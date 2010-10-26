@@ -1,0 +1,20 @@
+#!/usr/bin/ruby
+
+require 'fileutils'
+
+src, target=ARGV
+
+if target =~ /\/$/ # create the directory if it doesn't exist
+  unless File.directory?(target)
+    puts "Creating directory #{target}" 
+  FileUtils.mkdir_p target
+  end
+else # assuming we want to copy the file to that name
+  dirname = File.dirname(target)
+  unless File.directory?(dirname)
+    puts "Creating directory #{dirname}" 
+    FileUtils.mkdir_p File.dirname
+  end
+end
+
+FileUtils.cp src, target, :verbose => true

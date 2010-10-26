@@ -100,5 +100,8 @@ alias glh="gl | head"
 alias gmt="git mergetool"
 alias gitpretend="git add -n ."
 alias grc="git rebase --continue"
+alias gwtf="git wtf"
 
 alias py="python"
+
+PATH+=":"$CONF/common/bin
