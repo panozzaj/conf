@@ -1,10 +1,15 @@
+EDITOR="gvim"
+
 #####
 # COMMAND SHORTCUTS
 #####
 
 alias sagi="sudo apt-get install"
 alias xm="xmms2"
+
 alias -g xclip='xclip -selection c'
+# I could both copy and print the warning or just copy without, but want to increase muscle memory
+alias pbcopy='echo "you should be using xclip on Ubuntu, not pbcopy"'
 
 # Heroku
 export PATH=$PATH:/var/lib/gems/1.8/bin
@@ -27,6 +32,14 @@ alias vimrc="$EDITOR ~/.vimrc"
 
 alias ls='ls -aAbhX --color=auto'
 alias sl='ls -aAbhX --color=auto'
+
+# Set up home and end keys
+bindkey '\e[1~' beginning-of-line
+bindkey '\e[4~' end-of-line
+case $TERM in (xterm*)
+	bindkey '\e[H' beginning-of-line
+	bindkey '\e[F' end-of-line ;;
+esac
 
 #####
 # QUICK PATHS

@@ -16,8 +16,6 @@ SAVEHIST=1000
 bindkey -e
 # End of lines configured by zsh-newuser-install
 
-EDITOR="gvim"
-
 export PS1="$(print '%{\e[1;35m%}%S%c%s%{\e[0m%}')> "
 export LS_COLORS='di=01;33'
 
@@ -26,14 +24,6 @@ export LS_COLORS='di=01;33'
 #####
         
 export WORDCHARS='*?_[]~=&;!#$%^(){}'
-
-# Set up home and end keys
-bindkey '\e[1~' beginning-of-line
-bindkey '\e[4~' end-of-line
-case $TERM in (xterm*)
-	bindkey '\e[H' beginning-of-line
-	bindkey '\e[F' end-of-line ;;
-esac
 
 # Configure delete key
 bindkey "\e[3~" delete-char
@@ -46,10 +36,13 @@ bindkey "\e[3~" delete-char
 alias fn='find . -name'
 alias ll='ls -l'
 
-alias -- -="cd -" # the -- signifies that the variable will start with a -, so `-` will invoke `cd -`
-
-alias .="cd .."
 # Quick change directories
+# typing a directory name or variable that expands to one is sufficient to change directories
+setopt AUTOCD
+alias -- -="cd -" # the -- signifies that the variable will start with a -, so `-` will invoke `cd -`
+alias .="cd .."
+
+# when you are typing and you have more than two dots in a row, converts the third dot to /.. on the fly
 function rationalize-dot {
     if [[ $LBUFFER = *.. ]]; then
         LBUFFER+=/..
