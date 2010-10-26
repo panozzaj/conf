@@ -1,0 +1,5 @@
+CONF=$HOME/conf
+PLATFORM='ubuntu-10.04'
+
+path_to_zshrc=etc/.zshrc
+source $CONF/init/$path_to_zshrc
