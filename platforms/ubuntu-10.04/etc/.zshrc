@@ -23,7 +23,10 @@ gvim () { command gvim $@ 2> /dev/null }
 
 # gvim shortcut
 alias g="gvim"
-alias vimrc="gvim ~/.vimrc"
+alias vimrc="$EDITOR ~/.vimrc"
+
+alias ls='ls -aAbhX --color=auto'
+alias sl='ls -aAbhX --color=auto'
 
 #####
 # QUICK PATHS

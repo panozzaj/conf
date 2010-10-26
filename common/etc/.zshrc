@@ -19,7 +19,6 @@ bindkey -e
 EDITOR="gvim"
 
 export PS1="$(print '%{\e[1;35m%}%S%c%s%{\e[0m%}')> "
-alias ls='ls -abhX --color=auto'
 export LS_COLORS='di=01;33'
 
 #####
@@ -65,7 +64,6 @@ alias -g L='| less'
 
 # Spelling corrections for common commands
 alias dc='cd'
-alias sl='ls -aAbhX --color=auto'
 alias pw='pwd'
 alias pdw='pwd'
 alias grpe='grep'
