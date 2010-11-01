@@ -74,6 +74,10 @@ alias rdtp="rake db:test:prepare"
 alias rmig="./script/generate migration"
 alias rkae="rake"
 
+# gem
+alias sgi="sudo gem install"
+alias sgu="sudo gem update"
+
 alias cuc="cucumber"
 
 # RSpec

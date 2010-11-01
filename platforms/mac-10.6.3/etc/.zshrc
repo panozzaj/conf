@@ -1,4 +1,5 @@
 EDITOR='mvim -f -c "au VimLeave * !open -a Terminal"'
+alias m="mvim"
 
 #####
 # COMMAND SHORTCUTS
@@ -19,3 +20,6 @@ doc=$HOME/Documents
 dev=$doc/dev
 
 PATH+=":"$CONF/platforms/$PLATFORM/bin
+
+# load up rvm
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"  # This loads RVM into a shell session.
