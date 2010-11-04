@@ -1,6 +1,14 @@
 EDITOR='mvim -f -c "au VimLeave * !open -a Terminal"'
 alias m="mvim"
 
+# setup for Mac Ports
+PATH+=:$CONF/platforms/$PLATFORM/bin
+PATH+=:/opt/local/bin
+MANPATH+=:/opt/local/share/man
+INFOPATH+=:/opt/local/share/info
+
+alias spi="sudo port install"
+
 #####
 # COMMAND SHORTCUTS
 #####
@@ -18,8 +26,6 @@ alias xclip='echo "you should be using pbcopy on Mac, not xclip"'
 desk=$HOME/Desktop
 doc=$HOME/Documents
 dev=$doc/dev
-
-PATH+=":"$CONF/platforms/$PLATFORM/bin
 
 # load up rvm
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"  # This loads RVM into a shell session.

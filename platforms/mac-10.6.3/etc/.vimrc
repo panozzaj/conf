@@ -6,12 +6,12 @@ syntax enable
 set guifont=Inconsolata:h18
 set showcmd
 
-"if &l:diff
-"  colors peachpuff
-"  set diffopt+=iwhite   " ignore whitespace differences for diff
-"else
-"  colors wombat
-"endif
+if &l:diff
+  colors peachpuff
+  set diffopt+=iwhite   " ignore whitespace differences for diff
+else
+  colors neon
+endif
 
 set nu
 set ic
@@ -107,6 +107,8 @@ let g:Tex_DefaultTargetFormat="pdf"
 " should be in another file, but don't care for now
 " should also move things from vim72/** that I added into my personal .vim directory
 au BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please stop reading unless you are Anthony." | call Wp() | endif
+
+au BufRead,BufNewFile {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc,irb_tempfile*} set ft=ruby
 
 """""""""""""""""""""""""""""""""""
 " some from mswin.vim for consistency/quickness

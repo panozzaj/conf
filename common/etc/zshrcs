@@ -1,0 +1,1 @@
+$EDITOR $CONF/hosts/$HOST/$path_to_zshrc $CONF/platforms/$PLATFORM/$path_to_zshrc $CONF/common/$path_to_zshrc
