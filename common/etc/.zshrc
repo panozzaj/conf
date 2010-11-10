@@ -73,7 +73,9 @@ GREP_OPTIONS='--color=auto' GREP_COLOR='1;29'
 alias rdd="rake db:drop"
 alias rdm="rake db:migrate"
 alias rdtp="rake db:test:prepare"
-alias rmig="./script/generate migration"
+alias rg="rails generate"
+alias rg="rails generate migration"
+alias rc="rails console"
 alias rkae="rake"
 
 # gem
@@ -105,6 +107,7 @@ alias reload="source ~/.zshrc"
 alias gs="git status"
 alias gco="git checkout"
 alias gb="git branch"
+alias gba="git branch -a"
 alias gd="git diff"
 alias gl="git log --pretty=oneline --graph"
 alias glh="gl | head"
