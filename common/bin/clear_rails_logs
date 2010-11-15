@@ -4,7 +4,7 @@
 # files to save some space.
 #
 # modified from http://www.opensourcery.co.za/2008/11/21/clear-the-log-files-of-all-your-rails-projects/
-# by @panozzaj on 20101115
+# by @panozzaj on 20101115 to not use rake log:clear (conflicts with Bundler gemsets.)
 
 date
 for path in `find /Users/anthonypanozzo/Documents/dev -type f -path '*/config/environment.rb'`
