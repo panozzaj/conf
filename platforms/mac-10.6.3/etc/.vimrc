@@ -109,6 +109,7 @@ let g:Tex_DefaultTargetFormat="pdf"
 au BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please stop reading unless you are Anthony." | call Wp() | endif
 
 au BufRead,BufNewFile {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc,irb_tempfile*} set ft=ruby
+au FileType conf set foldmethod=manual
 
 """""""""""""""""""""""""""""""""""
 " some from mswin.vim for consistency/quickness

@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# Find all the rails projects from this directory down and clear their log
+# files to save some space.
+#
+# modified from http://www.opensourcery.co.za/2008/11/21/clear-the-log-files-of-all-your-rails-projects/
+# by @panozzaj on 20101115
+
+date
+for path in `find /Users/anthonypanozzo/Documents/dev -type f -path '*/config/environment.rb'`
+do
+  rails_root=`echo $path | xargs dirname | xargs dirname`
+  echo "Found RAILS_ROOT in $rails_root"
+  echo rm -f $rails_root/log/*.log
+  rm -f $rails_root/log/*.log
+  echo
+done
