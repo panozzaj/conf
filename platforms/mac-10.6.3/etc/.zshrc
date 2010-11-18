@@ -27,9 +27,6 @@ desk=$HOME/Desktop
 doc=$HOME/Documents
 dev=$doc/dev
 
-# load up rvm
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"  # This loads RVM into a shell session.
-
 # from Giles
 # search Gmail THIS WAY, not by going to the Inbox
 search_gmail() {
