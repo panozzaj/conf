@@ -18,6 +18,7 @@ alias sl='ls -abhG'
 
 # I could both copy and print the warning or just copy without, but want to increase muscle memory
 alias xclip='echo "you should be using pbcopy on Mac, not xclip"'
+alias xcode='open /Developer/Applications/Xcode.app'
 
 
 #####
