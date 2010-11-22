@@ -33,7 +33,7 @@ bindkey "\e[3~" delete-char
 #####
 
 ### Some general shortcuts
-alias fn='find . -name'
+alias fn='find . -iname'
 alias ll='ls -l'
 
 # Quick change directories
