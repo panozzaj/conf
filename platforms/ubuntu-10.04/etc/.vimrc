@@ -72,6 +72,7 @@ fun! Blog()
   call Writing()
   cd Documents/blog_stuff
   set syntax=html
+  set foldmethod=manual
 endfu
 
 fun! Log()
@@ -85,6 +86,7 @@ fun! Gtd()
 endfu
 
 iabbrev dts <C-R>=strftime("%Y%m%d - %H%M")<CR>
+iabbrev ds <C-R>=strftime("%Y%m%d")<CR>
 
 iabbrev wrt with respect to
 iabbrev otoh on the other hand
@@ -106,6 +108,7 @@ let g:Tex_DefaultTargetFormat="pdf"
 " should also move things from vim72/** that I added into my personal .vim directory
 au BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please stop reading unless you are Anthony." | call Wp() | endif
 
+" I think these can go in .vim/filetype according to http://objectmix.com/editors/365165-simple-vim-question-how-add-extension-syntax-highlighting.html
 au BufRead,BufNewFile {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc,irb_tempfile*} set ft=ruby
 au FileType conf set foldmethod=manual
 
@@ -178,3 +181,50 @@ cnoremap <C-A> <C-C>gggH<C-O>G
 onoremap <C-A> <C-C>gggH<C-O>G
 snoremap <C-A> <C-C>gggH<C-O>G
 xnoremap <C-A> <C-C>ggVG
+
+
+" Rename.vim  -  Rename a buffer within Vim and on the disk
+"
+" Copyright June 2007 by Christian J. Robinson <heptite@gmail.com>
+"
+" Distributed under the terms of the Vim license.  See ":help license".
+"
+" Usage:
+"
+" :Rename[!] {newname}
+command! -nargs=* -complete=file -bang Rename :call Rename("<args>", "<bang>")
+
+function! Rename(name, bang)
+        let l:curfile = expand("%:p")
+        let v:errmsg = ""
+        silent! exe "saveas" . a:bang . " " . a:name
+        if v:errmsg =~# '^$\|^E329'
+                if expand("%:p") !=# l:curfile && filewritable(expand("%:p"))
+                        silent exe "bwipe! " . l:curfile
+                        if delete(l:curfile)
+                                echoerr "Could not delete " . l:curfile
+                        endif
+                endif
+        else
+                echoerr v:errmsg
+        endif
+endfunction
+
+" create buffer on `gf` if the file does not currently exist (slight
+" modification from help file to accommodate colon remapping)
+map gf ;e <cfile><CR>
+
+" function for working with files with hard line breaks
+cabbr eighty call Eighty()
+fun! Eighty()
+  set textwidth=80                               " wrap to size characters
+  set formatoptions+=a                           " automatically reformat when inserting or deleting
+  let w:m2=matchadd('ErrorMsg', '\%>80v.\+', -1) " highlight any line > size characters
+  colo neon
+endfu
+
+inoremap <C-S> <Esc>==^y$iputs "<Esc>A: " + <Esc>pA.inspect
+
+"experimental
+
+set backspace=2 " trying to fix problem in Vim 7.3 on Ubuntu
