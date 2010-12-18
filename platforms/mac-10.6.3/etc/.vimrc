@@ -48,7 +48,7 @@ cabbr manual set foldmethod=manual
 cabbr wp call Wp()
 fun! Wp()
   set lbr
-  source /home/anthony/.vim/autocorrect.vim
+  source ~/.vim/autocorrect.vim
   nnoremap j gj
   nnoremap k gk
   nnoremap 0 g0

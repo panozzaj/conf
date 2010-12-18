@@ -111,8 +111,6 @@ alias gb="git branch"
 alias gba="git branch -a"
 alias gd="git diff"
 alias gp="git push"
-alias gph="git push heroku"
-alias gpa="git push && git push heroku"
 alias gl="git log --pretty=oneline --graph"
 alias glh="gl | head"
 alias gmt="git mergetool"
@@ -125,6 +123,8 @@ alias zshrcs="~/zshrcs"
 alias vimrcs="~/vimrcs"
 
 alias py="python"
+
+alias san="curl https://github.com/fastestforward/heroku_san/raw/master/README.rdoc | less"
 
 PATH+=":"$CONF/common/bin
 
