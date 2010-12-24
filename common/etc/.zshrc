@@ -6,6 +6,7 @@ zmodload zsh/datetime
 setopt share_history
 setopt APPEND_HISTORY
 
+autoload zmv
 autoload -Uz compinit
 compinit
 # End of lines added by compinstall

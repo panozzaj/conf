@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+require 'net/http'
+require 'rubygems'
+require 'xmlsimple'
+require 'ap'
+require 'pp'
+require 'json'
+
+filename = ARGV[0]
+abort "Filename must be provided as the first argument." unless filename
+
+puts "Printing #{filename}"
+contents = File.read filename
+
+if filename =~ /\.xml$/
+  data = XmlSimple.xml_in contents
+  ap data
+end
+
+if filename =~ /\.html$/
+  result = `tidy -indent -bare -quiet #{filename}`
+  puts "\n\n#{result}"
+end
+
+if filename =~ /\.json$/
+  data = JSON.parse(File.read(filename))
+  ap data
+end
