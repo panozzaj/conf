@@ -118,6 +118,7 @@ alias gmt="git mergetool"
 alias gitpretend="git add -n ."
 alias grc="git rebase --continue"
 alias gwtf="git wtf"
+alias gdc="git diff --cached"
 
 # .zshrc and .vimrc quick edit
 alias zshrcs="~/zshrcs"

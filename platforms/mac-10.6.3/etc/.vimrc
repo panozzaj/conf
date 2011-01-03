@@ -36,7 +36,7 @@ let g:rubycomplete_rails = 1
 set backupdir=/tmp " change backup directory so backups don't go everywhere
 set guioptions-=T " hide the toolbar
 
-set foldmethod=syntax
+"set foldmethod=syntax
 set scrolloff=2 " leave a gap between bottom of window and cursor, if possible
 
 " enter command mode without using shift key

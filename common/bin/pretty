@@ -1,20 +1,20 @@
 #!/usr/bin/env ruby
-require 'net/http'
 require 'rubygems'
-require 'xmlsimple'
+require 'bundler'
+require 'net/http'
 require 'ap'
-require 'pp'
 require 'json'
+require 'active_model'
+
+include ActiveModel::Serializers::Xml
 
 filename = ARGV[0]
 abort "Filename must be provided as the first argument." unless filename
 
 puts "Printing #{filename}"
-contents = File.read filename
 
 if filename =~ /\.xml$/
-  data = XmlSimple.xml_in contents
-  ap data
+  ap Hash.from_xml(File.read(filename))
 end
 
 if filename =~ /\.html$/
@@ -23,6 +23,5 @@ if filename =~ /\.html$/
 end
 
 if filename =~ /\.json$/
-  data = JSON.parse(File.read(filename))
-  ap data
+  ap JSON.parse(File.read(filename))
 end
