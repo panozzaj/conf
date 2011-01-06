@@ -55,6 +55,7 @@ zle -N rationalize-dot
 bindkey . rationalize-dot
 
 alias -g L='| less'
+alias -g NV='--no-verify'
 
 # Spelling corrections for common commands
 alias dc='cd'
@@ -127,6 +128,7 @@ alias vimrcs="~/vimrcs"
 alias py="python"
 
 alias san="curl https://github.com/fastestforward/heroku_san/raw/master/README.rdoc | less"
+alias pre="pretty"
 
 PATH+=":"$CONF/common/bin
 
