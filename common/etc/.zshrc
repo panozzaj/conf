@@ -6,6 +6,7 @@ zmodload zsh/datetime
 setopt share_history
 setopt APPEND_HISTORY
 
+autoload zmv
 autoload -Uz compinit
 compinit
 # End of lines added by compinstall
@@ -54,6 +55,7 @@ zle -N rationalize-dot
 bindkey . rationalize-dot
 
 alias -g L='| less'
+alias -g NV='--no-verify'
 
 # Spelling corrections for common commands
 alias dc='cd'
@@ -117,6 +119,7 @@ alias gmt="git mergetool"
 alias gitpretend="git add -n ."
 alias grc="git rebase --continue"
 alias gwtf="git wtf"
+alias gdc="git diff --cached"
 
 # .zshrc and .vimrc quick edit
 alias zshrcs="~/zshrcs"
@@ -125,6 +128,7 @@ alias vimrcs="~/vimrcs"
 alias py="python"
 
 alias san="curl https://github.com/fastestforward/heroku_san/raw/master/README.rdoc | less"
+alias pre="pretty"
 
 PATH+=":"$CONF/common/bin
 

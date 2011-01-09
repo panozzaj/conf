@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'bundler'
+require 'net/http'
+require 'ap'
+require 'json'
+require 'active_model'
+
+include ActiveModel::Serializers::Xml
+
+# desirable: support something like:
+#   > curl 'http://example.com' | pretty
+# see http://stackoverflow.com/questions/2013428 for ideas
+# problems include not knowing what the actual filename is for filtered files
+# see http://stackoverflow.com/questions/51572 for ideas on how to solve this
+
+filename = ARGV[0]
+abort "Filename must be provided as the first argument." unless filename
+abort "File does not exist." unless File.exists?(filename)
+
+puts "Printing #{filename}\n\n"
+
+case filename
+  when /\.xml$/, /\.rss$/
+    ap Hash.from_xml(File.read(filename))
+  when /\.html$/
+    result = `tidy -indent -bare -quiet #{filename}`
+    puts "\n\n#{result}"
+  when /\.json$/
+    ap JSON.parse(File.read(filename))
+  else
+    puts File.read(filename)
+    puts "\nFile format did not match any of the special pretty printers `pretty` knows about!"
+end

@@ -112,6 +112,7 @@ au BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please 
 au BufRead,BufNewFile {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc,irb_tempfile*} set ft=ruby
 au BufRead,BufNewFile *.less set ft=less
 au FileType conf set foldmethod=manual
+au BufRead,BufNewFile *.less setfiletype less
 
 """""""""""""""""""""""""""""""""""
 " some from mswin.vim for consistency/quickness
