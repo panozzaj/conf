@@ -110,6 +110,7 @@ au BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please 
 
 " I think these can go in .vim/filetype according to http://objectmix.com/editors/365165-simple-vim-question-how-add-extension-syntax-highlighting.html
 au BufRead,BufNewFile {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc,irb_tempfile*} set ft=ruby
+au BufRead,BufNewFile *.less set ft=less
 au FileType conf set foldmethod=manual
 
 """""""""""""""""""""""""""""""""""
