@@ -27,6 +27,7 @@ alias xcode='open /Developer/Applications/Xcode.app'
 desk=$HOME/Desktop
 doc=$HOME/Documents
 dev=$doc/dev
+peerkat=$dev/peerkat
 
 # from Giles
 # search Gmail THIS WAY, not by going to the Inbox

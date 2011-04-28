@@ -79,6 +79,7 @@ alias rg="rails generate"
 alias rgm="rails generate migration"
 alias rc="rails console"
 alias rkae="rake"
+alias rdr="rake db:rollback"
 
 # gem
 alias sgi="sudo gem install"
@@ -104,11 +105,13 @@ alias her="heroku"
 
 # zsh shorcuts
 alias reload="source ~/.zshrc"
+alias reload!="source ~/.zshrc"
 
 # git shortcuts
 alias gs="git status"
 alias gco="git checkout"
-alias gc="git commit -t ~/ticket"
+alias gc="git commit"
+alias gcom="git commit -m"
 alias gb="git branch"
 alias gba="git branch -a"
 alias gd="git diff"
