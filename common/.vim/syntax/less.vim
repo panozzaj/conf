@@ -239,7 +239,7 @@ if version >= 508 || !exists("did_less_syn_inits")
   HiLink cssSelectorOp Special
   HiLink cssSelectorOp2 Special
   HiLink cssFontProp StorageClass
-  HiLink cssColorProp storageClass
+  HiLink cssColorProp StorageClass
   HiLink cssTextProp StorageClass
   HiLink cssBoxProp StorageClass
   HiLink cssRenderProp StorageClass
@@ -301,5 +301,4 @@ if main_syntax == 'less'
 endif
 
 
-" vim: ts=8
-
+" vim: ts=2
