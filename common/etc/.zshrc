@@ -95,9 +95,6 @@ alias rsc="rake spec:controllers"
 alias rsv="rake spec:views"
 alias rsh="rake spec:helpers"
 
-# bundler
-alias bi="bundle install"
-
 # Heroku
 alias hrdm="heroku rake db:migrate"
 alias hero="heroku"
