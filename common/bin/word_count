@@ -1,0 +1,8 @@
+#!/bin/zsh
+zmodload zsh/mathfunc
+filename="file_for_word_count.txt"
+git diff --word-diff=porcelain $2 -- $1 > $filename
+added=`egrep "^\+" $filename | wc -w`
+subtracted=`egrep "^\-" $filename | wc -w`
+echo $(( $added - $subtracted ))
+rm $filename
