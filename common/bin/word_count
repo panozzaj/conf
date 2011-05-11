@@ -1,4 +1,8 @@
 #!/bin/zsh
+# all parameters optional
+# first  - specific filename            (defaults to all changed files)
+# second - git revision to diff         (defaults to current)
+# third  - git revision to diff against (defaults to HEAD)
 zmodload zsh/mathfunc
 filename="file_for_word_count.txt"
 git diff --word-diff=porcelain $2 -- $1 > $filename
