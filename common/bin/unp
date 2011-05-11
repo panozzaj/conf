@@ -1,0 +1,334 @@
+#! /usr/bin/perl
+
+# Maintained by Eduard Bloch <edi@ka.linux.de>
+# http://www.eduard.bloch.com/edecosi/unp.en.html
+#
+# Originaly written by André Karwath, 1997
+# andre.karwath@informatik.tu-chemnitz.de
+# http://www.aka-online.de
+#
+# "unp" runs the correct unpack program depending on the file extension
+# of the given parameter.
+# 
+# This file is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# -----------------------------------------------------------------------
+# If you make changes to this script, please feel free to forward the new 
+# version to eduard@bloch.com or Andre.Karwath@informatik.tu-chemnitz.de
+# -----------------------------------------------------------------------
+# You need some archiver and compressor programs for extracting:
+# GNU tar, gzip, bzip2, ar, rpm, unrar or rar, unarj, unzip and lha
+
+use File::Basename;
+
+$not_found=": not found\n";
+$not_read=": not readable\n";
+$unsup=": unsupported format\n";
+$formats="
+tar[.gz,.bz2], gz, bz2, Z, ar/deb, rpm, shar, rar, arj, zip, LHa, cab, ace,
+tnef, uu (mail, news), mime, hqx, sea, zoo, pmd, cpio, afio, lzop
+";
+$usage="
+usage: unp file [file]...
+file: compressed file(s) to expand
+
+Use -- to pass arguments to external programs, eg. some tar options:
+unp fastgl.tgz xmnt.tgz -- -C /tmp
+
+Special option:
+  -f  Continue even if program availability checks fail
+  -u  For Debian packages:
+      - extract data.tar.gz after each operation
+      - extract control.tar.gz in control/<filename>/
+      For other archives:
+      - create directory <filename without suffix>/
+      - extract contents there
+
+currently supported extensions and formats are".$formats;
+$tryfile=" - unknown extension, checking with file\n";
+$testbz2=" contains bzip2-compressed data, determining data type...\n";
+$testgz=" contains gzip-compressed data, determining data type...\n";
+$testlz=" contains lzop-compressed data, determining data type...\n";
+$skip=" exists allready, skipping...\n";
+$is_dir=" is a directory, skipping...\n";
+$nopack="Warning, the following unarchiv program(s) could not be found:
+  ";
+$plzinst="Please install the package(s): ";
+$or="or";
+
+# localisation part (only german at the moment):
+if($ENV{'LANG'}=~ "^de" || $ENV{'LC_MESSAGES'}=~ "^de"  ){
+$not_found=" wurde nicht gefunden!\n";
+$not_read=" konnte nicht gelesen werden!\n";
+$unsup=": dieses Format wird nicht unterstuetzt!\n";
+$usage="
+Aufruf: unp Datei [Datei] ...
+Datei: eine oder mehrere komprimierte Datei(en) zum entpacken
+
+Optionen:
+  -f  Weitermachen, auch wenn Checks der Entpacker-Verfügbarkeit fehlschlagen
+  -u  Fuer Debian-Pakete:
+      - Nach jeder Operation data.tar.gz entpacken
+      - control.tar.gz nach control/<Achiv-Name>/
+      Fuer andere Archive:
+      - Verzeichniss <Archivename ohne Endung>/ erstellen
+      - Archiv dort entpacken
+
+Optionen nach -- werden an externe Programme uebergeben, z.B. tar-Optionen:
+unp fastgl.tgz xmnt.tgz -- -C /tmp
+
+Derzeit unterstuetzte Erweiterungen und Formate:".$formats;
+$tryfile=" - Endung unbekannt, ueberpruefe mit file...
+";
+$testbz2=" enthält bzip2-komprimierte Daten, ueberpruefe den Datentyp...\n";
+$testgz=" enthält gzip-komprimierte Daten, ueberpruefe den Datentyp...\n";
+$testlz=" enthält lzop-komprimierte Daten, ueberpruefe den Datentyp...\n";
+$skip=" existiert bereits, ueberspringe...\n";
+$is_dir=" ist ein Verzeichnis\n";
+$nopack="Warnung, folgende(s) Entpacker-Programm(e) wurde(n) nicht gefunden:
+  ";
+$plzinst="Bitte installieren Sie folgend(e) Paket(e): ";
+$or="oder";
+}
+
+%pkgmap = (
+   cpio, "afio $or cpio",
+   afio, "afio $or cpio",
+   rpm2cpio, "rpm, afio $or cpio",
+   unshar, sharutils,
+   uudecode, sharutils,
+   PPMd, ppmd,
+   rar, "rar or unrar",
+   ar, binutils,
+   unarj, "unarj or arj", 
+   hexbin, macutils,
+   macunpack, macunpack,
+   gunzip, gzip,
+   bunzip2, bzip2,
+   formail, "formail, mpack"
+);
+
+&print_usage if ($#ARGV<0 || $ARGV[0] eq "-h");
+
+my $command;
+my $force;
+
+sub set_command {
+
+   my %cand;
+   my $lastcmd;
+   for $cmd (@_) {
+      $cmd =~ /^(\S+)(\s|$)/;
+      my $prog=$1;
+      # HACKS
+      set_command("mpack") if($prog eq "formail");
+      for(split(/:/,$ENV{"PATH"})) {
+         if(-x "$_/$prog") {
+            $command=$cmd;
+            return;
+         }
+         $lastcmd=$cmd;
+         $cand{$prog}=$prog;
+      }
+   }
+   # override with custom package names where needed
+   for(keys %cand) { $cand{$_}=$pkgmap{$_} if( defined($pkgmap{$_}) ); }
+   print "$nopack ".join(" $or ", keys %cand)."\n$plzinst".join(" $or ", values %cand)."\n";
+   $command=$lastcmd;
+   $force || exit 1;
+}
+   
+sub testfile {
+   print $UNP_FILE.$tryfile;
+   my $uncompcmd;
+   my $UNP_FILEstr;
+   if(open(fd, "-|", "file", $UNP_FILE))
+   {
+      while(<fd>)
+      {
+         if(/(gzip)/si) { $uncompcmd='zcat'; }
+         elsif (/(bzip2)/si) { $uncompcmd='bzcat'; }
+         elsif (/(lzop)/si) { $uncompcmd='lzop -d <'; }
+         else
+         {
+            $UNP_FILEstr.=$_;
+            next;
+         }
+         last;
+      }
+      close(fd);
+   }
+   if($uncompcmd)
+   {
+      $UNP_TARGET=basename($UNP_FILE).".unp";
+      $command=$uncompcmd.' $UNP_FILE > $UNP_TARGET'; # preliminary, check for tar contents also
+
+      $ENV{"UNP_FILE"}=$UNP_FILE;
+      if(open(fd, "-|", "/bin/sh", "-c", $uncompcmd.' "$UNP_FILE" | file -'))
+      {
+         while(<fd>)
+         {
+            if(/tar/i)
+            {
+               $command=$uncompcmd.' $UNP_FILE | tar -x -v -f - $UNP_ARGS';
+               last;
+            }
+         }
+         close(fd);
+      }
+   }
+   
+   if ($UNP_FILEstr =~ /RAR.*archive/i) { set_command('rar x $UNP_ARGS $UNP_FILE','unrar x $UNP_ARGS $UNP_FILE'); }
+   if ($UNP_FILEstr =~ /tar.*archive/i) { set_command 'tar -xvf $UNP_FILE $UNP_ARGS'; }
+   if ($UNP_FILEstr =~ /(Debian binary package|\ ar.*archive)/i) { set_command 'ar -x -v $UNP_FILE $UNP_ARGS'; }
+   if ($UNP_FILEstr =~ /LHa.*archive/i) { set_command 'lha x $UNP_ARGS $UNP_FILE'; }
+   if ($UNP_FILEstr =~ /ARJ.*archive/i) { set_command('unarj x $UNP_FILE','arj x $UNP_FILE '); }
+   if ($UNP_FILEstr =~ /CAB file/i) { set_command 'cabextract $UNP_FILE'; }
+   if ($UNP_FILEstr =~ /cpio/i) { set_command('afio -Z -v -i $UNP_FILE','cpio -i -d	--verbose  $UNP_ARGS < $UNP_FILE'); }
+   if ($UNP_FILEstr =~ /Zip.*archive/i) { set_command 'unzip $UNP_ARGS $UNP_FILE'; }
+   if ($UNP_FILEstr =~ /Zoo.*archive/i) { set_command 'unzoo -x $UNP_ARGS $UNP_FILE'; }
+   if ($UNP_FILEstr =~ /shell.*archive/i) { set_command 'unshar $UNP_ARGS $UNP_FILE'; }
+   if ($UNP_FILEstr =~ /Transport Neutral Encapsulation Format/i) { set_command 'tnef -v $UNP_ARGS $UNP_FILE'; }
+   if ($UNP_FILEstr =~ /uuencoded/i) { set_command 'uudecode $UNP_ARGS $UNP_FILE'; }
+   if ($UNP_FILEstr =~ /(mail text)|news/i) { set_command 'formail -s munpack < $UNP_FILE'; }
+   if ($UNP_FILEstr =~ /RPM/) { set_command 'rpm2cpio < $UNP_FILE | cpio -i -d	--verbose $UNP_ARGS';}
+   # RAR can also create executables
+   if ($UNP_FILEstr =~ /executable/i){set_command 'orange $UNP_FILE || unzip $UNP_FILE || unrar x $UNP_FILE || rar x $UNP_FILE || unarj x $UNP_FILE || lha x $UNP_FILE';}
+   if ($UNP_FILEstr =~ /BinHex/i) {set_command 'a=$(hexbin -v $UNP_FILE 2>&1); bla=$(echo "$a" | sed -e \'s/.* name=\\(.*\\).*/\\1/\'); macunpack -v "$bla.bin"'}
+
+   # if still nothing could be found, print an error message
+   if ($command eq "") {
+      print $UNP_FILE.$unsup;
+      next LOOP;
+   }
+}
+
+arglabel: foreach $arg (@ARGV){
+   die "Suspicious file name, aborting...\n" if($arg=~/UNP_/);
+	if("$arg" eq "-u"){$dataunp=1 ; next arglabel};
+	if("$arg" eq "-f"){$force=1 ; next arglabel};
+	if("$arg" eq "--"){$argvalue=1; next arglabel};
+	if($argvalue){
+		push(@ARGS, $arg);
+	}else{
+		push(@FILES,$arg);
+	}
+}
+
+LOOP: foreach $UNP_FILE (@FILES) {
+  if (!-e $UNP_FILE) {
+     print $UNP_FILE.$not_found;
+     if ($UNP_FILE == "-") 
+       {$stdin=1}
+     else
+       {next LOOP;}
+  }
+
+  if ((!-r $UNP_FILE) && (!$stdin)) {
+     print $UNP_FILE.$not_read;
+     next LOOP;
+  }
+  
+	if (-d $UNP_FILE) {
+     print $UNP_FILE.$is_dir;
+     next LOOP;
+  }
+	undef $command;
+
+  # not just gunzip, create new file with uncompressed data in the current
+	# directory, same for bz2
+	if ($UNP_FILE =~ /([^\/]*)\.(gz|Z)$/i) {if (-f $1){ print $1.$skip; next LOOP;};
+			set_command "gunzip < \$UNP_FILE > \"$1\""; }
+  if ($UNP_FILE =~ /([^\/]*)\.(bz2$)/i) {if (-f $1){ print $1.$skip; next LOOP;};
+			set_command "bunzip2 < \$UNP_FILE > \"$1\""; }
+	if ($UNP_FILE =~ /([^\/]*)\.lzo$/i) {if (-f $1){ print $1.$skip; next LOOP;};
+			set_command "lzop -v -d \$UNP_FILE"; }
+	
+	# check also for _tar, because of broken filenames
+  if ($UNP_FILE =~ /(\.|_)tar$/i) { set_command 'tar -xvf $UNP_FILE $UNP_ARGS'; }
+	if ($UNP_FILE =~ /(\.|_)rpm$/i) { set_command 'rpm2cpio < $UNP_FILE | cpio -i -d	--verbose $UNP_ARGS';}
+	if ($UNP_FILE =~ /(\.|_)tar\.gz$/i) { set_command 'tar -xvzf $UNP_FILE $UNP_ARGS'; }
+  if ($UNP_FILE =~ /(\.|_)tar\.bz2$/i) { set_command 'bunzip2 -c $UNP_FILE | tar -xvf - $UNP_ARGS'; }
+	
+	if ($UNP_FILE =~ /\.tgz$/i) { set_command 'tar -xvzf $UNP_FILE $UNP_ARGS'; }
+	if ($UNP_FILE =~ /\.(tzo|tar\.lzop)$/i) { set_command 'lzop -v -d $UNP_FILE | tar -xv $UNP_ARGS'; }
+  if ($UNP_FILE =~ /\.rar$/i) { set_command('rar x $UNP_FILE $UNP_ARGS','unrar x $UNP_FILE $UNP_ARGS'); }
+  if ($UNP_FILE =~ /\.(ar|deb)$/i) { set_command 'ar -x -v $UNP_FILE $UNP_ARGS'; }
+  if ($UNP_FILE =~ /\.l(ha|zh)$/i) { set_command 'lha x $UNP_ARGS $UNP_FILE'; }
+  if ($UNP_FILE =~ /\.arj$/i) { set_command ('arj x $UNP_FILE','unarj x $UNP_FILE'); }
+  if ($UNP_FILE =~ /\.zip$/i) { set_command 'unzip $UNP_ARGS $UNP_FILE'; }
+  if ($UNP_FILE =~ /\.zoo$/i) { set_command 'unzoo -x $UNP_ARGS $UNP_FILE'; }
+  if ($UNP_FILE =~ /\.cab$/i) { set_command 'cabextract $UNP_FILE'; }
+  if ($UNP_FILE =~ /\.ace$/i) { set_command 'unace e $UNP_ARGS $UNP_FILE'; }
+  if ($UNP_FILE =~ /\.dat$/i) { set_command 'tnef -v $UNP_ARGS $UNP_FILE'; }
+  if ($UNP_FILE =~ /\.pmd$/i) { set_command 'PPMd x $UNP_ARGS $UNP_FILE'; }
+  if ($UNP_FILE =~ /\.(sea|sea\.bin)$/i) { set_command 'macutils -v $UNP_ARGS $UNP_FILE'; }
+  if ($UNP_FILE =~ /\.uu$/i) { set_command 'uudecode $UNP_ARGS $UNP_FILE'; }
+	
+	# assume that exe is just an arcive with executable header and try
+	# some programs
+	if ($UNP_FILE =~ /\.exe$/i) { set_command 'orange $UNP_FILE || unzip $UNP_FILE || unrar x $UNP_FILE || rar x $UNP_FILE || unarj x $UNP_FILE || lha x $UNP_FILE';}
+
+  if ($command eq "") {testfile};
+	if ($dataunp){
+#print "binda\n$command\n$1";
+     if($UNP_FILE =~ /([^\/]*)\.deb$/i) {
+        my $debbase=$1;
+        &doit;
+        system ("tar", "zxvf", "data.tar.gz");
+        mkdir "control";
+        mkdir "control/$debbase";
+        system("tar", "zxvf", "control.tar.gz", "-C", "control/$debbase");
+     }
+     else {
+      # Wo sind wir gerade? (Achtung newline muss weg!!)
+      chomp($pwd = `pwd`);
+      # Pfad fixen
+      $0 =~ s!^./!$pwd/!;
+      $UNP_FILE =~ /([^\/]+)\.(\w)+$/i;
+      $newdir=$1;
+      if($UNP_FILE !~ m/^\//) { # wenn der pfad nicht absolut ist
+        $UNP_FILE = "$pwd/$UNP_FILE";
+      }
+      mkdir $newdir;
+      chdir $newdir;
+      system ($0, $UNP_FILE);
+      chdir $pwd;
+   }
+	}
+  else {
+    &doit;
+  }
+}
+
+sub doit {
+   #print "DBG: doit, $command\n";
+   my @realargs;
+   $ENV{"UNP_FILE"}=$UNP_FILE;
+   $ENV{"TARGET"}=$UNP_TARGET;
+   $command=~s/\$UNP_FILE/"\$UNP_FILE\"/g;
+   $command=~s/\$UNP_TARGET/"\$UNP_TARGET"/g;
+   $command=~s/\$UNP_ARGS/"\$\@"/g;
+   #print "DBG: doit2, $command\n";
+   if(0!=system("/bin/sh", "-c", $command, @ARGS))
+   {
+      # if execution failed, try file way
+      testfile;
+      system("/bin/sh", "-c", $command, @ARGS);
+   };
+}
+
+# -----------------------------------------------------------------------------
+sub print_usage {
+  print $usage;
+	die "\n";
+}
+# -----------------------------------------------------------------------------

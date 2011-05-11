@@ -1,0 +1,115 @@
+#! /usr/bin/perl
+
+# Maintained by Eduard Bloch <edi@ka.linux.de>
+#
+# "ucat" is a wrapper for zcat, bzcat, zip, tar. It runs the correct unpack
+# program depending on the file extension or the detected file contents.
+# 
+# This file is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# -----------------------------------------------------------------------
+# If you make changes to this script, please feel free to forward the new 
+# version to eduard@bloch.com or Andre.Karwath@informatik.tu-chemnitz.de
+# -----------------------------------------------------------------------
+
+
+$usage="
+usage: ucat file [file]...
+file: compressed file(s) to expand and output
+";
+
+$tryfile=" - unknown extension, checking with \"file\"\n";
+$testbz2=" contains bzip2-compressed data, determining data type...\n";
+$testgz=" contains gzip-compressed data, determining data type...\n";
+$testlz=" contains lzop-compressed data, determining data type...\n";
+$skip=" exists allready, skipping...\n";
+$is_dir=" is a directory, skipping...\n";
+
+# localisation part (only german at the moment):
+if($ENV{'LANG'}=~ "^de"){
+$not_found=" wurde nicht gefunden!\n";
+$not_read=" konnte nicht gelesen werden!\n";
+$unsup=": dieses Format wird nicht unterstuetzt!\n";
+$usage="
+Aufruf: ucat Datei [Datei] ...
+Datei: eine oder mehrere komprimierte Datei(en) zum entpacken und ausgeben
+";
+
+$tryfile=" - Endung unbekannt, ueberpruefe mit \"file\"...
+";
+$testbz2=" enthält bzip2-komprimierte Daten, ueberpruefe den Datentyp...\n";
+$testgz=" enthält gzip-komprimierte Daten, ueberpruefe den Datentyp...\n";
+$testlz=" enthält lzop-komprimierte Daten, ueberpruefe den Datentyp...\n";
+$skip=" existiert bereits, ueberspringe...\n";
+$is_dir=" ist ein Verzeichnis\n";
+}
+
+&print_usage if ($#ARGV<0 || $ARGV[0] eq "-h");
+
+sub testfile {
+   print STDERR $file.$tryfile;
+   $filestr=`file \"$file\"`;
+   if ($filestr =~ /(gzip)/gi){
+      $command="zcat \"$file\"";
+   };
+   if ($filestr =~ /(bzip2)/gi){
+      $command="bzcat \"$file\"";
+   };
+   if ($filestr =~ /(lzop)/gi){
+      $command="lzop -d < \"$file\" ";
+   };
+   
+   if ($filestr =~ /RAR.*archive/i) { $command="rar p \"$file\""; }
+   if ($filestr =~ /LHa.*archive/i) { $command="lha p \"$file\""; }
+   if ($filestr =~ /tar.*archive/i) { $command="tar -x -O"; }
+   if ($filestr =~ /Zip.*archive/i) { $command="unzip -c \"$file\""; }
+   if ($filestr =~ /Zoo.*archive/i) { $command="unzoo -x -p \"$file\""; }
+   if ($filestr =~ /uuencoded/i) { $command="uudecode -o - \"$file\""; }
+   # if still nothing could be found, print an error message
+   if ($command eq "") {
+      print STDERR $file.$unsup;
+      next LOOP;
+   }
+}
+
+LOOP: foreach $file (@ARGV) {
+
+  if ((!-r $file) && (!$stdin)) {
+     print STDERR $file.$not_read;
+     next LOOP;
+  }
+  
+	if (-d $file) {
+     print STDERR $file.$is_dir;
+     next LOOP;
+  }
+  &doit;
+}
+
+sub doit {
+   &testfile;
+   #    retry. On failure, tell user to install the packer
+   if(system($command)) {
+      $bin=((split(/\s/,$command))[0]);
+      if(!length(`which $bin`)) {
+         die "
+         Could not locate the program $bin. Please
+         install a package that provides it, for example $bin.\n";
+      }
+   }
+}
+
+# -----------------------------------------------------------------------------
+sub print_usage {
+  print $usage;
+	die "\n";
+}
+# -----------------------------------------------------------------------------
