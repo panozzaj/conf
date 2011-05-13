@@ -130,6 +130,9 @@ alias py="python"
 alias san="curl https://github.com/fastestforward/heroku_san/raw/master/README.rdoc | less"
 alias pre="pretty"
 
+alias ant='color-ant'
+alias mvn='color-mvn'
+
 PATH+=":"$CONF/common/bin
 
 # load up rvm
