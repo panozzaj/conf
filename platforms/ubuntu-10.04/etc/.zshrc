@@ -47,3 +47,6 @@ esac
 vim=/usr/share/vim
 desk=$HOME/Desktop
 doc=$HOME/Documents
+
+# fink shell script (and presumably others) uses . as a command
+alias .="cd .."

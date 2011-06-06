@@ -41,7 +41,6 @@ alias ll='ls -l'
 # typing a directory name or variable that expands to one is sufficient to change directories
 setopt AUTOCD
 alias -- -="cd -" # the -- signifies that the variable will start with a -, so `-` will invoke `cd -`
-alias .="cd .."
 
 # when you are typing and you have more than two dots in a row, converts the third dot to /.. on the fly
 function rationalize-dot {
@@ -111,7 +110,6 @@ alias gc="git commit"
 alias gcom="git commit -m"
 alias gb="git branch"
 alias gba="git branch -a"
-alias gd="git diff"
 alias gp="git push"
 alias gl="git log --pretty=oneline --graph"
 alias glh="gl | head"
@@ -119,7 +117,9 @@ alias gmt="git mergetool"
 alias gitpretend="git add -n ."
 alias grc="git rebase --continue"
 alias gwtf="git wtf"
+alias gd="git diff"
 alias gdc="git diff --cached"
+alias gdw="git diff --word-diff"
 
 # .zshrc and .vimrc quick edit
 alias zshrcs="~/zshrcs"

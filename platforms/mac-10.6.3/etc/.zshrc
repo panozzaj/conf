@@ -28,9 +28,20 @@ desk=$HOME/Desktop
 doc=$HOME/Documents
 dev=$doc/dev
 peerkat=$dev/peerkat
+downloads=~/Downloads
+workspace=$doc/workspace
 
 # from Giles
 # search Gmail THIS WAY, not by going to the Inbox
 search_gmail() {
   open "http://mail.google.com/mail/#search/$*"
 }
+
+# fink shell script (and presumably others) uses . as a command
+alias .=.
+# initialize fink
+source /sw/bin/init.sh
+alias .="cd .."
+
+export JAVA_HOME=/Library/Java/Home
+export CATALINA_HOME=/Library/Tomcat/Home
