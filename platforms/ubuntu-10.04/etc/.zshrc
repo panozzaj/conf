@@ -26,8 +26,6 @@ alias go=gnome-open
 # can remove when this problem is fixed, although I suppose it isn't hurting much
 gvim () { command gvim $@ 2> /dev/null }
 
-# gvim shortcut
-alias g="gvim"
 alias vimrc="$EDITOR ~/.vimrc"
 
 alias ls='ls -aAbhX --color=auto'
