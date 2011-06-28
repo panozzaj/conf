@@ -48,3 +48,7 @@ doc=$HOME/Documents
 
 # fink shell script (and presumably others) uses . as a command
 alias .="cd .."
+
+if [ -e "`pwd`/.rvmrc" ]; then
+        source "`pwd`/.rvmrc"
+fi
