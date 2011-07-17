@@ -1,4 +1,4 @@
-EDITOR='mvim -f -c "au VimLeave * !open -a Terminal"'
+EDITOR='mvim'
 
 # setup for Mac Ports
 PATH+=:$CONF/platforms/$PLATFORM/bin
