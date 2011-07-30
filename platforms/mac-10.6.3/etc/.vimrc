@@ -117,6 +117,8 @@ au BufRead,BufNewFile {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc
 au FileType conf set foldmethod=manual
 au BufRead,BufNewFile *.less setfiletype less
 
+imap <C-BS> <C-W>
+
 """""""""""""""""""""""""""""""""""
 " some from mswin.vim for consistency/quickness
 " CTRL-X and SHIFT-Del are Cut
