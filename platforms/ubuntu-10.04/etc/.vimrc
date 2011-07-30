@@ -1,6 +1,7 @@
 set nocompatible
 
 call pathogen#runtime_append_all_bundles()
+runtime macros/matchit.vim
 
 highlight Pmenu guibg=brown gui=bold
 syntax enable
@@ -35,6 +36,8 @@ set smartindent
 let g:rubycomplete_rails = 1
 set backupdir=/tmp " change backup directory so backups don't go everywhere
 set guioptions-=T " hide the toolbar
+set mouse=a " mouse support for terminal vim
+set title " terminal title set to buffer name
 
 set foldmethod=syntax
 set scrolloff=2 " leave a gap between bottom of window and cursor, if possible
@@ -230,5 +233,8 @@ endfu
 inoremap <C-S> <Esc>==^y$iputs "<Esc>A: " + <Esc>pA.inspect
 
 "experimental
-
 set backspace=2 " trying to fix problem in Vim 7.3 on Ubuntu
+
+"  toggle trailing whitespace highlighting with leader + s
+set listchars=tab:>-,trail:·,eol:$
+nmap <silent> <leader>s :set nolist!<CR>

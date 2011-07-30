@@ -1,6 +1,7 @@
 set nocompatible
 
 call pathogen#runtime_append_all_bundles()
+runtime macros/matchit.vim
 
 highlight Pmenu guibg=brown gui=bold
 syntax enable
@@ -37,6 +38,8 @@ set smartindent
 let g:rubycomplete_rails = 1
 set backupdir=/tmp " change backup directory so backups don't go everywhere
 set guioptions-=T " hide the toolbar
+set mouse=a " mouse support for terminal vim
+set title " terminal title set to buffer name
 
 "set foldmethod=syntax
 set scrolloff=2 " leave a gap between bottom of window and cursor, if possible
@@ -57,7 +60,7 @@ fun! Wp()
   nnoremap $ g$
   set nonumber
   set spell spelllang=en_us
-  set guifont=Inconsolata\ 14
+  set guifont=Inconsolata:h20
 endfu
 
 cabbr autocommit call Autocommit()
@@ -183,3 +186,8 @@ cnoremap <C-A> <C-C>gggH<C-O>G
 onoremap <C-A> <C-C>gggH<C-O>G
 snoremap <C-A> <C-C>gggH<C-O>G
 xnoremap <C-A> <C-C>ggVG
+
+" Experimental
+"  toggle trailing whitespace highlighting with leader + s
+set listchars=tab:>-,trail:·,eol:$
+nmap <silent> <leader>s :set nolist!<CR>
