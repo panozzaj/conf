@@ -1,0 +1,3 @@
+[submodule "common/.vim/bundle/command-t"]
+	path = common/.vim/bundle/command-t
+	url = git://git.wincent.com/command-t.git
