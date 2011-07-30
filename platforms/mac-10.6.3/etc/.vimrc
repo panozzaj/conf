@@ -44,10 +44,6 @@ set title " terminal title set to buffer name
 "set foldmethod=syntax
 set scrolloff=2 " leave a gap between bottom of window and cursor, if possible
 
-" enter command mode without using shift key
-nnoremap ; :
-nnoremap : ;
-
 cabbr manual set foldmethod=manual
 
 cabbr wp call Wp()
@@ -192,4 +188,172 @@ xnoremap <C-A> <C-C>ggVG
 " Experimental
 "  toggle trailing whitespace highlighting with leader + s
 set listchars=tab:>-,trail:·,eol:$
-nmap <silent> <leader>s :set nolist!<CR>
+nmap <silent> <leader>s ;set nolist!<CR>
+
+" Don't expand tab in Makefiles
+autocmd FileType make set noexpandtab
+
+set wildignore=*.o,*.class,*.png,*.pdf,*.ps,*.gif,*.jpg,*.aux,*.toc,*.cod,*.bak,*.mp3,*.m4a,*.wmv,*.mpg,*.mov,*.doc,*.bc
+
+" Enable automatic spell checking for txt and tex files
+let spell_auto_type="tex,txt"
+
+" Turns an word into a regex to match that word
+function English(word)
+  " Case-insensitive, and properly bounded.
+  return '\c\<' . a:word . '\>'
+endfunction
+
+" For proofreading.
+" From the bottom of http://www.cs.princeton.edu/~npjohnso/dot.vimrc 
+fun! Proofreading()
+  highlight Weakener ctermbg=yellow ctermfg=blue guibg=reg guifg=blue
+  call matchadd("Weakener", English('general'), 1)
+  call matchadd("Weakener", English('generally'), 1)
+  call matchadd("Weakener", English('in general'), 1)
+  call matchadd("Weakener", English('usual'), 1)
+  call matchadd("Weakener", English('usually'), 1)
+  call matchadd("Weakener", English('often'), 1)
+  call matchadd("Weakener", English('frequent'), 1)
+  call matchadd("Weakener", English('frequenty'), 1)
+  call matchadd("Weakener", English('many'), 1)
+  call matchadd("Weakener", English('in many cases'), 1)
+  call matchadd("Weakener", English('effective'), 1)
+  call matchadd("Weakener", English('effectively'), 1)
+  call matchadd("Weakener", English('can'), 1)
+  call matchadd("Weakener", English('may'), 1)
+  call matchadd("Weakener", English('could'), 1)
+  call matchadd("Weakener", English('should'), 1)
+  call matchadd("Weakener", English('might'), 1)
+  call matchadd("Weakener", English('possible'), 1)
+  call matchadd("Weakener", English('possibly'), 1)
+  call matchadd("Weakener", English('potential'), 1)
+  call matchadd("Weakener", English('potentially'), 1)
+  
+  " Contractions
+  highlight Contraction ctermbg=white ctermfg=blue guibg=white guifg=blue
+  call matchadd("Contraction", English("I'm"), 1)
+  call matchadd("Contraction", English("He's"), 1)
+  call matchadd("Contraction", English("She's"), 1)
+  call matchadd("Contraction", English("It's"), 1)
+  call matchadd("Contraction", English("let's"), 1)
+  call matchadd("Contraction", English("[a-z]*'ve"), 1)
+  call matchadd("Contraction", English("[a-z]*'ll"), 1)
+  call matchadd("Contraction", English("[a-z]*n't"), 1)
+  
+  " From Wikipedia's list of Weasel Words
+  highlight WeaselWord ctermbg=red ctermfg=white guibg=red guifg=white
+  call matchadd("WeaselWord", English("reveal"), 1)
+  call matchadd("WeaselWord", English("expose"), 1)
+  call matchadd("WeaselWord", English("observe"), 1)
+  call matchadd("WeaselWord", English("feel"), 1)
+  call matchadd("WeaselWord", English("supposed"), 1)
+  call matchadd("WeaselWord", English("alleged"), 1)
+  call matchadd("WeaselWord", English("insist"), 1)
+  call matchadd("WeaselWord", English("insisted"), 1)
+  call matchadd("WeaselWord", English("maintain"), 1)
+  call matchadd("WeaselWord", English("maintained"), 1)
+  call matchadd("WeaselWord", English("purported"), 1)
+  call matchadd("WeaselWord", English("naturally"), 1)
+  call matchadd("WeaselWord", English("obviously"), 1)
+  call matchadd("WeaselWord", English("clearly"), 1)
+  call matchadd("WeaselWord", English("actually"), 1)
+  call matchadd("WeaselWord", English("fundamentally"), 1)
+  call matchadd("WeaselWord", English("essentially"), 1)
+  call matchadd("WeaselWord", English("basically"), 1)
+  call matchadd("WeaselWord", English("ironically"), 1)
+  call matchadd("WeaselWord", English("amusingly"), 1)
+  call matchadd("WeaselWord", English("unfortunately"), 1)
+  call matchadd("WeaselWord", English("interestingly"), 1)
+  call matchadd("WeaselWord", English("sadly"), 1)
+  call matchadd("WeaselWord", English("tragically"), 1)
+  
+  " From wikipedia's list of time-sensitive words
+  highlight TimeSensitive ctermbg=yellow ctermfg=blue guibg=yellow guifg=blue
+  call matchadd("TimeSensitive", English("yesterday"), 1)
+  call matchadd("TimeSensitive", English("today"), 1)
+  call matchadd("TimeSensitive", English("tomorrow"), 1)
+  call matchadd("TimeSensitive", English("recent"), 1)
+  call matchadd("TimeSensitive", English("recently"), 1)
+  call matchadd("TimeSensitive", English("current"), 1)
+  call matchadd("TimeSensitive", English("currently"), 1)
+  call matchadd("TimeSensitive", English("eventual"), 1)
+  call matchadd("TimeSensitive", English("eventually"), 1)
+  call matchadd("TimeSensitive", English("imminent"), 1)
+  call matchadd("TimeSensitive", English("imminently"), 1)
+  call matchadd("TimeSensitive", English("soon"), 1)
+  
+  " From wikipedia's list of Peacock terms
+  highlight PeacockTerm ctermbg=yellow ctermfg=red guibg=yellow guifg=red
+  call matchadd("PeacockTerm", English("good"), 1)
+  call matchadd("PeacockTerm", English("bad"), 1)
+  call matchadd("PeacockTerm", English("acclaimed"), 1)
+  call matchadd("PeacockTerm", English("amazing"), 1)
+  call matchadd("PeacockTerm", English("astonishing"), 1)
+  call matchadd("PeacockTerm", English("beautiful"), 1)
+  call matchadd("PeacockTerm", English("best"), 1)
+  call matchadd("PeacockTerm", English("classic"), 1)
+  call matchadd("PeacockTerm", English("defining"), 1)
+  call matchadd("PeacockTerm", English("eminent"), 1)
+  call matchadd("PeacockTerm", English("enigma"), 1)
+  call matchadd("PeacockTerm", English("exciting"), 1)
+  call matchadd("PeacockTerm", English("fabulous"), 1)
+  call matchadd("PeacockTerm", English("famous"), 1)
+  call matchadd("PeacockTerm", English("infamous"), 1)
+  call matchadd("PeacockTerm", English("fantastic"), 1)
+  call matchadd("PeacockTerm", English("fully"), 1)
+  call matchadd("PeacockTerm", English("genius"), 1)
+  call matchadd("PeacockTerm", English("global"), 1)
+  call matchadd("PeacockTerm", English("greatest"), 1)
+  call matchadd("PeacockTerm", English("iconic"), 1)
+  call matchadd("PeacockTerm", English("immensely"), 1)
+  call matchadd("PeacockTerm", English("impactful"), 1)
+  call matchadd("PeacockTerm", English("incendiary"), 1)
+  call matchadd("PeacockTerm", English("indisputable"), 1)
+  call matchadd("PeacockTerm", English("influential"), 1)
+  call matchadd("PeacockTerm", English("innovative"), 1)
+  call matchadd("PeacockTerm", English("intriguing"), 1)
+  call matchadd("PeacockTerm", English("leader"), 1)
+  call matchadd("PeacockTerm", English("legendary"), 1)
+  call matchadd("PeacockTerm", English("major"), 1)
+  call matchadd("PeacockTerm", English("mature"), 1)
+  call matchadd("PeacockTerm", English("memorable"), 1)
+  call matchadd("PeacockTerm", English("pioneer"), 1)
+  call matchadd("PeacockTerm", English("popular"), 1)
+  call matchadd("PeacockTerm", English("prestigious"), 1)
+  call matchadd("PeacockTerm", English("seminal"), 1)
+  call matchadd("PeacockTerm", English("significant"), 1)
+  call matchadd("PeacockTerm", English("single-handedly"), 1)
+  call matchadd("PeacockTerm", English("staunch"), 1)
+  call matchadd("PeacockTerm", English("talented"), 1)
+  call matchadd("PeacockTerm", English("top"), 1)
+  call matchadd("PeacockTerm", English("visionary"), 1)
+  call matchadd("PeacockTerm", English("virtually"), 1)
+  call matchadd("PeacockTerm", English("well-known"), 1)
+  call matchadd("PeacockTerm", English("world-class"), 1)
+  call matchadd("PeacockTerm", English("worst"), 1)
+endfu
+
+" http://pastebin.com/f46e9ffca
+" toggle spellcheck and autocorrect
+function! <SID>ToggleSpellCorrect()
+    "if &spell
+        "iabclear
+    "else
+        "runtime autocorrect.vim
+    "endif
+    setlocal spell! spell?
+endfunction
+map <silent><F12>       ;<C-U>call <SID>ToggleSpellCorrect()<CR>
+vmap<silent><F12>       ;<C-U>call <SID>ToggleSpellCorrect()<CR>gv
+imap<silent><F12>       <C-O>;call <SID>ToggleSpellCorrect()<CR>
+
+"if has("gui_macvim")
+"  macmenu &File.New\ Tab key=<nop>
+"  map <D-t> :CommandT<CR>
+"endif
+
+" enter command mode without using shift key
+nnoremap ; :
+nnoremap : ;
+
