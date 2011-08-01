@@ -1,6 +1,10 @@
+filetype off
+call pathogen#helptags()
+call pathogen#runtime_append_all_bundles()
+filetype plugin indent on
 set nocompatible
 
-call pathogen#runtime_append_all_bundles()
+set history=1000 " lines of history to remember
 runtime macros/matchit.vim
 
 highlight Pmenu guibg=brown gui=bold
@@ -8,6 +12,11 @@ syntax enable
 
 set guifont=Inconsolata:h18
 set showcmd
+
+set undodir=~/.vim/tmp/undo//
+set undofile
+set undolevels=1000 "maximum number of changes that can be undone
+set undoreload=10000 "maximum number lines to save for undo on a buffer reload
 
 if &l:diff
   colors peachpuff
@@ -36,7 +45,9 @@ set expandtab
 set smarttab
 set smartindent
 let g:rubycomplete_rails = 1
-set backupdir=/tmp " change backup directory so backups don't go everywhere
+set backupdir=~/.vim/tmp/backup// " change backup directory so backups don't go everywhere
+set backup
+set directory=~/.vim/tmp/swap//
 set guioptions-=T " hide the toolbar
 set mouse=a " mouse support for terminal vim
 set title " terminal title set to buffer name
@@ -184,6 +195,9 @@ cnoremap <C-A> <C-C>gggH<C-O>G
 onoremap <C-A> <C-C>gggH<C-O>G
 snoremap <C-A> <C-C>gggH<C-O>G
 xnoremap <C-A> <C-C>ggVG
+
+nnoremap Y y$
+nnoremap D d$
 
 " Experimental
 "  toggle trailing whitespace highlighting with leader + s
@@ -348,6 +362,7 @@ map <silent><F12>       ;<C-U>call <SID>ToggleSpellCorrect()<CR>
 vmap<silent><F12>       ;<C-U>call <SID>ToggleSpellCorrect()<CR>gv
 imap<silent><F12>       <C-O>;call <SID>ToggleSpellCorrect()<CR>
 
+" Actual command-t...
 "if has("gui_macvim")
 "  macmenu &File.New\ Tab key=<nop>
 "  map <D-t> :CommandT<CR>
@@ -356,4 +371,84 @@ imap<silent><F12>       <C-O>;call <SID>ToggleSpellCorrect()<CR>
 " enter command mode without using shift key
 nnoremap ; :
 nnoremap : ;
+
+" Settings for VimClojure
+let vimclojure#HighlightBuiltins = 1
+let vimclojure#ParenRainbow = 1
+
+
+" Potentially dangerous, but useful
+" When vimrc is edited, reload it
+"autocmd! bufwritepost vimrc source ~/.vim_runtime/vimrc
+
+"  In visual mode when you press * or # to search for the current selection
+vnoremap <silent> * :call VisualSearch('f')<CR>
+vnoremap <silent> # :call VisualSearch('b')<CR>
+
+function! CmdLine(str)
+    exe "menu Foo.Bar :" . a:str
+    emenu Foo.Bar
+    unmenu Foo
+endfunction 
+
+" From an idea by Michael Naumann
+function! VisualSearch(direction) range
+    let l:saved_reg = @"
+    execute "normal! vgvy"
+
+    let l:pattern = escape(@", '\\/.*$^~[]')
+    let l:pattern = substitute(l:pattern, "\n$", "", "")
+
+    if a:direction == 'b'
+        execute "normal ?" . l:pattern . "^M"
+    elseif a:direction == 'gv'
+        call CmdLine("vimgrep " . '/'. l:pattern . '/' . ' **/*.')
+    elseif a:direction == 'f'
+        execute "normal /" . l:pattern . "^M"
+    endif
+
+    let @/ = l:pattern
+    let @" = l:saved_reg
+endfunction
+
+" Remove the Windows ^M - when the encodings get messed up
+noremap <Leader>m mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
+
+" Keep search matches in the middle of the window.
+nnoremap * *zzzv
+nnoremap # #zzzv
+nnoremap n nzzzv
+nnoremap N Nzzzv
+
+set foldlevelstart=0
+
+" Space to toggle folds.
+nnoremap <Space> za
+vnoremap <Space> za
+
+
+"function! MyFoldText() " {{{
+    "let line = getline(v:foldstart)
+
+    "let nucolwidth = &fdc + &number * &numberwidth
+    "let windowwidth = winwidth(0) - nucolwidth - 3
+    "let foldedlinecount = v:foldend - v:foldstart
+
+    "" expand tabs into spaces
+    "let onetab = strpart('          ', 0, &tabstop)
+    "let line = substitute(line, '\t', onetab, 'g')
+
+    "let line = strpart(line, 0, windowwidth - 2 -len(foldedlinecount))
+    "let fillcharcount = windowwidth - len(line) - len(foldedlinecount)
+    "return line . '…' . repeat(" ",fillcharcount) . foldedlinecount . '…' . ' '
+"endfunction " }}}
+"set foldtext=MyFoldText()
+
+" kill help key
+set fuoptions=maxvert,maxhorz
+noremap <F1> :set invfullscreen<CR>
+inoremap <F1> <ESC>:set invfullscreen<CR>a
+
+" kill manual key.
+nnoremap K <nop>
 
