@@ -133,6 +133,8 @@ alias pre="pretty"
 alias ant='color-ant'
 alias mvn='color-mvn'
 
+alias pathogen="git submodule add"
+
 PATH+=":"$CONF/common/bin
 
 # load up rvm
