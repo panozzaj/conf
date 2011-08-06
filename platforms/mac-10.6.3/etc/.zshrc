@@ -29,6 +29,9 @@ dev=$doc/dev
 peerkat=$dev/peerkat
 downloads=~/Downloads
 workspace=$doc/workspace
+asta=$dev/asta
+ims=$asta/ims
+rerun=$dev/rerun
 
 # from Giles
 # search Gmail THIS WAY, not by going to the Inbox
