@@ -1,0 +1,25 @@
+[color]
+	ui = auto
+	interactive = auto
+[user]
+	name = Anthony Panozzo
+	email = panozzaj@gmail.com
+[core]
+	excludesfile = ~/.gitignore
+[alias]
+        co = checkout
+        st = status
+        ci = commit
+        com = commit
+        di = diff-index
+        man = help
+        pb = publish-branch
+        aliases = !git config --list | grep 'alias\\.' | sed 's/alias\\.\\([^=]*\\)=\\(.*\\)/\\1\t=> \\2/' | sort
+        ignore = !([ ! -e .gitignore ] && touch .gitignore) | echo $1 >>.gitignore
+        create = !mkdir $1 && cd $1 && git init && git ignore && touch readme && git add . && git commit -m \"Initial commit.\"
+        rails = !rails $1 && cd $1 && git init && git ignore && touch readme && git add . && git commit -m \"Initial commit.\"
+        pop = stash pop
+        amend = commit --amend
+        pretend = add -n .
+[rerere]
+	enabled = 1

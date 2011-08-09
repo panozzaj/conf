@@ -1,4 +1,5 @@
 EDITOR='mvim'
+export GIT_EDITOR="mvim --nofork"
 
 # setup for Mac Ports
 PATH+=:$CONF/platforms/$PLATFORM/bin
@@ -26,18 +27,7 @@ alias xcode='open /Developer/Applications/Xcode.app'
 desk=$HOME/Desktop
 doc=$HOME/Documents
 dev=$doc/dev
-peerkat=$dev/peerkat
 downloads=~/Downloads
-workspace=$doc/workspace
-asta=$dev/asta
-ims=$asta/ims
-rerun=$dev/rerun
-
-# from Giles
-# search Gmail THIS WAY, not by going to the Inbox
-search_gmail() {
-  open "http://mail.google.com/mail/#search/$*"
-}
 
 # fink shell script (and presumably others) uses . as a command
 alias .=.
