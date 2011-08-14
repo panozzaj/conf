@@ -13,10 +13,7 @@ syntax enable
 set guifont=Inconsolata:h18
 set showcmd
 
-set undodir=~/.vim/tmp/undo//
-set undofile
 set undolevels=1000 "maximum number of changes that can be undone
-set undoreload=10000 "maximum number lines to save for undo on a buffer reload
 
 if &l:diff
   colors peachpuff
@@ -415,10 +412,10 @@ endfunction
 noremap <Leader>m mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
 
 " Keep search matches in the middle of the window.
-nnoremap * *zzzv
-nnoremap # #zzzv
-nnoremap n nzzzv
-nnoremap N Nzzzv
+"nnoremap * *zzzv
+"nnoremap # #zzzv
+"nnoremap n nzzzv
+"nnoremap N Nzzzv
 
 set foldlevelstart=0
 
@@ -443,11 +440,6 @@ vnoremap <Space> za
     "return line . '…' . repeat(" ",fillcharcount) . foldedlinecount . '…' . ' '
 "endfunction " }}}
 "set foldtext=MyFoldText()
-
-" kill help key
-set fuoptions=maxvert,maxhorz
-noremap <F1> :set invfullscreen<CR>
-inoremap <F1> <ESC>:set invfullscreen<CR>a
 
 " kill manual key.
 nnoremap K <nop>
