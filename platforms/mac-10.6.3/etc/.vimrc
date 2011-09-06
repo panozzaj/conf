@@ -29,6 +29,9 @@ set wrap
 
 set visualbell
 
+let g:closetag_html_style=1
+source ~/.vim/closetag.vim 
+
 let g:NERDShutUp=1
 let g:Twiki_FoldAtHeadings=1
 
@@ -38,7 +41,16 @@ set wildmode=longest,list " bash-style file completion
 set whichwrap=b,s,<,>,[,],h,l
 set hls
 set gcr=a:blinkon0 " Set the cursor to not blink
-set expandtab
+
+"let notabs = matchstr(getcwd(), '/Users/anthonypanozzo/Documents/dev/asta')
+"if empty(notabs)
+"  " echo 'will be expanding tabs'
+"  set expandtab
+"else
+"  " echo 'will not be expanding tabs'
+"  set noexpandtab
+"endif
+
 set smarttab
 set smartindent
 let g:rubycomplete_rails = 1
@@ -123,6 +135,7 @@ au BufRead,BufNewFile *.less setfiletype less
 
 imap <C-BS> <C-W>
 
+let g:CommandTMatchWindowAtTop = 1 " we want the best command-t matches at the top so they never move
 """""""""""""""""""""""""""""""""""
 " some from mswin.vim for consistency/quickness
 " CTRL-X and SHIFT-Del are Cut

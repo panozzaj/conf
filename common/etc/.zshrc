@@ -64,7 +64,8 @@ alias grpe='grep'
 
 alias -g NE="2> /dev/null"
 
-GREP_OPTIONS='--color=auto' GREP_COLOR='1;29'
+export GREP_OPTIONS='--color=auto'
+export GREP_COLOR='1;29'
 
 #####
 # COMMAND SHORTCUTS

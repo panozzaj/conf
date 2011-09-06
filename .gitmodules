@@ -28,3 +28,9 @@
 [submodule "common/.vim/bundle/vim-endwise"]
 	path = common/.vim/bundle/vim-endwise
 	url = https://github.com/tpope/vim-endwise.git
+[submodule "common/.vim/bundle/swap_parameters.vim"]
+	path = common/.vim/bundle/swap_parameters.vim
+	url = https://github.com/vim-scripts/swap-parameters.git
+[submodule "common/.vim/bundle/nerdcommenter"]
+	path = common/.vim/bundle/nerdcommenter
+	url = https://github.com/scrooloose/nerdcommenter
