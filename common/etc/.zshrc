@@ -138,6 +138,14 @@ alias pathogen="git submodule add"
 
 PATH+=":"$CONF/common/bin
 
+cat () {
+  if [ -d $1 ]; then
+    ls $1
+  else
+    /bin/cat "$*"
+  fi
+}
+
 # load up rvm
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"  # This loads RVM into a shell session.
 
