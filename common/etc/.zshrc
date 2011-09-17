@@ -122,10 +122,6 @@ alias gd="git diff"
 alias gdc="git diff --cached"
 alias gdw="git diff --word-diff"
 
-# .zshrc and .vimrc quick edit
-alias zshrcs="~/zshrcs"
-alias vimrcs="~/vimrcs"
-
 alias py="python"
 
 alias san="curl https://github.com/fastestforward/heroku_san/raw/master/README.rdoc | less"
