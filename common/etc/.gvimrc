@@ -9,6 +9,8 @@ set fuoptions=maxvert,maxhorz
 noremap <F1> :set invfullscreen<CR>
 inoremap <F1> <ESC>:set invfullscreen<CR>a
 
+set guioptions-=T " hide the toolbar
+
 " shows some interesting and normally not visible stuff
 " annoying with almost every color scheme but zenburn
 " perhaps due to the colorscheme's settings

@@ -134,7 +134,7 @@ alias pre="pretty"
 alias ant='color-ant'
 alias mvn='color-mvn'
 
-alias pathogen="git submodule add"
+alias pathogen="git submodule"
 
 PATH+=":"$CONF/common/bin
 

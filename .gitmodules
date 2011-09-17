@@ -7,9 +7,6 @@
 [submodule "common/.vim/bundle/supertab-continued"]
 	path = common/.vim/bundle/supertab-continued
 	url = git://github.com/vim-scripts/SuperTab-continued..git
-[submodule "vim-autoclose"]
-	path = vim-autoclose
-	url = https://github.com/andrewle/vim-autoclose
 [submodule "common/.vim/bundle/autoclose"]
 	path = common/.vim/bundle/autoclose
 	url = https://github.com/andrewle/vim-autoclose.git
