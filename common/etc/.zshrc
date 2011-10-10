@@ -23,7 +23,7 @@ LS_COLORS='di=01;33'
 #####
 # KEYBINDINGS
 #####
-        
+
 WORDCHARS='*?_[]~=&;!#$%^(){}'
 
 # Configure delete key
@@ -108,16 +108,19 @@ alias reload!="source ~/.zshrc"
 alias gs="git status"
 alias gco="git checkout"
 alias gc="git commit"
-alias gcom="git commit -m"
+alias gcom="git commit"
+alias gcomm="git commit -m"
+alias gf="git fetch"
 alias gb="git branch"
 alias gba="git branch -a"
 alias gp="git push"
 alias gl="git log --pretty=oneline --graph"
 alias glh="gl | head"
 alias gmt="git mergetool"
-alias gitpretend="git add -n ."
 alias grc="git rebase --continue"
-alias gwtf="git wtf"
+alias gwtf="git wtf -A"
+alias gfwtf="git fetch && git wtf -A"
+alias gwtff="git fetch && git wtf -A"
 alias gd="git diff"
 alias gdc="git diff --cached"
 alias gdw="git diff --word-diff"
@@ -134,14 +137,16 @@ alias pathogen="git submodule"
 
 PATH+=":"$CONF/common/bin
 
-cat () {
-  if [ -d $1 ]; then
-    ls $1
-  else
-    /bin/cat "$*"
-  fi
-}
-
 # load up rvm
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"  # This loads RVM into a shell session.
 
+# seems to conflict with rvm?
+#cat () {
+#  if [ -d $1 ]; then
+#    ls $1
+#  else
+#    echo "echoing $*"
+#    CAT = "/bin/cat"
+#    $CAT "$*"
+#  fi
+#}
