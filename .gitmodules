@@ -40,3 +40,6 @@
 [submodule "common/.vim/bundle/vim-fugitive"]
 	path = common/.vim/bundle/vim-fugitive
 	url = https://github.com/tpope/vim-fugitive.git
+[submodule "common/.vim/bundle/vim-slim"]
+	path = common/.vim/bundle/vim-slim
+	url = https://github.com/bbommarito/vim-slim.git
