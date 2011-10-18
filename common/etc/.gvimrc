@@ -14,7 +14,7 @@ set guioptions-=T " hide the toolbar
 if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome")
   set guifont=Inconsolata\ 12
 elseif has("gui_macvim") || has("gui_mac")
-  set guifont=Inconsolata:h12
+  set guifont=Inconsolata:h18
 elseif has("gui_win32")
   set guifont=Inconsolata:h12
 end
