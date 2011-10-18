@@ -26,8 +26,6 @@ set ic
 set is
 set wrap
 
-set visualbell
-
 let g:closetag_html_style=1
 source ~/.vim/closetag.vim 
 
