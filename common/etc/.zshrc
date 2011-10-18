@@ -127,6 +127,7 @@ alias gfwtf="git fetch && git wtf -A"
 alias gd="git diff"
 alias gdc="git diff --cached"
 alias gdw="git diff --word-diff"
+alias gpr="git pull --rebase"
 
 alias py="python"
 
