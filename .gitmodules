@@ -46,3 +46,6 @@
 [submodule "common/.vim/bundle/zoom.vim"]
 	path = common/.vim/bundle/zoom.vim
 	url = https://github.com/vim-scripts/zoom.vim.git
+[submodule "common/.vim/bundle/vim-coffee-script"]
+	path = common/.vim/bundle/vim-coffee-script
+	url = https://github.com/kchmck/vim-coffee-script.git
