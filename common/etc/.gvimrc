@@ -5,16 +5,16 @@ set undofile
 set undoreload=10000 "maximum number lines to save for undo on a buffer reload
 
 " kill help key
-set fuoptions=maxvert,maxhorz
+"set fuoptions=maxvert,maxhorz
 noremap <F1> :set invfullscreen<CR>
 inoremap <F1> <ESC>:set invfullscreen<CR>a
 
 set guioptions-=T " hide the toolbar
-set guifont=Inconsolata:h18
 
-" shows some interesting and normally not visible stuff
-" annoying with almost every color scheme but zenburn
-" perhaps due to the colorscheme's settings
-" see list documentation for more details
-"set list
-"set listchars=tab:>-,trail:·,eol:$,nbsp:%
+if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome")
+  set guifont=Inconsolata\ 12
+elseif has("gui_macvim") || has("gui_mac")
+  set guifont=Inconsolata:h12
+elseif has("gui_win32")
+  set guifont=Inconsolata:h12
+end

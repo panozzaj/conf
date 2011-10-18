@@ -68,7 +68,13 @@ fun! Wp()
   nnoremap $ g$
   set nonumber
   set spell spelllang=en_us
-  set guifont=Inconsolata:h20
+  if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome")
+    set guifont=Inconsolata\ 16
+  elseif has("gui_macvim") || has("gui_mac")
+    set guifont=Inconsolata:h16
+  elseif has("gui_win32")
+    set guifont=Inconsolata:h16
+  end
 endfu
 
 cabbr autocommit call Autocommit()
@@ -224,7 +230,7 @@ function English(word)
 endfunction
 
 " For proofreading.
-" From the bottom of http://www.cs.princeton.edu/~npjohnso/dot.vimrc 
+" From the bottom of http://www.cs.princeton.edu/~npjohnso/dot.vimrc
 fun! Proofreading()
   highlight Weakener ctermbg=yellow ctermfg=blue guibg=reg guifg=blue
   call matchadd("Weakener", English('general'), 1)
@@ -248,7 +254,7 @@ fun! Proofreading()
   call matchadd("Weakener", English('possibly'), 1)
   call matchadd("Weakener", English('potential'), 1)
   call matchadd("Weakener", English('potentially'), 1)
-  
+
   " Contractions
   highlight Contraction ctermbg=white ctermfg=blue guibg=white guifg=blue
   call matchadd("Contraction", English("I'm"), 1)
@@ -259,7 +265,7 @@ fun! Proofreading()
   call matchadd("Contraction", English("[a-z]*'ve"), 1)
   call matchadd("Contraction", English("[a-z]*'ll"), 1)
   call matchadd("Contraction", English("[a-z]*n't"), 1)
-  
+
   " From Wikipedia's list of Weasel Words
   highlight WeaselWord ctermbg=red ctermfg=white guibg=red guifg=white
   call matchadd("WeaselWord", English("reveal"), 1)
@@ -286,7 +292,7 @@ fun! Proofreading()
   call matchadd("WeaselWord", English("interestingly"), 1)
   call matchadd("WeaselWord", English("sadly"), 1)
   call matchadd("WeaselWord", English("tragically"), 1)
-  
+
   " From wikipedia's list of time-sensitive words
   highlight TimeSensitive ctermbg=yellow ctermfg=blue guibg=yellow guifg=blue
   call matchadd("TimeSensitive", English("yesterday"), 1)
@@ -301,7 +307,7 @@ fun! Proofreading()
   call matchadd("TimeSensitive", English("imminent"), 1)
   call matchadd("TimeSensitive", English("imminently"), 1)
   call matchadd("TimeSensitive", English("soon"), 1)
-  
+
   " From wikipedia's list of Peacock terms
   highlight PeacockTerm ctermbg=yellow ctermfg=red guibg=yellow guifg=red
   call matchadd("PeacockTerm", English("good"), 1)
@@ -387,7 +393,7 @@ function! CmdLine(str)
     exe "menu Foo.Bar :" . a:str
     emenu Foo.Bar
     unmenu Foo
-endfunction 
+endfunction
 
 " From an idea by Michael Naumann
 function! VisualSearch(direction) range
