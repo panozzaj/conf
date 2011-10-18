@@ -377,8 +377,8 @@ vmap<silent><F12>       ;<C-U>call <SID>ToggleSpellCorrect()<CR>gv
 imap<silent><F12>       <C-O>;call <SID>ToggleSpellCorrect()<CR>
 
 " enter command mode without using shift key
-nnoremap ; :
-nnoremap : ;
+noremap ; :
+noremap : ;
 
 " Settings for VimClojure
 let vimclojure#HighlightBuiltins = 1
