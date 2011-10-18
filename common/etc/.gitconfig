@@ -23,7 +23,7 @@
         pop = stash pop
         amend = commit --amend
         pretend = add -n .
-        edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; mvim `f`"
+        edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; $EDITOR `f`"
         add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
         praise = blame
 [rerere]
