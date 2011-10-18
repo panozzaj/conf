@@ -218,6 +218,9 @@ set list
 " Don't expand tab in Makefiles
 autocmd FileType make set noexpandtab
 
+" Use the javascript syntax highlighting for JSON files
+autocmd BufNewFile,BufRead *.json set ft=javascript
+
 set wildignore=*.o,*.class,*.png,*.pdf,*.ps,*.gif,*.jpg,*.aux,*.toc,*.cod,*.bak,*.mp3,*.m4a,*.wmv,*.mpg,*.mov,*.doc,*.bc
 
 " Enable automatic spell checking for txt and tex files
