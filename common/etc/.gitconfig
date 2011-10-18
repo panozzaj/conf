@@ -16,7 +16,7 @@
         pb = publish-branch
         aliases = !git config --list | grep 'alias\\.' | sed 's/alias\\.\\([^=]*\\)=\\(.*\\)/\\1\t=> \\2/' | sort
         ignore = !([ ! -e .gitignore ] && touch .gitignore) | echo $1 >> .gitignore
-        local-ignore = !([ ! -e .git/info/exclude ] && touch .git/info/exclude) | echo $1 >> .git/info/exclude
+        local-ignore = !([ ! -e .git/info/exclude ] && touch .git/info/exclude) | echo $2 >> .git/info/exclude
         exclude = !([ ! -e .git/info/exclude ] && touch .git/info/exclude) | echo $1 >> .git/info/exclude
         create = !mkdir $1 && cd $1 && git init && git ignore && touch readme && git add . && git commit -m \"Initial commit.\"
         rails = !rails $1 && cd $1 && git init && git ignore && touch readme && git add . && git commit -m \"Initial commit.\"
