@@ -10,6 +10,7 @@ noremap <F1> :set invfullscreen<CR>
 inoremap <F1> <ESC>:set invfullscreen<CR>a
 
 set guioptions-=T " hide the toolbar
+set guifont=Inconsolata:h18
 
 " shows some interesting and normally not visible stuff
 " annoying with almost every color scheme but zenburn

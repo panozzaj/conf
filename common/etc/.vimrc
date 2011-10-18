@@ -494,4 +494,3 @@ if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome") || has("unix")
   source ~/conf/platforms/ubuntu-10.04/etc/.vimrc
 endif
 
-set guifont=Inconsolata:h18
