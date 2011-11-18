@@ -11,6 +11,7 @@
         st = status
         ci = commit
         com = commit
+        comm = commit -m
         di = diff-index
         man = help
         pb = publish-branch
