@@ -128,6 +128,7 @@ au BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please 
 au BufRead,BufNewFile {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc,irb_tempfile*,Vagrantfile} set ft=ruby
 au FileType conf set foldmethod=manual
 au BufRead,BufNewFile *.less setfiletype less
+"au BufRead,BufNewFile *.ino setfiletype ino
 
 imap <C-BS> <C-W>
 
@@ -427,9 +428,9 @@ noremap <Leader>m mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
 
 set foldlevelstart=0
 
-" Space to toggle folds.
-nnoremap <Space> za
-vnoremap <Space> za
+" Space to toggle folds. (commenting out because it messes with space = advance cursor)
+"nnoremap <Space> za
+"vnoremap <Space> za
 
 
 "function! MyFoldText() " {{{

@@ -8,4 +8,4 @@ gmail_args.gsub!(/[?&]cc=/, '&cc=')
 gmail_args.gsub!(/[?&]bcc=/, '&bcc=')
 gmail_args.gsub!(/[?&]body=/, '&body=')
 
-system("firefox -remote 'openurl(https://mail.google.com/mail?view=cm&tf=0#{gmail_args},new-tab)'")
+system("chrome 'openurl(https://mail.google.com/mail?view=cm&tf=0#{gmail_args},new-tab)'")
