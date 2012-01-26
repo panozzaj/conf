@@ -221,6 +221,8 @@ autocmd FileType make set noexpandtab
 autocmd BufNewFile,BufRead *.json set ft=javascript
 
 set wildignore=*.o,*.class,*.png,*.pdf,*.ps,*.gif,*.jpg,*.aux,*.toc,*.cod,*.bak,*.mp3,*.m4a,*.wmv,*.mpg,*.mov,*.doc,*.bc
+set wildignore+=vendor/rails/**
+set wildignore+=build/android  " Titanium
 
 " Enable automatic spell checking for txt and tex files
 let spell_auto_type="tex,txt"
