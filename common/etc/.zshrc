@@ -72,6 +72,7 @@ export GREP_COLOR='1;29'
 #####
 
 # Rails
+alias rials="rails"
 alias rdm="rake db:migrate"
 alias rdr="rake db:rollback"
 alias rdd="rake db:drop"

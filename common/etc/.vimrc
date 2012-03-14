@@ -198,12 +198,12 @@ cnoremap <C-PageDown> <C-C><C-W>w
 onoremap <C-PageDown> <C-C><C-W>w
 
 " CTRL-A is Select all
-noremap <C-A> gggH<C-O>G
-inoremap <C-A> <C-O>gg<C-O>gH<C-O>G
-cnoremap <C-A> <C-C>gggH<C-O>G
-onoremap <C-A> <C-C>gggH<C-O>G
-snoremap <C-A> <C-C>gggH<C-O>G
-xnoremap <C-A> <C-C>ggVG
+"noremap <C-A> gggH<C-O>G
+"inoremap <C-A> <C-O>gg<C-O>gH<C-O>G
+"cnoremap <C-A> <C-C>gggH<C-O>G
+"onoremap <C-A> <C-C>gggH<C-O>G
+"snoremap <C-A> <C-C>gggH<C-O>G
+"xnoremap <C-A> <C-C>ggVG
 
 nnoremap Y y$
 nnoremap D d$

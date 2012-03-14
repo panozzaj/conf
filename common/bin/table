@@ -1,8 +1,7 @@
 #!/usr/bin/env ruby
 
 def print_usage_and_exit
-  puts 'Please provide table names to print as arguments'
-  exit 1
+  abort 'Please provide table names to print as arguments'
 end
 
 def print_table schema, table_name
@@ -11,13 +10,17 @@ def print_table schema, table_name
     if line =~ /^\s+create_table "#{table_name}"/
       print_until_end = true
     end
-  
+
     if print_until_end
       puts line
     end
-  
+
     if line =~ /^\s+end\s*$/
       print_until_end = false
+    end
+
+    if line =~ /^\s+add_index "#{table_name}"/
+      puts line
     end
   end
 end
@@ -28,8 +31,7 @@ print_usage_and_exit if table_names.empty?
 
 schema_filename = './db/schema.rb'
 unless File.exists?(schema_filename)
-  puts "#{schema_filename} does not exist"
-  exit 1
+  abort "#{schema_filename} does not exist"
 end
 
 schema = File.read(schema_filename)

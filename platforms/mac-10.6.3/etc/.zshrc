@@ -39,3 +39,6 @@ export JAVA_HOME=/Library/Java/Home
 export CATALINA_HOME=/Library/Tomcat/Home
 
 export RUBYOPT="-ropenssl" 
+
+# see http://blog.ghostinthemachines.com/2010/01/19/mac-os-x-fork-resource-temporarily-unavailable/
+ulimit -u 512
