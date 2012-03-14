@@ -49,3 +49,6 @@
 [submodule "common/.vim/bundle/vim-coffee-script"]
 	path = common/.vim/bundle/vim-coffee-script
 	url = https://github.com/kchmck/vim-coffee-script.git
+[submodule "common/.vim/bundle/vim-instant-markdown"]
+	path = common/.vim/bundle/vim-instant-markdown
+	url = https://github.com/suan/vim-instant-markdown.git
