@@ -6,8 +6,7 @@ set undoreload=10000 "maximum number lines to save for undo on a buffer reload
 
 " kill help key
 "set fuoptions=maxvert,maxhorz
-noremap <F1> :set invfullscreen<CR>
-inoremap <F1> <ESC>:set invfullscreen<CR>a
+nnoremap <F1> <nop>
 
 set guioptions-=T " hide the toolbar
 

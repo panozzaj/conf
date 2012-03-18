@@ -6,7 +6,3 @@ else
   " echo 'will not be expanding tabs'
   set noexpandtab
 endif
-
-" Actual command-t...
-"macmenu &File.New\ Tab key=<nop>
-"map <D-t> :CommandT<CR>
