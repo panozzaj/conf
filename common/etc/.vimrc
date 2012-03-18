@@ -27,7 +27,7 @@ set is
 set wrap
 
 let g:closetag_html_style=1
-source ~/.vim/closetag.vim 
+"source ~/.vim/closetag.vim 
 
 let g:NERDShutUp=1
 let g:Twiki_FoldAtHeadings=1
