@@ -14,15 +14,13 @@
         comm = commit -m
         di = diff-index
         man = help
-        pb = publish-branch
         aliases = !git config --list | grep 'alias\\.' | sed 's/alias\\.\\([^=]*\\)=\\(.*\\)/\\1\t=> \\2/' | sort
         ignore = !([ ! -e .gitignore ] && touch .gitignore) | echo $2 >> .gitignore
         local-ignore = !([ ! -e .git/info/exclude ] && touch .git/info/exclude) | echo $2 >> .git/info/exclude
         exclude = !([ ! -e .git/info/exclude ] && touch .git/info/exclude) | echo $2 >> .git/info/exclude
-        create = !mkdir $1 && cd $1 && git init && git ignore && touch readme && git add . && git commit -m \"Initial commit.\"
-        rails = !rails $1 && cd $1 && git init && git ignore && touch readme && git add . && git commit -m \"Initial commit.\"
         pop = stash pop
         amend = commit --amend
+        amend-nc = commit --amend -C HEAD # amend without comment
         pretend = add -n .
         edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; $EDITOR `f`"
         add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
