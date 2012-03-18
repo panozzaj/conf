@@ -52,3 +52,9 @@
 [submodule "common/.vim/bundle/vim-instant-markdown"]
 	path = common/.vim/bundle/vim-instant-markdown
 	url = https://github.com/suan/vim-instant-markdown.git
+[submodule "common/.vim/bundle/vim-rails"]
+	path = common/.vim/bundle/vim-rails
+	url = https://github.com/tpope/vim-rails.git
+[submodule "common/.vim/bundle/ack.vim"]
+	path = common/.vim/bundle/ack.vim
+	url = https://github.com/mileszs/ack.vim.git
