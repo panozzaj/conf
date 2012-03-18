@@ -133,6 +133,7 @@ au BufRead,BufNewFile *.less setfiletype less
 imap <C-BS> <C-W>
 
 let g:CommandTMatchWindowAtTop = 1 " want the best command-t matches at the top so they never move
+nnoremap <leader>T <Esc>:CommandTFlush<CR>
 
 
 """""""""""""""""""""""""""""""""""
@@ -196,14 +197,6 @@ noremap <C-PageDown> <C-W>w
 inoremap <C-PageDown> <C-O><C-W>w
 cnoremap <C-PageDown> <C-C><C-W>w
 onoremap <C-PageDown> <C-C><C-W>w
-
-" CTRL-A is Select all
-"noremap <C-A> gggH<C-O>G
-"inoremap <C-A> <C-O>gg<C-O>gH<C-O>G
-"cnoremap <C-A> <C-C>gggH<C-O>G
-"onoremap <C-A> <C-C>gggH<C-O>G
-"snoremap <C-A> <C-C>gggH<C-O>G
-"xnoremap <C-A> <C-C>ggVG
 
 nnoremap Y y$
 nnoremap D d$
@@ -485,7 +478,7 @@ endfunction
 
 " create buffer on `gf` if the file does not currently exist (slight
 " modification from help file to accommodate colon remapping)
-map gf ;e <cfile><CR>
+nnoremap gf :e <cfile><CR>
 
 " function for working with files with hard line breaks
 cabbr eighty call Eighty()

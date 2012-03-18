@@ -58,3 +58,27 @@
 [submodule "common/.vim/bundle/ack.vim"]
 	path = common/.vim/bundle/ack.vim
 	url = https://github.com/mileszs/ack.vim.git
+[submodule "common/.vim/bundle/html5.vim"]
+	path = common/.vim/bundle/html5.vim
+	url = https://github.com/othree/html5.vim.git
+[submodule "common/.vim/bundle/closetag.vim"]
+	path = common/.vim/bundle/closetag.vim
+	url = git://github.com/docunext/closetag.vim.git
+[submodule "common/.vim/bundle/vim-colors-solarized"]
+	path = common/.vim/bundle/vim-colors-solarized
+	url = git://github.com/altercation/vim-colors-solarized.git
+[submodule "common/.vim/bundle/surround.vim"]
+	path = common/.vim/bundle/surround.vim
+	url = https://github.com/tpope/vim-surround.git
+[submodule "common/.vim/bundle/vim-repeat"]
+	path = common/.vim/bundle/vim-repeat
+	url = https://github.com/tpope/vim-repeat.git
+[submodule "common/.vim/bundle/vim-css-color"]
+	path = common/.vim/bundle/vim-css-color
+	url = https://github.com/skammer/vim-css-color.git
+[submodule "common/.vim/bundle/Rainbow-Parenthesis"]
+	path = common/.vim/bundle/Rainbow-Parenthesis
+	url = https://github.com/vim-scripts/Rainbow-Parenthesis.git
+[submodule "common/.vim/bundle/vim-javascript"]
+	path = common/.vim/bundle/vim-javascript
+	url = https://github.com/pangloss/vim-javascript.git
