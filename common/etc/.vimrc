@@ -56,7 +56,7 @@ cabbr manual set foldmethod=manual
 
 let g:rubycomplete_rails = 1
 
-cabbr wp call Wp()
+"cabbr wp call Wp()
 fun! Wp()
   set lbr
   source ~/.vim/autocorrect.vim
@@ -66,6 +66,8 @@ fun! Wp()
   nnoremap $ g$
   set nonumber
   set spell spelllang=en_us
+  set lbr
+  set nolist " lbr command relies on list being off :(
   if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome")
     set guifont=Inconsolata\ 16
   elseif has("gui_macvim") || has("gui_mac")
