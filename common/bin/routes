@@ -1,2 +1,6 @@
 #!/bin/sh
-rake routes | grep $1
+if [ $1 ]; then
+  rake routes | grep $1
+else
+  rake routes
+fi
