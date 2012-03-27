@@ -137,6 +137,9 @@ imap <C-BS> <C-W>
 let g:CommandTMatchWindowAtTop = 1 " want the best command-t matches at the top so they never move
 nnoremap <leader>T <Esc>:CommandTFlush<CR>
 
+" could make this only for ruby file types
+ia rdbg require 'ruby-debug'; Debugger.start; Debugger.settings[:autoeval] = 1; Debugger.settings[:autolist] = 1; debugger
+
 
 """""""""""""""""""""""""""""""""""
 " some from mswin.vim for consistency/quickness

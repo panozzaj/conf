@@ -12,6 +12,7 @@
         ci = commit
         com = commit
         comm = commit -m
+        cam = commit -am
         di = diff-index
         man = help
         aliases = !git config --list | grep 'alias\\.' | sed 's/alias\\.\\([^=]*\\)=\\(.*\\)/\\1\t=> \\2/' | sort
@@ -27,3 +28,11 @@
         praise = blame
 [rerere]
         enabled = 1
+[difftool "sourcetree"]
+	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+	path = 
+[mergetool "sourcetree"]
+	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true
+[branch]
+        autosetupmerge = true
