@@ -91,3 +91,6 @@
 [submodule "common/.vim/bundle/vim-cucumber"]
 	path = common/.vim/bundle/vim-cucumber
 	url = https://github.com/tpope/vim-cucumber.git
+[submodule "common/.vim/bundle/tabular"]
+	path = common/.vim/bundle/tabular
+	url = https://github.com/godlygeek/tabular.git

@@ -428,6 +428,23 @@ noremap <Leader>m mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
 
 set foldlevelstart=0
 
+
+" for lining cucumber tables up
+" see https://github.com/tpope/vim-cucumber/issues/4
+" see https://gist.github.com/287147
+inoremap <silent> <Bar>   <Bar><Esc>:call <SID>align()<CR>a
+function! s:align()
+  let p = '^\s*|\s.*\s|\s*$'
+  if exists(':Tabularize') && getline('.') =~# '^\s*|' && (getline(line('.')-1) =~# p || getline(line('.')+1) =~# p)
+    let column = strlen(substitute(getline('.')[0:col('.')],'[^|]','','g'))
+    let position = strlen(matchstr(getline('.')[0:col('.')],'.*|\s*\zs.*'))
+    Tabularize/|/l1
+    normal! 0
+    call search(repeat('[^|]*|',column).'\s\{-\}'.repeat('.',position),'ce',line('.'))
+  endif
+endfunction
+
+
 " Space to toggle folds. (commenting out because it messes with space = advance cursor)
 "nnoremap <Space> za
 "vnoremap <Space> za
@@ -501,4 +518,5 @@ endif
 if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome") || has("unix")
   source ~/conf/platforms/ubuntu-10.04/etc/.vimrc
 endif
+
 
