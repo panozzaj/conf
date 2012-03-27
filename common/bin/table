@@ -6,7 +6,7 @@ end
 
 def print_table schema, table_name
   print_until_end = false
-  schema.each do |line|
+  schema.split("\n").each do |line|
     if line =~ /^\s+create_table "#{table_name}"/
       print_until_end = true
     end
