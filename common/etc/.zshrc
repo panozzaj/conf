@@ -103,6 +103,7 @@ alias rsh="rake spec:helpers"
 alias hrdm="heroku rake db:migrate"
 alias hero="heroku"
 alias her="heroku"
+alias fs="foreman start"
 
 # zsh shorcuts
 alias reload="source ~/.zshrc"

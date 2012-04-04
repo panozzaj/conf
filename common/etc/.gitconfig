@@ -7,24 +7,24 @@
 [core]
         excludesfile = ~/.gitignore
 [alias]
-        co = checkout
-        st = status
-        ci = commit
-        com = commit
-        comm = commit -m
-        cam = commit -am
-        di = diff-index
-        man = help
+        ad = add
+        add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
         aliases = !git config --list | grep 'alias\\.' | sed 's/alias\\.\\([^=]*\\)=\\(.*\\)/\\1\t=> \\2/' | sort
-        ignore = !([ ! -e .gitignore ] && touch .gitignore) | echo $2 >> .gitignore
-        local-ignore = !([ ! -e .git/info/exclude ] && touch .git/info/exclude) | echo $2 >> .git/info/exclude
-        exclude = !([ ! -e .git/info/exclude ] && touch .git/info/exclude) | echo $2 >> .git/info/exclude
-        pop = stash pop
         amend = commit --amend
         amend-nc = commit --amend -C HEAD # amend without comment
-        pretend = add -n .
+        ca = commit -a
+        cam = commit -am
+        ci = commit
+        co = checkout
+        com = commit
+        comm = commit -m
+        di = diff-index
         edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; $EDITOR `f`"
-        add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
+        exclude = !([ ! -e .git/info/exclude ] && touch .git/info/exclude) | echo $2 >> .git/info/exclude
+        ignore = !([ ! -e .gitignore ] && touch .gitignore) | echo $2 >> .gitignore
+        local-ignore = !([ ! -e .git/info/exclude ] && touch .git/info/exclude) | echo $2 >> .git/info/exclude
+        man = help
+        pop = stash pop
         praise = blame
 [rerere]
         enabled = 1
@@ -36,3 +36,5 @@
 	trustExitCode = true
 [branch]
         autosetupmerge = true
+[push]
+	default = tracking

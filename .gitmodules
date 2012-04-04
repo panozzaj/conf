@@ -94,3 +94,6 @@
 [submodule "common/.vim/bundle/tabular"]
 	path = common/.vim/bundle/tabular
 	url = https://github.com/godlygeek/tabular.git
+[submodule "common/.vim/bundle/ZoomWin"]
+	path = common/.vim/bundle/ZoomWin
+	url = https://github.com/vim-scripts/ZoomWin.git

@@ -1,0 +1,8 @@
+--smart-case
+
+--type-add=ruby=.rake,.haml,.rsel
+--type-add=html=.erb,.slim
+--type-add=js=.coffee
+--type-add=css=.scss,.sass
+--type-set=cucumber=.feature
+
