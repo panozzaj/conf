@@ -19,7 +19,7 @@
         com = commit
         comm = commit -m
         di = diff-index
-        edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; $EDITOR `f`"
+        edit-unmerged = !git-edit-unmerged
         exclude = !([ ! -e .git/info/exclude ] && touch .git/info/exclude) | echo $2 >> .git/info/exclude
         ignore = !([ ! -e .gitignore ] && touch .gitignore) | echo $2 >> .gitignore
         local-ignore = !([ ! -e .git/info/exclude ] && touch .git/info/exclude) | echo $2 >> .git/info/exclude

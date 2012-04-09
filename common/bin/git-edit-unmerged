@@ -1,0 +1,4 @@
+#!/bin/zsh
+
+EDITOR='gvim'
+git ls-files --unmerged | cut -f2 | sort -u | xargs $EDITOR
