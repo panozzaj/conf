@@ -135,10 +135,11 @@ au BufRead,BufNewFile *.less setfiletype less
 imap <C-BS> <C-W>
 
 let g:CommandTMatchWindowAtTop = 1 " want the best command-t matches at the top so they never move
-nnoremap <leader>T <Esc>:CommandTFlush<CR>
+let g:CommandTMaxHeight = 5 " only show a few lines for the output
+nnoremap <leader>T <Esc>:CommandTFlush<CR> " quicker way to flush the queue
 
 " could make this only for ruby file types
-ia rdbg require 'ruby-debug'; Debugger.start; Debugger.settings[:autoeval] = 1; Debugger.settings[:autolist] = 1; debugger
+ia rdbg require 'debug'; Debugger.start; Debugger.settings[:autoeval] = 1; Debugger.settings[:autolist] = 1; debugger
 
 
 """""""""""""""""""""""""""""""""""
@@ -217,6 +218,7 @@ autocmd FileType make set noexpandtab
 
 " Use the javascript syntax highlighting for JSON files
 autocmd BufNewFile,BufRead *.json set ft=javascript
+autocmd BufNewFile,BufRead *.plist set ft=xml
 
 set wildignore=*.o,*.class,*.png,*.pdf,*.ps,*.gif,*.jpg,*.aux,*.toc,*.cod,*.bak,*.mp3,*.m4a,*.wmv,*.mpg,*.mov,*.doc,*.bc
 set wildignore+=vendor/rails/**
