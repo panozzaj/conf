@@ -97,3 +97,15 @@
 [submodule "common/.vim/bundle/ZoomWin"]
 	path = common/.vim/bundle/ZoomWin
 	url = https://github.com/vim-scripts/ZoomWin.git
+[submodule "common/.vim/bundle/arduino-syntax-file"]
+	path = common/.vim/bundle/arduino-syntax-file
+	url = /Users/anthonypanozzo/Documents/dev/awesomecontroller/awesome_controller/Arduino-syntax-file
+[submodule "common/.vim/bundle/Arduino-syntax-file"]
+	path = common/.vim/bundle/Arduino-syntax-file
+	url = https://github.com/AwesomeController/Arduino-syntax-file.git
+[submodule "common/.vim/bundle/vim-web-indent"]
+	path = common/.vim/bundle/vim-web-indent
+	url = https://github.com/lukaszb/vim-web-indent.git
+[submodule "common/.vim/bundle/jslint.vim"]
+	path = common/.vim/bundle/jslint.vim
+	url = https://github.com/hallettj/jslint.vim.git

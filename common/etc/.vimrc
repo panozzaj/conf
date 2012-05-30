@@ -18,7 +18,12 @@ if &l:diff
   colors peachpuff
   set diffopt+=iwhite   " ignore whitespace differences for diff
 else
-  colors neon
+  "colors neon
+
+  " random color on startup, from http://vim.1045645.n5.nabble.com/Random-color-scheme-at-start-td1165585.html
+  let mycolors = split(globpath(&rtp,"**/colors/*.vim"),"\n") 
+  exe 'so ' . mycolors[localtime() % len(mycolors)] 
+  unlet mycolors 
 endif
 
 set nu
@@ -76,6 +81,8 @@ fun! Wp()
     set guifont=Inconsolata:h16
   end
 endfu
+
+cabbr cdhere cd %:p:h
 
 cabbr autocommit call Autocommit()
 fun! Autocommit()
@@ -206,6 +213,7 @@ onoremap <C-PageDown> <C-C><C-W>w
 
 nnoremap Y y$
 nnoremap D d$
+nnoremap du :diffupdate<CR>
 
 " Experimental
 "  toggle trailing whitespace highlighting with leader + s

@@ -1,6 +1,3 @@
-EDITOR='mvim'
-export GIT_EDITOR="mvim --nofork"
-
 # setup for Mac Ports
 PATH+=:$CONF/platforms/$PLATFORM/bin
 PATH+=:/opt/local/bin

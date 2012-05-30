@@ -71,6 +71,10 @@ export GREP_COLOR='1;29'
 # COMMAND SHORTCUTS
 #####
 
+# Ruby
+alias be="bundle exec"
+alias rkae="rake"
+
 # Rails
 alias rials="rails"
 alias rdm="rake db:migrate"
@@ -84,7 +88,6 @@ alias rg="rails g"
 alias rgm="rails g migration"
 alias rc="rails c"
 alias rs="rails s"
-alias rkae="rake"
 
 # gem
 alias sgi="sudo gem install"
@@ -161,3 +164,5 @@ PATH+=":"$CONF/common/bin
 # print stderr in red. see http://en.gentoo-wiki.com/wiki/Zsh#Colorize_STDERR
 #exec 2>>(while read line; do
   #print '\e[91m'${(q)line}'\e[0m' > /dev/tty; print -n $'\0'; done &)
+
+eval "$(hub alias -s)"

@@ -2,10 +2,10 @@
         ui = auto
         interactive = auto
 [user]
-        name = Anthony Panozzo
-        email = panozzaj@gmail.com
+	name = Anthony Panozzo
+	email = panozzaj@gmail.com
 [core]
-        excludesfile = ~/.gitignore
+	excludesfile = /Users/anthonypanozzo/.gitignore
 [alias]
         ad = add
         add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
@@ -24,6 +24,7 @@
         ignore = !([ ! -e .gitignore ] && touch .gitignore) | echo $2 >> .gitignore
         local-ignore = !([ ! -e .git/info/exclude ] && touch .git/info/exclude) | echo $2 >> .git/info/exclude
         man = help
+        pick = cherry-pick
         pop = stash pop
         praise = blame
 [rerere]
@@ -38,3 +39,5 @@
         autosetupmerge = true
 [push]
 	default = tracking
+[github]
+	user = panozzaj
