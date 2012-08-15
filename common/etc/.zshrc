@@ -12,13 +12,15 @@ compinit
 # End of lines added by compinstall
 # Lines configured by zsh-newuser-install
 HISTFILE=~/.histfile
-HISTSIZE=10000
-SAVEHIST=10000
+HISTSIZE=500000
+SAVEHIST=500000
 bindkey -e
 # End of lines configured by zsh-newuser-install
 
 PS1="$(print '%{\e[1;35m%}%S%c%s%{\e[0m%}')> "
 LS_COLORS='di=01;33'
+
+setopt HIST_IGNORE_SPACE # don't add to ZSH history file any lines that start with a space
 
 #####
 # KEYBINDINGS
@@ -34,7 +36,7 @@ bindkey "\e[3~" delete-char
 #####
 
 ### Some general shortcuts
-alias fn='find . -iname'
+alias fn='find . | grep -i $1'
 alias ll='ls -l'
 
 # Quick change directories
@@ -76,18 +78,20 @@ alias be="bundle exec"
 alias rkae="rake"
 
 # Rails
-alias rials="rails"
 alias rdm="rake db:migrate"
 alias rdr="rake db:rollback"
 alias rdd="rake db:drop"
 alias rdc="rake db:create"
+alias rdmtp="rdm && rdtp"
 alias rdsl="rake db:schema:load"
 alias rds="rake db:seed"
 alias rdtp="rake db:test:prepare"
+alias rials="rails"
 alias rg="rails g"
 alias rgm="rails g migration"
 alias rc="rails c"
 alias rs="rails s"
+alias rsp="rails s -p"
 
 # gem
 alias sgi="sudo gem install"
@@ -111,8 +115,10 @@ alias fs="foreman start"
 # zsh shorcuts
 alias reload="source ~/.zshrc"
 alias reload!="source ~/.zshrc"
+alias zshrc="$EDITOR ~/conf/common/etc/.zshrc"
 
 # git shortcuts
+alias g="git"
 alias gap="git add -p"
 alias gb="git branch"
 alias gba="git branch -a"
@@ -122,6 +128,9 @@ alias gc="git commit"
 alias gco="git checkout"
 alias gcom="git commit"
 alias gcomm="git commit -m"
+alias gcomma="git commit -m 'Add"
+alias gcommf="git commit -m 'Fix"
+alias gcommr="git commit -m 'Remove"
 alias gd="git diff"
 alias gdc="git diff --cached"
 alias gdw="git diff --word-diff"
@@ -137,6 +146,9 @@ alias gs="git status"
 alias gwtf="git wtf -A"
 alias gwtff="git fetch && git wtf -A"
 
+# vim shortcuts
+alias vimrc="$EDITOR ~/conf/common/etc/.vimrc"
+
 alias py="python"
 
 alias san="curl https://github.com/fastestforward/heroku_san/raw/master/README.rdoc | less"
@@ -144,6 +156,12 @@ alias pre="pretty"
 
 alias ant='color-ant'
 alias mvn='color-mvn'
+
+# from http://gilesbowkett.blogspot.com/2010/11/productivity-boosting-shell-script.html
+# search Gmail THIS WAY, not by going to the Inbox
+search_gmail() {
+  open "http://mail.google.com/mail/#search/$*"
+}
 
 PATH+=":"$CONF/common/bin
 

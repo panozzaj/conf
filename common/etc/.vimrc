@@ -1,3 +1,4 @@
+" vim: set ts=2 sw=2:
 filetype off
 call pathogen#helptags()
 call pathogen#runtime_append_all_bundles()
@@ -14,18 +15,6 @@ set showcmd
 
 set undolevels=1000 "maximum number of changes that can be undone
 
-if &l:diff
-  colors peachpuff
-  set diffopt+=iwhite   " ignore whitespace differences for diff
-else
-  "colors neon
-
-  " random color on startup, from http://vim.1045645.n5.nabble.com/Random-color-scheme-at-start-td1165585.html
-  let mycolors = split(globpath(&rtp,"**/colors/*.vim"),"\n") 
-  exe 'so ' . mycolors[localtime() % len(mycolors)] 
-  unlet mycolors 
-endif
-
 set nu
 set ic
 set is
@@ -37,6 +26,7 @@ let g:closetag_html_style=1
 let g:NERDShutUp=1
 let g:Twiki_FoldAtHeadings=1
 
+set visualbell " don't beep at me
 set wildmode=longest,list " bash-style file completion
 
 " The first few were defaults, but I want h and l to work between lines as well.
@@ -60,6 +50,9 @@ set scrolloff=2 " leave a gap between bottom of window and cursor, if possible
 cabbr manual set foldmethod=manual
 
 let g:rubycomplete_rails = 1
+
+set guioptions-=r " remove sidebars
+set guioptions-=L " remove sidebars
 
 "cabbr wp call Wp()
 fun! Wp()
@@ -123,6 +116,8 @@ iabbrev Btw By the way
 iabbrev imo in my opinion
 iabbrev Imo in my opinion
 
+ia 3nd end
+
 " latex-suite
 filetype plugin on
 set grepprg=grep\ -nH\ $*
@@ -143,7 +138,30 @@ imap <C-BS> <C-W>
 
 let g:CommandTMatchWindowAtTop = 1 " want the best command-t matches at the top so they never move
 let g:CommandTMaxHeight = 5 " only show a few lines for the output
-nnoremap <leader>T <Esc>:CommandTFlush<CR> " quicker way to flush the queue
+
+" quicker way to flush the queue
+nnoremap <leader>T <Esc>:CommandTFlush<CR>
+
+
+
+" Colorscheme stuff
+function RandomColorscheme()
+  " random color, from http://vim.1045645.n5.nabble.com/Random-color-scheme-at-start-td1165585.html
+  let mycolors = split(globpath(&rtp,"**/colors/*.vim"),"\n")
+  let i = localtime() % len(mycolors)
+  exe 'so ' . mycolors[i]
+  unlet mycolors
+endfunction
+
+nnoremap <leader>c <Esc>:call RandomColorscheme()<CR>
+
+if &l:diff
+  colors peachpuff
+  set diffopt+=iwhite   " ignore whitespace differences for diff
+else
+  call RandomColorscheme()
+endif
+
 
 " could make this only for ruby file types
 ia rdbg require 'debug'; Debugger.start; Debugger.settings[:autoeval] = 1; Debugger.settings[:autolist] = 1; debugger
@@ -529,4 +547,4 @@ if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome") || has("unix")
   source ~/conf/platforms/ubuntu-10.04/etc/.vimrc
 endif
 
-
+nnoremap <leader>n <Esc>:NumbersToggle<CR>

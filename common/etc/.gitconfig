@@ -14,11 +14,9 @@
         amend-nc = commit --amend -C HEAD # amend without comment
         ca = commit -a
         cam = commit -am
-        ci = commit
         co = checkout
         com = commit
         comm = commit -m
-        di = diff-index
         edit-unmerged = !git-edit-unmerged
         exclude = !([ ! -e .git/info/exclude ] && touch .git/info/exclude) | echo $2 >> .git/info/exclude
         ignore = !([ ! -e .gitignore ] && touch .gitignore) | echo $2 >> .gitignore

@@ -6,6 +6,9 @@ Usage:
 
 Will install, say, https://github.com/tpope/vim-endwise.git to common/.vim/bundle/vim-endwise
 by doing git submodule add https://github.com/tpope/vim-endwise.git common/.vim/bundle/vim-endwise
+
+Will also take a Github repo url https://github.com/tpope/vim-haml and convert it into
+a correct repository url for ease of copying.
 EOS
 
 abort usage unless ARGV.length > 0
