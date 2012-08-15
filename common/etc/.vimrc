@@ -245,6 +245,7 @@ autocmd FileType make set noexpandtab
 " Use the javascript syntax highlighting for JSON files
 autocmd BufNewFile,BufRead *.json set ft=javascript
 autocmd BufNewFile,BufRead *.plist set ft=xml
+autocmd BufRead,BufNewFile *.erb set filetype=eruby.html
 
 set wildignore=*.o,*.class,*.png,*.pdf,*.ps,*.gif,*.jpg,*.aux,*.toc,*.cod,*.bak,*.mp3,*.m4a,*.wmv,*.mpg,*.mov,*.doc,*.bc
 set wildignore+=vendor/rails/**
