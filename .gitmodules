@@ -31,9 +31,6 @@
 [submodule "common/.vim/bundle/nerdcommenter"]
 	path = common/.vim/bundle/nerdcommenter
 	url = https://github.com/scrooloose/nerdcommenter
-[submodule "common/.vim/rainbow-parenthesis"]
-	path = common/.vim/rainbow-parenthesis
-	url = https://github.com/vim-scripts/Rainbow-Parenthesis.git
 [submodule "common/.vim/bundle/rainbow-parenthesis"]
 	path = common/.vim/bundle/rainbow-parenthesis
 	url = https://github.com/vim-scripts/Rainbow-Parenthesis.git
@@ -76,9 +73,6 @@
 [submodule "common/.vim/bundle/vim-css-color"]
 	path = common/.vim/bundle/vim-css-color
 	url = https://github.com/skammer/vim-css-color.git
-[submodule "common/.vim/bundle/Rainbow-Parenthesis"]
-	path = common/.vim/bundle/Rainbow-Parenthesis
-	url = https://github.com/vim-scripts/Rainbow-Parenthesis.git
 [submodule "common/.vim/bundle/vim-javascript"]
 	path = common/.vim/bundle/vim-javascript
 	url = https://github.com/pangloss/vim-javascript.git
