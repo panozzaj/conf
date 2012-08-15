@@ -55,9 +55,6 @@
 [submodule "common/.vim/bundle/ack.vim"]
 	path = common/.vim/bundle/ack.vim
 	url = https://github.com/mileszs/ack.vim.git
-[submodule "common/.vim/bundle/html5.vim"]
-	path = common/.vim/bundle/html5.vim
-	url = https://github.com/othree/html5.vim.git
 [submodule "common/.vim/bundle/closetag.vim"]
 	path = common/.vim/bundle/closetag.vim
 	url = git://github.com/docunext/closetag.vim.git
