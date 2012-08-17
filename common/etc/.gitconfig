@@ -25,6 +25,7 @@
         pick = cherry-pick
         pop = stash pop
         praise = blame
+        sub = submodule
 [rerere]
         enabled = 1
 [difftool "sourcetree"]
