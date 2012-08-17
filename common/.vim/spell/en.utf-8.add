@@ -465,3 +465,6 @@ ILSC
 Aeropress
 sellable
 colocated
+symlink
+Cygwin
+symlinks
