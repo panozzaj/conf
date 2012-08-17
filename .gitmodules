@@ -112,3 +112,9 @@
 [submodule "common/.vim/bundle/html5-syntax.vim"]
 	path = common/.vim/bundle/html5-syntax.vim
 	url = https://github.com/othree/html5-syntax.vim.git
+[submodule "common/.vim/bundle/vim-better-css-indent"]
+	path = common/.vim/bundle/vim-better-css-indent
+	url = https://github.com/miripiruni/vim-better-css-indent.git
+[submodule "common/.vim/bundle/vim-abolish"]
+	path = common/.vim/bundle/vim-abolish
+	url = https://github.com/tpope/vim-abolish.git
