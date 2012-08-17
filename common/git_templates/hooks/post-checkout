@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# original from https://github.com/chaitanyagupta/gitutils
+# Check if any submodule has been updated in HEAD after a merge (or
+# pull) or a branch checkout. If so, ask if user wants to run
+# git-submodule update.
+
+SCRIPT_NAME=$(basename "$0")
+
+# If run as a post-checkout script hook, and the previous and current
+# HEAD are the same or if its a file checkout, don't proceed
+if [[ "$SCRIPT_NAME" = "post-checkout" && "$1" = "$2" || "$3" = "0" ]]; then
+    exit 0
+fi
+
+# Jump to the current project's root directory (the one containing
+# .git/)
+
+ROOT_DIR=$(git rev-parse --show-cdup)
+
+SUBMODULES=$(grep path ${ROOT_DIR}.gitmodules | sed 's/^.*path = //')
+
+# See http://tbaggery.com/2011/02/07/bundle-while-you-git.html
+if [ $1 = 0000000000000000000000000000000000000000 ]; then
+  old=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+else
+  old=$1
+fi
+
+# Finding the submodules that have been modified
+MOD_SUBMODULES=$(git diff --name-only --ignore-submodules=dirty $old $2 | grep -F "$SUBMODULES")
+
+# If no modified submodules, exit with status code 0, else prompt the
+# user and exit accordingly
+if [[ -n "$MOD_SUBMODULES" ]]; then
+    echo "The following submodules have been updated in HEAD:"
+    echo "$MOD_SUBMODULES"
+    echo -n "Run git-submodule update? [n] "
+    read -n 1 reply </dev/tty
+    echo
+    if [[ "$reply" == "y" || "$reply" == "Y" ]]; then
+        git submodule update --init
+    fi
+fi

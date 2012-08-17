@@ -40,3 +40,5 @@
 	default = tracking
 [github]
 	user = panozzaj
+[init]
+	templatedir = ~/conf/common/git_templates
