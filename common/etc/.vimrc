@@ -246,6 +246,7 @@ autocmd FileType make set noexpandtab
 autocmd BufNewFile,BufRead *.json set ft=javascript
 autocmd BufNewFile,BufRead *.plist set ft=xml
 autocmd BufRead,BufNewFile *.erb set filetype=eruby.html
+autocmd BufRead,BufNewFile *.scss set filetype=scss
 
 set wildignore=*.o,*.class,*.png,*.pdf,*.ps,*.gif,*.jpg,*.aux,*.toc,*.cod,*.bak,*.mp3,*.m4a,*.wmv,*.mpg,*.mov,*.doc,*.bc
 set wildignore+=vendor/rails/**
