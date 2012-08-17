@@ -1,6 +1,6 @@
 [submodule "common/.vim/bundle/command-t"]
 	path = common/.vim/bundle/command-t
-	url = git@github.com:panozzaj/Command-T.git
+	url = git@github.com:wincent/Command-T.git
 [submodule "common/.vim/bundle/vimclojure"]
 	path = common/.vim/bundle/vimclojure
 	url = https://github.com/vim-scripts/VimClojure.git
