@@ -5,3 +5,10 @@
 --type-add=js=.coffee
 --type-add=css=.scss,.sass
 --type-set=cucumber=.feature
+
+--ignore-dir=log
+--ignore-dir=tmp
+--ignore-dir=.idea
+--ignore-dir=nbproject
+--ignore-dir=cassettes
+--sort-files

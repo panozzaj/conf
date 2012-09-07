@@ -118,3 +118,12 @@
 [submodule "common/.vim/bundle/vim-abolish"]
 	path = common/.vim/bundle/vim-abolish
 	url = https://github.com/tpope/vim-abolish.git
+[submodule "common/.vim/bundle/jekyll.vim"]
+	path = common/.vim/bundle/jekyll.vim
+	url = https://github.com/csexton/jekyll.vim.git
+[submodule "common/.vim/bundle/vim-markdown"]
+	path = common/.vim/bundle/vim-markdown
+	url = https://github.com/tpope/vim-markdown.git
+[submodule "common/.vim/bundle/vim-rvm"]
+	path = common/.vim/bundle/vim-rvm
+	url = https://github.com/tpope/vim-rvm.git

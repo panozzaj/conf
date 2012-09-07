@@ -27,10 +27,10 @@ dev=$doc/dev
 downloads=~/Downloads
 
 # fink shell script (and presumably others) uses . as a command
-alias .=.
+#alias .=.
 # initialize fink
-source /sw/bin/init.sh
-alias .="cd .."
+#source /sw/bin/init.sh
+#alias .="cd .."
 
 export JAVA_HOME=/Library/Java/Home
 export CATALINA_HOME=/Library/Tomcat/Home

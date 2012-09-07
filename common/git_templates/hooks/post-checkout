@@ -8,10 +8,12 @@
 SCRIPT_NAME=$(basename "$0")
 
 # If run as a post-checkout script hook, and the previous and current
-# HEAD are the same or if its a file checkout, don't proceed
+# HEAD are the same or if it's a file checkout, don't proceed
 if [[ "$SCRIPT_NAME" = "post-checkout" && "$1" = "$2" || "$3" = "0" ]]; then
     exit 0
 fi
+
+[ -f "#{ROOT_DIR}.gitmodules" ] || echo "No git modules, so will not try to update submodules." && exit 0
 
 # Jump to the current project's root directory (the one containing
 # .git/)

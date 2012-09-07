@@ -17,10 +17,11 @@ SAVEHIST=500000
 bindkey -e
 # End of lines configured by zsh-newuser-install
 
-PS1="$(print '%{\e[1;35m%}%S%c%s%{\e[0m%}')> "
+PS1="$(print '%{\e[1;35m%}%S[%T] %c%s%{\e[0m%}')> "
 LS_COLORS='di=01;33'
 
 setopt HIST_IGNORE_SPACE # don't add to ZSH history file any lines that start with a space
+setopt interactivecomments # ignore everything after pound signs in interactive prompt (comments)
 
 #####
 # KEYBINDINGS
@@ -75,7 +76,9 @@ export GREP_COLOR='1;29'
 
 # Ruby
 alias be="bundle exec"
+alias beg="bundle exec guard"
 alias rkae="rake"
+alias ®="rake"
 
 # Rails
 alias rdm="rake db:migrate"
@@ -183,4 +186,13 @@ PATH+=":"$CONF/common/bin
 #exec 2>>(while read line; do
   #print '\e[91m'${(q)line}'\e[0m' > /dev/tty; print -n $'\0'; done &)
 
-eval "$(hub alias -s)"
+#eval "$(hub alias -s)"
+
+# some Ruby compiler optimizations
+# see http://stackoverflow.com/questions/4461346/slow-rails-stack
+export RUBY_HEAP_MIN_SLOTS=800000
+export RUBY_HEAP_FREE_MIN=100000
+export RUBY_HEAP_SLOTS_INCREMENT=300000
+export RUBY_HEAP_SLOTS_GROWTH_FACTOR=1
+export RUBY_GC_MALLOC_LIMIT=79000000
+

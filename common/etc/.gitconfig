@@ -5,7 +5,7 @@
 	name = Anthony Panozzo
 	email = panozzaj@gmail.com
 [core]
-	excludesfile = /Users/anthonypanozzo/.gitignore
+	excludesfile = ~/.cvsignore
 [alias]
         ad = add
         add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"

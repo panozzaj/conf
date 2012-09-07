@@ -9,12 +9,25 @@ by doing git submodule add https://github.com/tpope/vim-endwise.git common/.vim/
 
 Will also take a Github repo url https://github.com/tpope/vim-haml and convert it into
 a correct repository url for ease of copying.
+
+Will also take just a Github username/reponame combo
+For example, tpope/vim-haml will install https://github.com/tpope/vim-haml.
 EOS
 
 abort usage unless ARGV.length > 0
 repo = ARGV[0]
 
+if repo !~ /^http/
+  if repo =~ /^[0-9a-zA-z_\-]+\/[0-9a-zA-z_\-]+$/  # maybe it's a github account?
+    repo = "https://github.com/#{repo}.git"
+  else
+    puts "Hmm, I don't recognize '#{repo}' as a valid git repo."
+    abort usage
+  end
+end
+
 puts repo
+
 repo += '.git' unless repo =~ /\.git$/ # in case I cmd/ctrl + L on github page instead of copying from repo box
 repo =~ /([^\/]*)\.git$/
 project_name = $1
