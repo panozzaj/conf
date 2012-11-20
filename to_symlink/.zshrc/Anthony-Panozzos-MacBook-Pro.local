@@ -1,7 +1,7 @@
 CONF=$HOME/conf
 conf=$CONF
 HOST=Anthony-Panozzos-MacBook-Pro.local
-PLATFORM='mac-10.6.3'
+PLATFORM='mac-10.8.2'
 
 path_to_zshrc=etc/.zshrc
 source $CONF/init/$path_to_zshrc
