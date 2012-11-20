@@ -37,7 +37,18 @@ bindkey "\e[3~" delete-char
 #####
 
 ### Some general shortcuts
-alias fn='find . | grep -i $1'
+fn () {
+    if [ $# -eq 0 ]; then
+        echo 'Usage: fn search_string [within_directory]'
+    elif [ $# -eq 1 ]; then
+        find . | grep -i $1
+    elif [ $# -eq 2 ]; then
+        find $2 | grep -i $1
+    elif [ $# -gt 2 ]; then
+        echo 'Usage: fn search_string [within_directory]'
+    fi
+}
+#alias fn='find [$2|.] | grep -i $1'
 alias ll='ls -l'
 
 # Quick change directories

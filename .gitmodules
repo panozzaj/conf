@@ -133,3 +133,6 @@
 [submodule "common/.vim/bundle/vim-eunuch"]
 	path = common/.vim/bundle/vim-eunuch
 	url = https://github.com/tpope/vim-eunuch.git
+[submodule "common/.vim/bundle/netrw"]
+	path = common/.vim/bundle/netrw
+	url = https://github.com/ryan-cf/netrw.git
