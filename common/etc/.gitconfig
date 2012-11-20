@@ -1,11 +1,3 @@
-[color]
-        ui = auto
-        interactive = auto
-[user]
-	name = Anthony Panozzo
-	email = panozzaj@gmail.com
-[core]
-	excludesfile = ~/.cvsignore
 [alias]
         ad = add
         add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
@@ -27,23 +19,31 @@
         praise = blame
         remove-merged-remotes = !git-remove-merged-remotes
         sub = submodule
-[rerere]
-        enabled = 1
-[difftool "sourcetree"]
-	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-	path = 
-[mergetool "sourcetree"]
-	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
-	trustExitCode = true
 [branch]
         autosetupmerge = true
-[push]
-	default = tracking
-[github]
-	user = panozzaj
-[init]
-	templatedir = ~/conf/common/git_templates
+[color]
+        ui = auto
+        interactive = auto
+[core]
+        excludesfile = ~/.cvsignore
 [diff]
-	renames = copies
+        renames = copies
+[difftool "sourcetree"]
+        cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+        path = 
+[github]
+        user = panozzaj
+[init]
+        templatedir = ~/conf/common/git_templates
 [merge]
-	stat = true
+        stat = true
+[mergetool "sourcetree"]
+        cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+        trustExitCode = true
+[push]
+        default = tracking
+[rerere]
+        enabled = 1
+[user]
+        name = Anthony Panozzo
+        email = panozzaj@gmail.com
