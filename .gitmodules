@@ -127,3 +127,9 @@
 [submodule "common/.vim/bundle/vim-rvm"]
 	path = common/.vim/bundle/vim-rvm
 	url = https://github.com/tpope/vim-rvm.git
+[submodule "common/.vim/bundle/vim-speeddating"]
+	path = common/.vim/bundle/vim-speeddating
+	url = https://github.com/tpope/vim-speeddating.git
+[submodule "common/.vim/bundle/vim-eunuch"]
+	path = common/.vim/bundle/vim-eunuch
+	url = https://github.com/tpope/vim-eunuch.git

@@ -25,6 +25,7 @@
         pick = cherry-pick
         pop = stash pop
         praise = blame
+        remove-merged-remotes = !git-remove-merged-remotes
         sub = submodule
 [rerere]
         enabled = 1

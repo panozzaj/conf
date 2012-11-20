@@ -47,6 +47,8 @@ set title " terminal title set to buffer name
 "set foldmethod=syntax
 set scrolloff=2 " leave a gap between bottom of window and cursor, if possible
 
+set synmaxcol=200 " vim is often slow with long lines that are syntax highlighted, so limit to 200 characters in length
+
 cabbr manual set foldmethod=manual
 
 let g:rubycomplete_rails = 1
@@ -475,6 +477,11 @@ function! s:align()
 endfunction
 
 
+" Convert Ruby 1.8 hash rockets to 1.9 JSON style hashes.
+" Based on https://github.com/hashrocket/dotmatrix/commit/6c77175adc19e94594e8f2d6ec29371f5539ceeb
+" from https://github.com/henrik/dotfiles/commit/aaa45c1cc0f9a6195a9155223a7e904aa10b256f
+command! -bar -range=% NotRocket execute '<line1>,<line2>s/:\(\w\+\)\s*=>/\1:/e' . (&gdefault ? '' : 'g')
+
 " Space to toggle folds. (commenting out because it messes with space = advance cursor)
 "nnoremap <Space> za
 "vnoremap <Space> za
@@ -500,33 +507,6 @@ endfunction
 " kill manual key.
 nnoremap K <nop>
 
-
-" Rename.vim  -  Rename a buffer within Vim and on the disk
-"
-" Copyright June 2007 by Christian J. Robinson <heptite@gmail.com>
-"
-" Distributed under the terms of the Vim license.  See ":help license".
-"
-" Usage:
-"
-" :Rename[!] {newname}
-command! -nargs=* -complete=file -bang Rename :call Rename("<args>", "<bang>")
-
-function! Rename(name, bang)
-        let l:curfile = expand("%:p")
-        let v:errmsg = ""
-        silent! exe "saveas" . a:bang . " " . a:name
-        if v:errmsg =~# '^$\|^E329'
-                if expand("%:p") !=# l:curfile && filewritable(expand("%:p"))
-                        silent exe "bwipe! " . l:curfile
-                        if delete(l:curfile)
-                                echoerr "Could not delete " . l:curfile
-                        endif
-                endif
-        else
-                echoerr v:errmsg
-        endif
-endfunction
 
 " create buffer on `gf` if the file does not currently exist (slight
 " modification from help file to accommodate colon remapping)

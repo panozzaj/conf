@@ -1,0 +1,10 @@
+#!/bin/zsh
+# install gems that I commonly use on the global gemset after getting a new ruby version
+rvm gemset use global
+gem install rake
+gem install cheat
+gem install pickler
+gem install powify
+gem install hookup
+cd ..
+cd -

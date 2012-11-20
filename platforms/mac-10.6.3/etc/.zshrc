@@ -4,6 +4,8 @@ PATH+=:/opt/local/bin
 MANPATH+=:/opt/local/share/man
 INFOPATH+=:/opt/local/share/info
 
+alias -g SAY='; say -v Zarvox -r400 "your command-line job has finished"'
+
 alias spi="sudo port install"
 
 #####
