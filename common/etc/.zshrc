@@ -67,6 +67,7 @@ function rationalize-dot {
 zle -N rationalize-dot
 bindkey . rationalize-dot
 
+export LESS='-R -F -W -X'
 alias -g L='| less'
 alias -g NV='--no-verify'
 

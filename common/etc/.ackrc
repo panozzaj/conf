@@ -1,3 +1,5 @@
+--color
+--pager=less
 --smart-case
 
 --type-add=ruby=.rake,.haml,.rsel
