@@ -48,7 +48,6 @@ fn () {
         echo 'Usage: fn search_string [within_directory]'
     fi
 }
-#alias fn='find [$2|.] | grep -i $1'
 alias ll='ls -l'
 
 # Quick change directories
@@ -70,6 +69,7 @@ bindkey . rationalize-dot
 export LESS='-R -F -W -X'
 alias -g L='| less'
 alias -g NV='--no-verify'
+alias -g GV='grep -v'
 
 # Spelling corrections for common commands
 alias dc='cd'
