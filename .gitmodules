@@ -133,3 +133,6 @@
 [submodule "common/.vim/bundle/netrw"]
 	path = common/.vim/bundle/netrw
 	url = https://github.com/ryan-cf/netrw.git
+[submodule "common/.vim/bundle/vim-ruby"]
+	path = common/.vim/bundle/vim-ruby
+	url = https://github.com/vim-ruby/vim-ruby.git
