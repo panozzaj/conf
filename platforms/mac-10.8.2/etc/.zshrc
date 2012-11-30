@@ -1,6 +1,7 @@
 # setup for Mac Ports
 PATH+=:$CONF/platforms/$PLATFORM/bin
 PATH+=:/opt/local/bin
+PATH+=:/usr/local/share/npm/bin
 MANPATH+=:/opt/local/share/man
 INFOPATH+=:/opt/local/share/info
 

@@ -107,6 +107,7 @@ alias rgm="rails g migration"
 alias rc="rails c"
 alias rs="rails s"
 alias rsp="rails s -p"
+alias reload_database='rdd && rdc && rdm && rds && rdtp'
 
 # gem
 alias sgi="sudo gem install"
