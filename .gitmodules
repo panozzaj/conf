@@ -31,9 +31,6 @@
 [submodule "common/.vim/bundle/nerdcommenter"]
 	path = common/.vim/bundle/nerdcommenter
 	url = https://github.com/scrooloose/nerdcommenter
-[submodule "common/.vim/bundle/rainbow-parenthesis"]
-	path = common/.vim/bundle/rainbow-parenthesis
-	url = https://github.com/vim-scripts/Rainbow-Parenthesis.git
 [submodule "common/.vim/bundle/vim-fugitive"]
 	path = common/.vim/bundle/vim-fugitive
 	url = https://github.com/tpope/vim-fugitive.git
