@@ -58,7 +58,6 @@ set guioptions-=L " remove sidebars
 
 "cabbr wp call Wp()
 fun! Wp()
-  set lbr
   source ~/.vim/autocorrect.vim
   nnoremap j gj
   nnoremap k gk
@@ -522,11 +521,9 @@ fun! Eighty()
 endfu
 
 if has("mac") || has("gui_macvim") || has("gui_mac")
-  source ~/conf/platforms/mac-10.6.3/etc/.vimrc
+  source ~/conf/platforms/mac-10.8.2/etc/.vimrc
 endif
 
 if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome") || has("unix")
   source ~/conf/platforms/ubuntu-10.04/etc/.vimrc
 endif
-
-nnoremap <leader>n <Esc>:NumbersToggle<CR>
