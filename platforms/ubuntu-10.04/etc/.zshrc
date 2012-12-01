@@ -1,6 +1,4 @@
-#####
 # COMMAND SHORTCUTS
-#####
 
 alias sagi="sudo apt-get install"
 alias xm="xmms2"
@@ -11,6 +9,9 @@ alias pbcopy='echo "you should be using xclip on Ubuntu, not pbcopy"'
 
 # Heroku
 export PATH=$PATH:/var/lib/gems/1.8/bin
+
+# Custom scripts
+export PATH=$PATH:~/common/bin
 
 # zsh shorcuts
 alias zshc="gvim ~/.zshrc"
@@ -50,3 +51,5 @@ alias .="cd .."
 if [ -e "`pwd`/.rvmrc" ]; then
         source "`pwd`/.rvmrc"
 fi
+
+alias ack='ack-grep'
