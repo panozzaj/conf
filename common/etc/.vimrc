@@ -134,6 +134,8 @@ au BufRead,BufNewFile {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc
 au FileType conf set foldmethod=manual
 au BufRead,BufNewFile *.less setfiletype less
 "au BufRead,BufNewFile *.ino setfiletype ino
+au BufRead,BufNewFile *.md set filetype=markdown
+
 
 imap <C-BS> <C-W>
 
