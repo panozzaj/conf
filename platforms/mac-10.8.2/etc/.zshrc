@@ -21,6 +21,10 @@ alias xclip='echo "you should be using pbcopy on Mac, not xclip"'
 
 alias xcode='open /Developer/Applications/Xcode.app'
 
+# recently 'hidden' FTP commands
+alias start_ftp_server='sudo -s launchctl load -w /System/Library/LaunchDaemons/ftp.plist'
+alias stop_ftp_server='sudo -s launchctl unload -w /System/Library/LaunchDaemons/ftp.plist'
+
 #####
 # QUICK PATHS
 #####
