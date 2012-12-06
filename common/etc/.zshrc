@@ -89,6 +89,7 @@ export GREP_COLOR='1;29'
 # Ruby
 alias be="bundle exec"
 alias beg="bundle exec guard"
+alias bi="bundle install"
 alias rkae="rake"
 alias ®="rake"
 
@@ -135,6 +136,7 @@ alias zshrc="$EDITOR ~/conf/common/etc/.zshrc"
 
 # git shortcuts
 alias g="git"
+alias ganc="git amend-nc"
 alias gap="git add -p"
 alias gb="git branch"
 alias gba="git branch -a"

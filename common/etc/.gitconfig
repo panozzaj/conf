@@ -6,6 +6,7 @@
         amend-nc = commit --amend -C HEAD # amend without comment
         ca = commit -a
         cam = commit -am
+        cp = cherry-pick
         co = checkout
         com = commit
         comm = commit -m
