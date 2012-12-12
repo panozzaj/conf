@@ -266,7 +266,7 @@ endfunction
 
 " For proofreading.
 " From the bottom of http://www.cs.princeton.edu/~npjohnso/dot.vimrc
-fun! Proofreading()
+function! Proofreading()
   highlight Weakener ctermbg=yellow ctermfg=blue guibg=reg guifg=blue
   call matchadd("Weakener", English('general'), 1)
   call matchadd("Weakener", English('generally'), 1)
@@ -392,7 +392,7 @@ fun! Proofreading()
   call matchadd("PeacockTerm", English("well-known"), 1)
   call matchadd("PeacockTerm", English("world-class"), 1)
   call matchadd("PeacockTerm", English("worst"), 1)
-endfu
+endfunction
 
 " http://pastebin.com/f46e9ffca
 " toggle spellcheck and autocorrect

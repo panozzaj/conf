@@ -7,6 +7,7 @@ AJP
 AMs
 ASTA
 Accessorize
+Admin
 Adwords
 Aeropress
 AlleyCats
@@ -80,6 +81,7 @@ GAJ
 GFS
 GMail
 GTD
+Gemfile
 Gervais
 Giggil
 Giles's
@@ -173,7 +175,9 @@ Pecha
 Peopleware
 Philbrook
 PhoneGap
+Pickler
 Posterous
+PostgreSQL
 Qdoba
 RNO
 RSS
@@ -182,6 +186,7 @@ RV's
 RailsThemes
 Rally's
 Ramen
+Rebase
 Reddit
 Regenstrief
 Regenstrief's
@@ -196,6 +201,7 @@ RoR
 Russ's
 S3
 SAAS
+SCM
 SDB
 SEP
 SEPedia
@@ -269,6 +275,7 @@ and's
 anima
 annualize
 antipattern
+api
 app
 apps
 architected
@@ -300,6 +307,7 @@ cashflow
 cloudworking
 codebase
 colocated
+config
 constitutionalist
 contrarianism
 coworking
@@ -308,6 +316,7 @@ crowdsourcing
 css
 customizability
 datatables
+db
 dealbreaker
 demotivated
 demotivating
@@ -336,6 +345,7 @@ fullscreen
 gamification
 gamified
 gauge
+github
 goodie
 grep
 gvim
@@ -360,6 +370,7 @@ javascript
 javascripts
 js
 kanban
+keygen
 keylogger
 leaderboard
 lifecycle
@@ -387,6 +398,7 @@ neuroplasticity
 neuroscience
 offline
 online
+org
 our
 outlier
 overanalyze
@@ -399,7 +411,12 @@ pageviews
 paintball
 paintballing
 pandoc
+passphrase
+pdf
 personas
+php
+pickler
+pickler
 piracetam
 plugin
 plugins
@@ -418,13 +435,17 @@ prioritization
 proven
 pushups
 queueing
+rebase
 refactor
 refactorings
+referenceable
 replicable
 repo
 roadmapping
+rspec
 rsync
 rsynced
+rvm
 satisficing
 screenshot
 screenshots
@@ -433,6 +454,7 @@ sellable
 sftp
 skillset
 spam
+spellchecker
 spellfiles
 standoffishness
 standups
@@ -443,6 +465,7 @@ subvocalize
 sudo
 symlink
 symlinks
+tddium
 techno
 teleported
 texted
@@ -480,23 +503,4 @@ workflows
 worldview
 worldviews
 xUnit
-Rebase
-rebase
-github
-Admin
-PostgreSQL
-rvm
-Pickler
-referenceable
 yml
-api
-pickler
-pickler
-SCM
-config
-db
-rspec
-tddium
-Gemfile
-keygen
-passphrase
