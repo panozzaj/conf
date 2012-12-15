@@ -10,18 +10,12 @@
 [submodule "common/.vim/bundle/autoclose"]
 	path = common/.vim/bundle/autoclose
 	url = https://github.com/andrewle/vim-autoclose.git
-[submodule "common/.vim/bundle/vim-snipmate"]
-	path = common/.vim/bundle/vim-snipmate
-	url = https://github.com/garbas/vim-snipmate.git
 [submodule "common/.vim/bundle/tlib_vim"]
 	path = common/.vim/bundle/tlib_vim
 	url = https://github.com/tomtom/tlib_vim.git
 [submodule "common/.vim/bundle/vim-addon-mw-utils"]
 	path = common/.vim/bundle/vim-addon-mw-utils
 	url = https://github.com/MarcWeber/vim-addon-mw-utils.git
-[submodule "common/.vim/bundle/snipmate-snippets"]
-	path = common/.vim/bundle/snipmate-snippets
-	url = https://github.com/honza/snipmate-snippets.git
 [submodule "common/.vim/bundle/vim-endwise"]
 	path = common/.vim/bundle/vim-endwise
 	url = https://github.com/tpope/vim-endwise.git
