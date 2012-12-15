@@ -93,7 +93,7 @@ alias bi="bundle install"
 alias rkae="rake"
 alias ®="rake"
 
-# Rails
+# Rake
 alias rdm="rake db:migrate"
 alias rdr="rake db:rollback"
 alias rdd="rake db:drop"
@@ -102,13 +102,16 @@ alias rdmtp="rdm && rdtp"
 alias rdsl="rake db:schema:load"
 alias rds="rake db:seed"
 alias rdtp="rake db:test:prepare"
+alias rjw="rake jobs:work"
+
+# Rails
 alias rials="rails"
 alias rg="rails g"
 alias rgm="rails g migration"
 alias rc="rails c"
 alias rs="rails s"
 alias rsp="rails s -p"
-alias reload_database='rdd && rdc && rdm && rds && rdtp'
+alias reload_database='powify server stop && rdd && rdc && rdm && rds && rdtp && powify server start'
 
 # gem
 alias sgi="sudo gem install"

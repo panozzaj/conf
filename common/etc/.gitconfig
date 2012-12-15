@@ -31,7 +31,6 @@
         renames = copies
 [difftool "sourcetree"]
         cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-        path = 
 [github]
         user = panozzaj
 [init]
