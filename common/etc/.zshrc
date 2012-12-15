@@ -6,6 +6,13 @@ zmodload zsh/datetime
 setopt share_history
 setopt APPEND_HISTORY
 
+autoload -U run-help
+autoload -Uz run-help-git
+#autoload run-help-git
+autoload run-help-svn
+autoload run-help-svk
+export HELPDIR=~/zsh_help
+
 autoload zmv
 autoload -Uz compinit
 compinit
@@ -17,7 +24,8 @@ SAVEHIST=500000
 bindkey -e
 # End of lines configured by zsh-newuser-install
 
-PS1="$(print '%{\e[1;35m%}%S[%T] %c%s%{\e[0m%}')> "
+#PS1="$(print '%{\e[1;31m%}%S[%T] %c%s%{\e[0m%}')> "
+PROMPT="%F{red}%S[%T] %c%f%s> "
 LS_COLORS='di=01;33'
 
 setopt HIST_IGNORE_SPACE # don't add to ZSH history file any lines that start with a space
@@ -180,33 +188,28 @@ alias pre="pretty"
 alias ant='color-ant'
 alias mvn='color-mvn'
 
-# from http://gilesbowkett.blogspot.com/2010/11/productivity-boosting-shell-script.html
-# search Gmail THIS WAY, not by going to the Inbox
-search_gmail() {
-  open "http://mail.google.com/mail/#search/$*"
-}
-
 PATH+=":"$CONF/common/bin
 
 # load up rvm
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"  # This loads RVM into a shell session.
 
-# seems to conflict with rvm?
-#cat () {
-#  if [ -d $1 ]; then
-#    ls $1
-#  else
-#    echo "echoing $*"
-#    CAT = "/bin/cat"
-#    $CAT "$*"
-#  fi
-#}
-
-# print stderr in red. see http://en.gentoo-wiki.com/wiki/Zsh#Colorize_STDERR
-#exec 2>>(while read line; do
-  #print '\e[91m'${(q)line}'\e[0m' > /dev/tty; print -n $'\0'; done &)
-
-#eval "$(hub alias -s)"
+setopt prompt_subst
+autoload -Uz vcs_info
+zstyle ':vcs_info:*' stagedstr 'M'
+zstyle ':vcs_info:*' unstagedstr 'M'
+zstyle ':vcs_info:*' check-for-changes true
+zstyle ':vcs_info:*' actionformats '%F{5}[%F{2}%b%F{3}|%F{1}%a%F{5}]%f '
+zstyle ':vcs_info:*' formats '%F{5}[%F{2}%b%F{5}] %F{2}%c%F{3}%u%f'
+zstyle ':vcs_info:git*+set-message:*' hooks git-untracked
+zstyle ':vcs_info:*' enable git
++vi-git-untracked() {
+  if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]] && \
+    git status --porcelain | grep '??' &> /dev/null ; then
+    hook_com[unstaged]+='%F{1}??%f'
+  fi
+}
+precmd () { vcs_info }
+RPROMPT='%F{3}%3~ ${vcs_info_msg_0_}'
 
 # some Ruby compiler optimizations
 # see http://stackoverflow.com/questions/4461346/slow-rails-stack
@@ -215,4 +218,3 @@ export RUBY_HEAP_FREE_MIN=100000
 export RUBY_HEAP_SLOTS_INCREMENT=300000
 export RUBY_HEAP_SLOTS_GROWTH_FACTOR=1
 export RUBY_GC_MALLOC_LIMIT=79000000
-

@@ -14,6 +14,7 @@ syntax enable
 set showcmd
 
 set undolevels=1000 "maximum number of changes that can be undone
+set laststatus=2 " always show statusline (Powerline)
 
 set nu
 set ic
