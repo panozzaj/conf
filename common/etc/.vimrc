@@ -14,7 +14,11 @@ syntax enable
 set showcmd
 
 set undolevels=1000 "maximum number of changes that can be undone
-set laststatus=2 " always show statusline (Powerline)
+set laststatus=1 " always show statusline, unless one file present
+
+" open split buffers below and to right instead of above and to left
+set splitbelow
+set splitright
 
 set nu
 set ic
@@ -52,10 +56,15 @@ set synmaxcol=200 " vim is often slow with long lines that are syntax highlighte
 
 cabbr manual set foldmethod=manual
 
-let g:rubycomplete_rails = 1
-
 set guioptions-=r " remove sidebars
 set guioptions-=L " remove sidebars
+
+" ctrl-p plugin
+let g:ctrlp_match_window_bottom=0 " put at top
+let g:ctrlp_match_window_reversed=0 " reverse order of items
+
+
+
 
 "cabbr wp call Wp()
 fun! Wp()
@@ -71,13 +80,14 @@ fun! Wp()
   if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome")
     set guifont=Inconsolata\ 16
   elseif has("gui_macvim") || has("gui_mac")
-    set guifont=Inconsolata:h16
+    set guifont=Inconsolata:h20
   elseif has("gui_win32")
     set guifont=Inconsolata:h16
   end
 endfu
 
 cabbr cdhere cd %:p:h
+cabbr mkdirhere !mkdir -p %:h
 
 cabbr autocommit call Autocommit()
 fun! Autocommit()
@@ -93,8 +103,8 @@ endfu
 
 fun! Blog()
   call Writing()
-  cd Documents/blog_stuff
-  set syntax=html
+  cd ~/Dropbox/blog_stuff
+  set syntax=markdown
 endfu
 
 fun! Log()
@@ -118,7 +128,22 @@ iabbrev Btw By the way
 iabbrev imo in my opinion
 iabbrev Imo in my opinion
 
-ia 3nd end
+" I commonly fat-finger this
+iabbrev 3nd end
+
+
+nnoremap <leader>gg :sp Gemfile<CR>
+nnoremap <leader>gr :sp config/routes.rb<CR>
+
+" copy current file name (relative/absolute) to system clipboard
+if has("mac") || has("gui_macvim") || has("gui_mac")
+  nnoremap <leader>cf :let @*=expand("%")<CR>
+  nnoremap <leader>cF :let @*=expand("%:p")<CR>
+endif
+if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome") || has("unix")
+  nnoremap <leader>cf :let @+=expand("%")<CR>
+  nnoremap <leader>cF :let @+=expand("%:p")<CR>
+endif
 
 " latex-suite
 filetype plugin on
@@ -127,7 +152,8 @@ filetype indent on
 let g:tex_flavor='latex'
 let g:Tex_DefaultTargetFormat="pdf"
 
-" should be in another file, but don't care for now
+" these should be in another file, but don't care for now
+
 " should also move things from vim72/** that I added into my personal .vim directory
 au BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please stop reading unless you are Anthony." | call Wp() | endif
 
@@ -140,12 +166,30 @@ au BufRead,BufNewFile *.md set filetype=markdown
 
 imap <C-BS> <C-W>
 
+" Command-T overrides
 let g:CommandTMatchWindowAtTop = 1 " want the best command-t matches at the top so they never move
-let g:CommandTMaxHeight = 5 " only show a few lines for the output
+let g:CommandTMaxHeight = 8 " only show a few lines for the output
 
 " quicker way to flush the queue
 nnoremap <leader>T <Esc>:CommandTFlush<CR>
 
+
+" on file load, go to the last known cursor position if it is valid
+autocmd BufReadPost *
+  \ if line("'\"") > 0 && line("'\"") <= line("$") |
+  \ exe "normal g`\"" |
+  \ endif
+
+
+function! PromoteToLet()
+  :normal! dd
+  " :exec '?^\s*it\>'
+  :normal! P
+  :.s/\(\w\+\) = \(.*\)$/let(:\1) { \2 }/
+  :normal ==
+endfunction
+:command! PromoteToLet :call PromoteToLet()
+:nnoremap <leader>l :PromoteToLet<cr>
 
 
 " Colorscheme stuff
@@ -166,6 +210,8 @@ else
   call RandomColorscheme()
 endif
 
+
+let g:vimroom_scrolloff=2
 
 " could make this only for ruby file types
 ia rdbg require 'debug'; Debugger.start; Debugger.settings[:autoeval] = 1; Debugger.settings[:autolist] = 1; debugger
@@ -452,7 +498,7 @@ function! VisualSearch(direction) range
 endfunction
 
 " Remove the Windows ^M - when the encodings get messed up
-noremap <Leader>m mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
+noremap <Leader>mm mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
 
 " Keep search matches in the middle of the window.
 "nnoremap * *zzzv

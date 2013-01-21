@@ -6,11 +6,10 @@ zmodload zsh/datetime
 setopt share_history
 setopt APPEND_HISTORY
 
-autoload -U run-help
+autoload -Uz run-help
 autoload -Uz run-help-git
-#autoload run-help-git
-autoload run-help-svn
-autoload run-help-svk
+autoload -Uz run-help-svn
+autoload -Uz run-help-svk
 export HELPDIR=~/zsh_help
 
 autoload zmv
@@ -25,8 +24,26 @@ bindkey -e
 # End of lines configured by zsh-newuser-install
 
 #PS1="$(print '%{\e[1;31m%}%S[%T] %c%s%{\e[0m%}')> "
-PROMPT="%F{red}%S[%T] %c%f%s> "
+PROMPT="%F{red}%S[%T] %c%f%s ◊ "
 LS_COLORS='di=01;33'
+
+setopt prompt_subst
+autoload -Uz vcs_info
+zstyle ':vcs_info:*' stagedstr 'M'
+zstyle ':vcs_info:*' unstagedstr 'M'
+zstyle ':vcs_info:*' check-for-changes true
+zstyle ':vcs_info:*' actionformats '%F{5}[%F{2}%b%F{3}|%F{1}%a%F{5}]%f '
+zstyle ':vcs_info:*' formats '%F{5}[%F{2}%b%F{5}] %F{2}%c%F{3}%u%f'
+zstyle ':vcs_info:git*+set-message:*' hooks git-untracked
+zstyle ':vcs_info:*' enable git
++vi-git-untracked() {
+  if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]] && \
+    git status --porcelain | grep '??' &> /dev/null ; then
+    hook_com[unstaged]+='%F{1}??%f'
+  fi
+}
+precmd () { vcs_info }
+RPROMPT='${vcs_info_msg_0_}'
 
 setopt HIST_IGNORE_SPACE # don't add to ZSH history file any lines that start with a space
 setopt interactivecomments # ignore everything after pound signs in interactive prompt (comments)
@@ -50,10 +67,8 @@ fn () {
         echo 'Usage: fn search_string [within_directory]'
     elif [ $# -eq 1 ]; then
         find . | grep -i $1
-    elif [ $# -eq 2 ]; then
-        find $2 | grep -i $1
-    elif [ $# -gt 2 ]; then
-        echo 'Usage: fn search_string [within_directory]'
+    elif [ $# -ge 2 ]; then
+        find ${@[@]:2} | grep -i $@[1]
     fi
 }
 alias ll='ls -l'
@@ -99,7 +114,7 @@ alias be="bundle exec"
 alias beg="bundle exec guard"
 alias bi="bundle install"
 alias rkae="rake"
-alias ®="rake"
+alias ®="rake "
 
 # Rake
 alias rdm="rake db:migrate"
@@ -119,7 +134,27 @@ alias rgm="rails g migration"
 alias rc="rails c"
 alias rs="rails s"
 alias rsp="rails s -p"
-alias reload_database='powify server stop && rdd && rdc && rdm && rds && rdtp && powify server start'
+function reload_database() {
+  echo "Reloading development and test databases from scratch!"
+  echo ''
+  powify server stop 2> /dev/null
+  echo "\nExecuting rake db:drop..."
+  rdd --trace
+  echo "\nExecuting rake db:create..."
+  rdc --trace
+  echo "\nExecuting rake db:migrate..."
+  rdm --trace
+  echo "\nExecuting rake db:seed..."
+  rds --trace
+  echo "\nExecuting rake db:test:prepare..."
+  rdtp --trace
+  echo ''
+  powify server start
+  echo "Finished reloading development and test databases from scratch"
+}
+function reset_database() {
+  reload_database
+}
 
 # gem
 alias sgi="sudo gem install"
@@ -127,6 +162,8 @@ alias sgu="sudo gem update"
 alias gi="gem install"
 
 alias cuc="cucumber"
+alias gcuc="git modified | egrep '.feature$' | xargs cucumber"
+alias recuc="gcuc"
 
 # RSpec
 alias rsm="rake spec:models"
@@ -147,6 +184,7 @@ alias zshrc="$EDITOR ~/conf/common/etc/.zshrc"
 
 # git shortcuts
 alias g="git"
+alias gaa="git add -A"
 alias ganc="git amend-nc"
 alias gap="git add -p"
 alias gb="git branch"
@@ -192,24 +230,6 @@ PATH+=":"$CONF/common/bin
 
 # load up rvm
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"  # This loads RVM into a shell session.
-
-setopt prompt_subst
-autoload -Uz vcs_info
-zstyle ':vcs_info:*' stagedstr 'M'
-zstyle ':vcs_info:*' unstagedstr 'M'
-zstyle ':vcs_info:*' check-for-changes true
-zstyle ':vcs_info:*' actionformats '%F{5}[%F{2}%b%F{3}|%F{1}%a%F{5}]%f '
-zstyle ':vcs_info:*' formats '%F{5}[%F{2}%b%F{5}] %F{2}%c%F{3}%u%f'
-zstyle ':vcs_info:git*+set-message:*' hooks git-untracked
-zstyle ':vcs_info:*' enable git
-+vi-git-untracked() {
-  if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]] && \
-    git status --porcelain | grep '??' &> /dev/null ; then
-    hook_com[unstaged]+='%F{1}??%f'
-  fi
-}
-precmd () { vcs_info }
-RPROMPT='%F{3}%3~ ${vcs_info_msg_0_}'
 
 # some Ruby compiler optimizations
 # see http://stackoverflow.com/questions/4461346/slow-rails-stack

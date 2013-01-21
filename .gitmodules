@@ -139,3 +139,27 @@
 [submodule "common/.vim/bundle/vim-powerline"]
 	path = common/.vim/bundle/vim-powerline
 	url = https://github.com/Lokaltog/vim-powerline.git
+[submodule "common/.vim/bundle/vim-less"]
+	path = common/.vim/bundle/vim-less
+	url = https://github.com/groenewege/vim-less.git
+[submodule "common/.vim/bundle/vim-signature"]
+	path = common/.vim/bundle/vim-signature
+	url = https://github.com/kshenoy/vim-signature.git
+[submodule "common/.vim/bundle/destroy-all-software-vim-theme"]
+	path = common/.vim/bundle/destroy-all-software-vim-theme
+	url = https://github.com/partkyle/destroy-all-software-vim-theme.git
+[submodule "common/.vim/bundle/vimroom"]
+	path = common/.vim/bundle/vimroom
+	url = https://github.com/mikewest/vimroom.git
+[submodule "common/.vim/bundle/nerdtree"]
+	path = common/.vim/bundle/nerdtree
+	url = https://github.com/scrooloose/nerdtree.git
+[submodule "common/.vim/bundle/lusty"]
+	path = common/.vim/bundle/lusty
+	url = https://github.com/sjbach/lusty.git
+[submodule "common/.vim/bundle/TuttiColori-Colorscheme"]
+	path = common/.vim/bundle/TuttiColori-Colorscheme
+	url = https://github.com/vim-scripts/TuttiColori-Colorscheme.git
+[submodule "common/.vim/bundle/ctrlp.vim"]
+	path = common/.vim/bundle/ctrlp.vim
+	url = https://github.com/kien/ctrlp.vim.git

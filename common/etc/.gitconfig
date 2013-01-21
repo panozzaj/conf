@@ -1,6 +1,7 @@
 [alias]
         ad = add
         add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
+        alias = !git aliases
         aliases = !git config --list | grep 'alias\\.' | sed 's/alias\\.\\([^=]*\\)=\\(.*\\)/\\1\t=> \\2/' | sort
         amend = commit --amend
         amend-nc = commit --amend -C HEAD # amend without comment
@@ -15,10 +16,12 @@
         ignore = !([ ! -e .gitignore ] && touch .gitignore) | echo $2 >> .gitignore
         local-ignore = !([ ! -e .git/info/exclude ] && touch .git/info/exclude) | echo $2 >> .git/info/exclude
         man = help
+        modified = ! git status --porcelain | cut -d ' ' -f 3
         pick = cherry-pick
         pop = stash pop
         praise = blame
-        remove-merged-remotes = !git-remove-merged-remotes
+        #remove-merged-remotes = !git-remove-merged-remotes
+        remove-merged-locals = !(git branch --merged | grep -v "\\*" | xargs -n 2 git branch -d)
         sub = submodule
 [branch]
         autosetupmerge = true
