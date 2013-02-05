@@ -125,6 +125,8 @@ alias rdmtp="rdm && rdtp"
 alias rdsl="rake db:schema:load"
 alias rds="rake db:seed"
 alias rdtp="rake db:test:prepare"
+alias rdpt="rake db:test:prepare"
+alias rdv="rake db:version"
 alias rjw="rake jobs:work"
 
 # Rails
@@ -138,19 +140,15 @@ function reload_database() {
   echo "Reloading development and test databases from scratch!"
   echo ''
   powify server stop 2> /dev/null
-  echo "\nExecuting rake db:drop..."
-  rdd --trace
-  echo "\nExecuting rake db:create..."
-  rdc --trace
-  echo "\nExecuting rake db:migrate..."
-  rdm --trace
-  echo "\nExecuting rake db:seed..."
-  rds --trace
-  echo "\nExecuting rake db:test:prepare..."
-  rdtp --trace
+  echo "\nExecuting rake db:drop db:create db:migrate..."
+  rake --trace db:drop db:create db:migrate
+  echo '\nExecuting rake db:seed...'
+  rake --trace db:seed
+  echo '\nExecuting rake db:test:prepare...'
+  rake --trace db:test:prepare
   echo ''
   powify server start
-  echo "Finished reloading development and test databases from scratch"
+  echo "Finished reloading development and test databases from scratch!"
 }
 function reset_database() {
   reload_database
@@ -163,13 +161,15 @@ alias gi="gem install"
 
 alias cuc="cucumber"
 alias gcuc="git modified | egrep '.feature$' | xargs cucumber"
-alias recuc="gcuc"
 
 # RSpec
 alias rsm="rake spec:models"
 alias rsc="rake spec:controllers"
 alias rsv="rake spec:views"
 alias rsh="rake spec:helpers"
+
+# Pow
+alias psr="powify server restart"
 
 # Heroku
 alias hrdm="heroku rake db:migrate"

@@ -17,6 +17,7 @@
         local-ignore = !([ ! -e .git/info/exclude ] && touch .git/info/exclude) | echo $2 >> .git/info/exclude
         man = help
         modified = ! git status --porcelain | cut -d ' ' -f 3
+        modified-but-not-deleted = ! git status --porcelain | egrep -v ' D' | cut -d ' ' -f 3
         pick = cherry-pick
         pop = stash pop
         praise = blame
