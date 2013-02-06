@@ -530,6 +530,8 @@ endfunction
 " from https://github.com/henrik/dotfiles/commit/aaa45c1cc0f9a6195a9155223a7e904aa10b256f
 command! -bar -range=% NotRocket execute '<line1>,<line2>s/:\(\w\+\)\s*=>/\1:/e' . (&gdefault ? '' : 'g')
 
+nnoremap <leader>9 :NotRocket<CR>
+
 " Space to toggle folds. (commenting out because it messes with space = advance cursor)
 "nnoremap <Space> za
 "vnoremap <Space> za
