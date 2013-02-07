@@ -1,4 +1,6 @@
 # The following lines were added by compinstall
+zmodload zsh/complist
+autoload -Uz compinit && compinit
 
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=** r:|=**' 'l:|=* r:|=*'
 
@@ -10,20 +12,19 @@ autoload -Uz run-help
 autoload -Uz run-help-git
 autoload -Uz run-help-svn
 autoload -Uz run-help-svk
+
 export HELPDIR=~/zsh_help
 
 autoload zmv
-autoload -Uz compinit
-compinit
 # End of lines added by compinstall
+
 # Lines configured by zsh-newuser-install
 HISTFILE=~/.histfile
-HISTSIZE=500000
-SAVEHIST=500000
+HISTSIZE=50000
+SAVEHIST=50000
 bindkey -e
 # End of lines configured by zsh-newuser-install
 
-#PS1="$(print '%{\e[1;31m%}%S[%T] %c%s%{\e[0m%}')> "
 PROMPT="%F{red}%S[%T] %c%f%s ◊ "
 LS_COLORS='di=01;33'
 
@@ -191,9 +192,11 @@ alias gb="git branch"
 alias gba="git branch -a"
 alias gbb="git bisect bad"
 alias gbg="git bisect good"
+alias gb-="git checkout -"
 alias gc="git commit"
 alias gca="git amend-nc"
 alias gco="git checkout"
+alias gco-="git checkout -"
 alias gcom="git commit"
 alias gcomm="git commit -m"
 alias gcomma="git commit -m 'Add"
@@ -220,7 +223,6 @@ alias vimrc="$EDITOR ~/conf/common/etc/.vimrc"
 
 alias py="python"
 
-alias san="curl https://raw.github.com/fastestforward/heroku_san/master/README.md | less"
 alias pre="pretty"
 
 alias ant='color-ant'

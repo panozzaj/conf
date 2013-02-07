@@ -20,8 +20,11 @@ set laststatus=1 " always show statusline, unless one file present
 set splitbelow
 set splitright
 
-set nu
-set ic
+" seems slow with ZSH and I don't get aliases either (probably due to my config)
+set shell=bash
+
+set number
+set ignorecase
 set is
 set wrap
 
@@ -36,8 +39,8 @@ set wildmode=longest,list " bash-style file completion
 
 " The first few were defaults, but I want h and l to work between lines as well.
 set whichwrap=b,s,<,>,[,],h,l
-set hls
-set gcr=a:blinkon0 " Set the cursor to not blink
+set hlsearch
+set guicursor=a:blinkon0 " Set the cursor to not blink
 
 set expandtab
 
