@@ -160,6 +160,7 @@ let g:Tex_DefaultTargetFormat="pdf"
 " should also move things from vim72/** that I added into my personal .vim directory
 au BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please stop reading unless you are Anthony." | call Wp() | endif
 
+au BufRead,BufNewFile *.txt set filetype=conf
 au BufRead,BufNewFile {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc,irb_tempfile*,Vagrantfile} set ft=ruby
 au FileType conf set foldmethod=manual
 au BufRead,BufNewFile *.less setfiletype less
