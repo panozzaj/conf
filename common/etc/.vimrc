@@ -29,7 +29,7 @@ set is
 set wrap
 
 let g:closetag_html_style=1
-"source ~/.vim/closetag.vim 
+"source ~/.vim/closetag.vim
 
 let g:NERDShutUp=1
 let g:Twiki_FoldAtHeadings=1
@@ -166,8 +166,7 @@ au BufRead,BufNewFile *.less setfiletype less
 "au BufRead,BufNewFile *.ino setfiletype ino
 au BufRead,BufNewFile *.md set filetype=markdown
 
-
-imap <C-BS> <C-W>
+inoremap <C-BS> <C-W>
 
 " Command-T overrides
 let g:CommandTMatchWindowAtTop = 1 " want the best command-t matches at the top so they never move
@@ -175,7 +174,6 @@ let g:CommandTMaxHeight = 8 " only show a few lines for the output
 
 " quicker way to flush the queue
 nnoremap <leader>T <Esc>:CommandTFlush<CR>
-
 
 " on file load, go to the last known cursor position if it is valid
 autocmd BufReadPost *
@@ -192,7 +190,7 @@ function! PromoteToLet()
   :normal ==
 endfunction
 :command! PromoteToLet :call PromoteToLet()
-:nnoremap <leader>l :PromoteToLet<cr>
+nnoremap <leader>l :PromoteToLet<cr>
 
 
 " Colorscheme stuff
@@ -516,6 +514,7 @@ set foldlevelstart=0
 " see https://github.com/tpope/vim-cucumber/issues/4
 " see https://gist.github.com/287147
 inoremap <silent> <Bar>   <Bar><Esc>:call <SID>align()<CR>a
+nnoremap <leader>a :call <SID>align()<CR>
 function! s:align()
   let p = '^\s*|\s.*\s|\s*$'
   if exists(':Tabularize') && getline('.') =~# '^\s*|' && (getline(line('.')-1) =~# p || getline(line('.')+1) =~# p)
