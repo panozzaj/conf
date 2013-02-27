@@ -526,6 +526,7 @@ function! s:align()
   endif
 endfunction
 
+autocmd BufReadPost COMMIT_EDITMSG exe "normal! gg"
 
 " Convert Ruby 1.8 hash rockets to 1.9 JSON style hashes.
 " Based on https://github.com/hashrocket/dotmatrix/commit/6c77175adc19e94594e8f2d6ec29371f5539ceeb
