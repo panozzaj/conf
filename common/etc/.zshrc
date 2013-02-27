@@ -114,10 +114,11 @@ export GREP_COLOR='1;29'
 alias be="bundle exec"
 alias beg="bundle exec guard"
 alias bi="bundle install"
-alias rkae="rake"
-alias ®="rake "
+alias bu="bundle update"
 
 # Rake
+alias ®="rake "
+alias rkae="rake"
 alias rdm="rake db:migrate"
 alias rdr="rake db:rollback"
 alias rdd="rake db:drop"
@@ -161,7 +162,12 @@ alias sgu="sudo gem update"
 alias gi="gem install"
 
 alias cuc="cucumber"
-alias gcuc="git modified | egrep '.feature$' | xargs cucumber"
+alias -g PIPE="|"
+function gcuc() {
+  # needs to handle
+  # R  features/1.feature -> features/2.feature
+  git status --porcelain | grep -v -e '^ D' | grep -v -e '^D' | awk 'match($1, ""){print $2}' | grep features/ | xargs cucumber
+}
 
 # RSpec
 alias rsm="rake spec:models"
@@ -222,6 +228,8 @@ alias gwtff="git fetch && git wtf -A"
 alias vimrc="$EDITOR ~/conf/common/etc/.vimrc"
 
 alias py="python"
+
+alias tf="tail -f"
 
 alias pre="pretty"
 

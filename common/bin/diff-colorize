@@ -1,0 +1,2 @@
+#!/bin/bash
+python ~/conf/common/bin/diff-colorize-hg/diff-colorize.py

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -e
+
+echo 'It would be nice to make a script that takes cucumber fail output and reruns those cukes in whole.
+Also adding  SAY  at the end of the thing to paste
+'
+
+

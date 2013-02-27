@@ -13,6 +13,7 @@ if [ -f config/environment.rb ]; then
   echo rm -f log/*.log
   echo rm -rf tmp
   rm -f log/*.log
+  rm -rf tmp
   echo 'Logs and tmp cleared!'
 else
   date
