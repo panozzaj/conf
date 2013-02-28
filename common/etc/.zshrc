@@ -135,9 +135,21 @@ alias rjw="rake jobs:work"
 alias rials="rails"
 alias rg="rails g"
 alias rgm="rails g migration"
-alias rc="rails c"
-alias rs="rails s"
-alias rsp="rails s -p"
+function rs() { # so this works for Rails 2 or Rails 3
+  if [ -f script/server ]; then
+    ./script/server $@
+  else
+    ./script/rails s $@
+  fi
+}
+function rc() { # so this works for Rails 2 or Rails 3
+  if [ -f script/console ]; then
+    ./script/console $@
+  else
+    ./script/rails c $@
+  fi
+}
+alias rsp="rs -p"
 function reload_database() {
   echo "Reloading development and test databases from scratch!"
   echo ''
