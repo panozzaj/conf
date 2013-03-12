@@ -167,6 +167,9 @@ au BufRead,BufNewFile *.less setfiletype less
 "au BufRead,BufNewFile *.ino setfiletype ino
 au BufRead,BufNewFile *.md set filetype=markdown
 
+" fabricator file shortcut
+autocmd User Rails Rnavcommand fabricator spec/fabricators -suffix=_fabricator.rb -default=model()
+
 inoremap <C-BS> <C-W>
 
 " Command-T overrides
@@ -201,6 +204,7 @@ function RandomColorscheme()
   let i = localtime() % len(mycolors)
   exe 'so ' . mycolors[i]
   unlet mycolors
+  highlight clear SignColumn " important for vim-gitgutter plugin to not look strange
 endfunction
 
 nnoremap <leader>c <Esc>:call RandomColorscheme()<CR>
@@ -212,6 +216,7 @@ else
   call RandomColorscheme()
 endif
 
+nnoremap <leader>h :highlight clear SignColumn<CR>
 
 let g:vimroom_scrolloff=2
 

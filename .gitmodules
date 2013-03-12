@@ -160,3 +160,9 @@
 [submodule "common/.vim/bundle/ctrlp.vim"]
 	path = common/.vim/bundle/ctrlp.vim
 	url = https://github.com/kien/ctrlp.vim.git
+[submodule "common/.vim/bundle/vim-gitgutter"]
+	path = common/.vim/bundle/vim-gitgutter
+	url = https://github.com/airblade/vim-gitgutter.git
+[submodule "common/.vim/bundle/ag.vim"]
+	path = common/.vim/bundle/ag.vim
+	url = https://github.com/rking/ag.vim.git

@@ -47,7 +47,7 @@
 [push]
         default = tracking
 [rerere]
-        enabled = 1
+        enabled = 0
 [user]
         name = Anthony Panozzo
         email = panozzaj@gmail.com

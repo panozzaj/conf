@@ -135,18 +135,18 @@ alias rjw="rake jobs:work"
 alias rials="rails"
 alias rg="rails g"
 alias rgm="rails g migration"
-function rs() { # so this works for Rails 2 or Rails 3
-  if [ -f script/server ]; then
+function rs() { # so this works for Rails 2 through 4
+  if [[ -d script && -f script/server ]]; then
     ./script/server $@
   else
-    ./script/rails s $@
+    rails s $@
   fi
 }
-function rc() { # so this works for Rails 2 or Rails 3
-  if [ -f script/console ]; then
+function rc() { # so this works for Rails 2 through 4
+  if [[ -d script && -f script/console ]]; then
     ./script/console $@
   else
-    ./script/rails c $@
+    rails c $@
   fi
 }
 alias rsp="rs -p"
@@ -242,6 +242,8 @@ alias vimrc="$EDITOR ~/conf/common/etc/.vimrc"
 alias py="python"
 
 alias tf="tail -f"
+alias tfld="tail -f log/development.log"
+alias tflt="tail -f log/test.log"
 
 alias pre="pretty"
 
