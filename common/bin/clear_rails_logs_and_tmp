@@ -8,21 +8,32 @@
 
 set -e
 
-if [ -f config/environment.rb ]; then
-  echo 'Clearing Rails logs and tmp for the app in this directory...'
+function clear_rails_logs {
+  if [ -z $1 ]; then
+    cd $1
+  fi
+  echo running at: `pwd`
   echo rm -f log/*.log
   echo rm -rf tmp
+  echo rm -rf public/uploads
   rm -f log/*.log
   rm -rf tmp
+  rm -rf public/uploads
+  if [ -z $1 ]; then
+    cd -
+  fi
+}
+
+if [ -f config/environment.rb ]; then
+  echo 'Clearing Rails logs and tmp for the app in this directory...'
+  clear_rails_logs '.'
   echo 'Logs and tmp cleared!'
 else
-  date
-  for path in `find /Users/anthonypanozzo/Documents/dev -type f -path '*/config/environment.rb'`
+  for filepath in `find /Users/anthonypanozzo/Documents/dev -type f -path '*/config/environment.rb'`
   do
-    rails_root=`echo $path | xargs dirname | xargs dirname`
+    rails_root=`echo $filepath | xargs dirname | xargs dirname`
     echo "Found RAILS_ROOT in $rails_root"
-    echo rm -f $rails_root/log/*.log
-    rm -f $rails_root/log/*.log
+    clear_rails_logs "$rails_root"
     echo
   done
 fi

@@ -166,3 +166,6 @@
 [submodule "common/.vim/bundle/ag.vim"]
 	path = common/.vim/bundle/ag.vim
 	url = https://github.com/rking/ag.vim.git
+[submodule "common/.vim/bundle/scss-syntax.vim"]
+	path = common/.vim/bundle/scss-syntax.vim
+	url = https://github.com/cakebaker/scss-syntax.vim.git
