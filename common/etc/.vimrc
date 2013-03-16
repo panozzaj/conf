@@ -312,6 +312,35 @@ set wildignore+=build/android  " Titanium
 " Enable automatic spell checking for txt and tex files
 let spell_auto_type="tex,txt"
 
+
+" Highlight common debugging statements that should not be committed (one
+" layer of protection, at least)
+let s:hilightdebugging = 1
+" http://stackoverflow.com/questions/11269066/toggling-a-match-in-vimrc
+highlight Debugging ctermbg=yellow ctermfg=blue guibg=yellow guifg=blue
+highlight link MaybeDebugging Debugging
+" could make these specific to the language used (filetype) but fine for now
+call matchadd("MaybeDebugging", "debugger")
+call matchadd("MaybeDebugging", "puts")
+call matchadd("MaybeDebugging", "show me the page")
+call matchadd("MaybeDebugging", "and I debug")
+call matchadd("MaybeDebugging", "console.log")
+call matchadd("MaybeDebugging", "console.dir")
+call matchadd("MaybeDebugging", "alert")
+function ToggleDebuggingMatching()
+  if s:hilightdebugging
+    echo 'turning debugging highlighting off'
+    highlight link MaybeDebugging NONE
+    let s:hilightdebugging = 0
+  else
+    echo 'turning debugging highlighting on'
+    highlight link MaybeDebugging Debugging
+    let s:hilightdebugging = 1
+  endif
+endfunction
+nnoremap <leader>d :call ToggleDebuggingMatching()<CR>
+
+
 " Turns an word into a regex to match that word
 function English(word)
   " Case-insensitive, and properly bounded.
