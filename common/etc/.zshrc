@@ -106,6 +106,15 @@ alias -g NE="2> /dev/null"
 export GREP_OPTIONS='--color=auto'
 export GREP_COLOR='1;29'
 
+function run_times() {
+    number=$1
+    shift
+    for i in `seq $number`; do
+      echo "Run #${number}"
+      $@
+    done
+}
+
 #####
 # COMMAND SHORTCUTS
 #####
@@ -114,7 +123,9 @@ export GREP_COLOR='1;29'
 alias be="bundle exec"
 alias beg="bundle exec guard"
 alias bi="bundle install"
+alias bil="bundle install --local"
 alias bu="bundle update"
+alias bul="bundle update --local"
 
 # Rake
 alias ®="rake "
@@ -191,7 +202,7 @@ alias rsh="rake spec:helpers"
 alias psr="powify server restart"
 
 # Heroku
-alias hrdm="heroku rake db:migrate"
+alias hrdm="heroku run rake db:migrate"
 alias hero="heroku"
 alias her="heroku"
 alias fs="foreman start"
@@ -220,6 +231,7 @@ alias gcomm="git commit -m"
 alias gcomma="git commit -m 'Add"
 alias gcommf="git commit -m 'Fix"
 alias gcommr="git commit -m 'Remove"
+alias gcpc="git cherry-pick --continue"
 alias gd="git diff"
 alias gdc="git diff --cached"
 alias gdw="git diff --word-diff"
@@ -227,6 +239,7 @@ alias gf="git fetch"
 alias gfwtf="git fetch && git wtf -A"
 alias gl="git log --oneline --graph --decorate"
 alias glh="gl -10"
+alias glp="git log -p"
 alias gmt="git mergetool"
 alias gp="git push"
 alias gpop="git pop"

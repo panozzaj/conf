@@ -169,3 +169,6 @@
 [submodule "common/.vim/bundle/scss-syntax.vim"]
 	path = common/.vim/bundle/scss-syntax.vim
 	url = https://github.com/cakebaker/scss-syntax.vim.git
+[submodule "common/.vim/bundle/BufOnly.vim"]
+	path = common/.vim/bundle/BufOnly.vim
+	url = https://github.com/vim-scripts/BufOnly.vim.git

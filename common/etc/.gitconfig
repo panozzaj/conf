@@ -5,6 +5,7 @@
         aliases = !git config --list | grep 'alias\\.' | sed 's/alias\\.\\([^=]*\\)=\\(.*\\)/\\1\t=> \\2/' | sort
         amend = commit --amend
         amend-nc = commit --amend -C HEAD # amend without comment
+        authors = !git log --pretty=format:%aN | sort | uniq -c | sort -rn
         ca = commit -a
         cam = commit -am
         cp = cherry-pick
@@ -15,6 +16,7 @@
         exclude = !([ ! -e .git/info/exclude ] && touch .git/info/exclude) | echo $2 >> .git/info/exclude
         ignore = !([ ! -e .gitignore ] && touch .gitignore) | echo $2 >> .gitignore
         local-ignore = !([ ! -e .git/info/exclude ] && touch .git/info/exclude) | echo $2 >> .git/info/exclude
+        ls-ignored = ls-files --exclude-standard --ignored --others
         man = help
         modified = ! git status --porcelain | cut -d ' ' -f 3
         modified-but-not-deleted = ! git status --porcelain | egrep -v ' D' | cut -d ' ' -f 3
@@ -41,6 +43,8 @@
         templatedir = ~/conf/common/git_templates
 [merge]
         stat = true
+[mergetool "mvimdiff"]
+        cmd = /usr/local/bin/mvimdiff -f "$LOCAL" "$MERGED" "$REMOTE"
 [mergetool "sourcetree"]
         cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
         trustExitCode = true

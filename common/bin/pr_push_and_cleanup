@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+git push
+git push origin :$1
+git branch -d $1

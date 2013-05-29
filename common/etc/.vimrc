@@ -196,32 +196,18 @@ endfunction
 :command! PromoteToLet :call PromoteToLet()
 nnoremap <leader>l :PromoteToLet<cr>
 
-
-" Colorscheme stuff
-function RandomColorscheme()
-  " random color, from http://vim.1045645.n5.nabble.com/Random-color-scheme-at-start-td1165585.html
-  let mycolors = split(globpath(&rtp,"**/colors/*.vim"),"\n")
-  let i = localtime() % len(mycolors)
-  exe 'so ' . mycolors[i]
-  unlet mycolors
-  highlight clear SignColumn " important for vim-gitgutter plugin to not look strange
-endfunction
-
-nnoremap <leader>c <Esc>:call RandomColorscheme()<CR>
-
-if &l:diff
-  colors peachpuff
-  set diffopt+=iwhite   " ignore whitespace differences for diff
-else
-  call RandomColorscheme()
-endif
-
-nnoremap <leader>h :highlight clear SignColumn<CR>
-
 let g:vimroom_scrolloff=2
 
 " could make this only for ruby file types
 ia rdbg require 'debug'; Debugger.start; Debugger.settings[:autoeval] = 1; Debugger.settings[:autolist] = 1; debugger
+
+" via: http://whynotwiki.com/Vim
+" Ruby
+" Use v or # to get a variable interpolation (inside of a string)}
+" ysiw#   Wrap the token under the cursor in #{}
+" v...s#  Wrap the selection in #{}
+let g:surround_113 = "#{\r}"   " v
+let g:surround_35  = "#{\r}"   " #
 
 
 """""""""""""""""""""""""""""""""""
@@ -260,12 +246,6 @@ noremap <C-Tab> <C-W>w
 inoremap <C-Tab> <C-O><C-W>w
 cnoremap <C-Tab> <C-C><C-W>w
 onoremap <C-Tab> <C-C><C-W>w
-
-" CTRL-F4 is Close window
-noremap <C-F4> <C-W>c
-inoremap <C-F4> <C-O><C-W>c
-cnoremap <C-F4> <C-C><C-W>c
-onoremap <C-F4> <C-C><C-W>c
 
 """""""""""""""""""""""""""""""""""
 " some additional things I added to be more consistent with other
@@ -312,10 +292,8 @@ set wildignore+=build/android  " Titanium
 " Enable automatic spell checking for txt and tex files
 let spell_auto_type="tex,txt"
 
-
 " Highlight common debugging statements that should not be committed (one
 " layer of protection, at least)
-let s:hilightdebugging = 1
 " http://stackoverflow.com/questions/11269066/toggling-a-match-in-vimrc
 highlight Debugging ctermbg=yellow ctermfg=blue guibg=yellow guifg=blue
 highlight link MaybeDebugging Debugging
@@ -327,18 +305,47 @@ call matchadd("MaybeDebugging", "and I debug")
 call matchadd("MaybeDebugging", "console.log")
 call matchadd("MaybeDebugging", "console.dir")
 call matchadd("MaybeDebugging", "alert")
+
+function TurnOnDebuggingMatching()
+  highlight link MaybeDebugging Debugging
+  let s:hilightdebugging = 1
+endfunction
+
+function TurnOffDebuggingMatching()
+  highlight link MaybeDebugging NONE
+  let s:hilightdebugging = 0
+endfunction
+
 function ToggleDebuggingMatching()
   if s:hilightdebugging
-    echo 'turning debugging highlighting off'
-    highlight link MaybeDebugging NONE
-    let s:hilightdebugging = 0
+    call TurnOffDebuggingMatching()
   else
-    echo 'turning debugging highlighting on'
-    highlight link MaybeDebugging Debugging
-    let s:hilightdebugging = 1
+    call TurnOnDebuggingMatching()
   endif
 endfunction
+
 nnoremap <leader>d :call ToggleDebuggingMatching()<CR>
+
+call TurnOnDebuggingMatching()
+
+" Colorscheme stuff
+function RandomColorscheme()
+  " random color, from http://vim.1045645.n5.nabble.com/Random-color-scheme-at-start-td1165585.html
+  let mycolors = split(globpath(&rtp,"**/colors/*.vim"),"\n")
+  let i = localtime() % len(mycolors)
+  exe 'so ' . mycolors[i]
+  unlet mycolors
+  highlight clear SignColumn " important for vim-gitgutter plugin to not look strange
+  if s:hilightdebugging
+    call TurnOnDebuggingMatching()  " restore my custom debugging highlighting if we were using it
+  endif
+endfunction
+
+nnoremap <leader>c <Esc>:call RandomColorscheme()<CR>
+
+nnoremap <leader>h :highlight clear SignColumn<CR>
+
+
 
 
 " Turns an word into a regex to match that word
@@ -616,3 +623,11 @@ endif
 if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome") || has("unix")
   source ~/conf/platforms/ubuntu-10.04/etc/.vimrc
 endif
+
+if &l:diff
+  colors peachpuff
+  set diffopt+=iwhite   " ignore whitespace differences for diff
+else
+  call RandomColorscheme()
+endif
+

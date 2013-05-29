@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+
+git fetch
+git checkout -b $1 origin/$1
+git checkout master
+echo ""
+echo "Merging..."
+git merge $1
