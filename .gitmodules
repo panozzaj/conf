@@ -172,3 +172,6 @@
 [submodule "common/.vim/bundle/BufOnly.vim"]
 	path = common/.vim/bundle/BufOnly.vim
 	url = https://github.com/vim-scripts/BufOnly.vim.git
+[submodule "common/open_source/js-beautify"]
+	path = common/open_source/js-beautify
+	url = https://github.com/einars/js-beautify
