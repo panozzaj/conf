@@ -43,9 +43,6 @@
 [submodule "common/.vim/bundle/closetag.vim"]
 	path = common/.vim/bundle/closetag.vim
 	url = git://github.com/docunext/closetag.vim.git
-[submodule "common/.vim/bundle/vim-colors-solarized"]
-	path = common/.vim/bundle/vim-colors-solarized
-	url = git://github.com/altercation/vim-colors-solarized.git
 [submodule "common/.vim/bundle/surround.vim"]
 	path = common/.vim/bundle/surround.vim
 	url = https://github.com/tpope/vim-surround.git
@@ -142,9 +139,6 @@
 [submodule "common/.vim/bundle/vim-signature"]
 	path = common/.vim/bundle/vim-signature
 	url = https://github.com/kshenoy/vim-signature.git
-[submodule "common/.vim/bundle/destroy-all-software-vim-theme"]
-	path = common/.vim/bundle/destroy-all-software-vim-theme
-	url = https://github.com/partkyle/destroy-all-software-vim-theme.git
 [submodule "common/.vim/bundle/vimroom"]
 	path = common/.vim/bundle/vimroom
 	url = https://github.com/mikewest/vimroom.git
@@ -154,9 +148,6 @@
 [submodule "common/.vim/bundle/lusty"]
 	path = common/.vim/bundle/lusty
 	url = https://github.com/sjbach/lusty.git
-[submodule "common/.vim/bundle/TuttiColori-Colorscheme"]
-	path = common/.vim/bundle/TuttiColori-Colorscheme
-	url = https://github.com/vim-scripts/TuttiColori-Colorscheme.git
 [submodule "common/.vim/bundle/ctrlp.vim"]
 	path = common/.vim/bundle/ctrlp.vim
 	url = https://github.com/kien/ctrlp.vim.git
@@ -175,3 +166,9 @@
 [submodule "common/open_source/js-beautify"]
 	path = common/open_source/js-beautify
 	url = https://github.com/einars/js-beautify
+[submodule "common/.vim/bundle/vim-colorschemes"]
+	path = common/.vim/bundle/vim-colorschemes
+	url = https://github.com/flazz/vim-colorschemes.git
+[submodule "common/.vim/bundle/vim-distinguished"]
+	path = common/.vim/bundle/vim-distinguished
+	url = https://github.com/Lokaltog/vim-distinguished.git
