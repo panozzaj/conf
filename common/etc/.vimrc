@@ -341,6 +341,8 @@ function RandomColorscheme()
   endif
 endfunction
 
+let g:gitgutter_eager = 0 " prevent reload of all buffers on window focus (which takes a long time)
+
 nnoremap <leader>c <Esc>:call RandomColorscheme()<CR>
 
 nnoremap <leader>h :highlight clear SignColumn<CR>
