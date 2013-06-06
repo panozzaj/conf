@@ -172,3 +172,9 @@
 [submodule "common/.vim/bundle/vim-distinguished"]
 	path = common/.vim/bundle/vim-distinguished
 	url = https://github.com/Lokaltog/vim-distinguished.git
+[submodule "common/.vim/bundle/gruvbox"]
+	path = common/.vim/bundle/gruvbox
+	url = https://github.com/morhetz/gruvbox.git
+[submodule "common/.vim/bundle/tomorrow-theme-vim"]
+	path = common/.vim/bundle/tomorrow-theme-vim
+	url = https://github.com/d11wtq/tomorrow-theme-vim.git
