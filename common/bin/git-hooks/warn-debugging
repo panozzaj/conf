@@ -1,8 +1,6 @@
 #!/bin/sh
 # Git pre-commit hook to check all staged files for common debug print statements
 
-set -e
-
 FILES_PATTERN='\.(rb|js|coffee)(\..+)?$'
 WARNINGS='(puts|logger\.ap|console\.log|alert\(|console\.dir|console\.debug)'
 
