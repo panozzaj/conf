@@ -1,0 +1,16 @@
+#!/bin/sh
+# Git pre-commit hook to check all staged spec files for
+# for save_and_open_page debugging scripts
+
+set -e
+
+FILES_PATTERN='_spec.rb$'
+FORBIDDEN='save_and_open_page'
+
+echo 'Checking for save_and_open_page calls in specs'
+git diff --cached --name-only | \
+    grep -E $FILES_PATTERN | \
+    GREP_COLOR='4;5;37;41' xargs grep --color --with-filename -n $FORBIDDEN && \
+    exit 1
+
+exit 0

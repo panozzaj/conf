@@ -1,0 +1,16 @@
+#!/bin/sh
+# Git pre-commit hook to check all staged Ruby (*.rb/haml/coffee) files 
+# for Pry binding references
+
+set -e
+
+FILES_PATTERN='\.(rb|haml|coffee)(\..+)?$'
+FORBIDDEN='binding.pry'
+
+echo 'Checking for binding.pry calls in .rb, .haml, .coffee scripts...'
+git diff --cached --name-only | \
+    grep -E $FILES_PATTERN | \
+    GREP_COLOR='4;5;37;41' xargs grep --color --with-filename -n $FORBIDDEN &&
+    exit 1
+
+exit 0

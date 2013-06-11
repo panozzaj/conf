@@ -1,0 +1,13 @@
+#!/bin/sh
+# Git pre-commit hook to check all staged files for git merge conflict markers
+
+set -e
+
+ERRORS='(<<<<<<<|>>>>>>>)'
+
+echo 'Checking for git merge conflict markers...'
+git diff --cached --name-only | \
+    GREP_COLOR='4;5;37;41' xargs grep --color --with-filename -n -E $ERRORS &&
+    exit 1
+
+exit 0
