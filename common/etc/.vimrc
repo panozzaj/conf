@@ -167,6 +167,9 @@ au BufRead,BufNewFile *.less setfiletype less
 "au BufRead,BufNewFile *.ino setfiletype ino
 au BufRead,BufNewFile *.md set filetype=markdown
 
+iabbrev prypry require 'pry'; binding.pry
+
+
 " fabricator file shortcut
 autocmd User Rails Rnavcommand fabricator spec/fabricators -suffix=_fabricator.rb -default=model()
 
