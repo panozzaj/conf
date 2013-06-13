@@ -10,12 +10,9 @@ setopt APPEND_HISTORY
 
 autoload -Uz run-help
 autoload -Uz run-help-git
-autoload -Uz run-help-svn
-autoload -Uz run-help-svk
 
 export HELPDIR=~/zsh_help
 
-autoload zmv
 # End of lines added by compinstall
 
 # Lines configured by zsh-newuser-install
