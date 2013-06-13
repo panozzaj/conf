@@ -1,4 +1,12 @@
 #!/bin/bash
+# git pre-commit hook wrapper.
+# See `man githooks` for more information on hooks.
+
+changed_files=`git diff --cached --name-only HEAD`
+if [ -z "$files" ] ; then # quick exit when no files changed
+  $DEBUG_HOOKS || echo 'No files in staging area. Exiting pre-commit hook.'
+  exit
+fi
 echo 'Running pre-commit hooks (base script located at .git/hooks/pre-commit)...'
 
 # `pee` comes from the moreutils package. This is nice because it allows us to
@@ -7,16 +15,17 @@ echo 'Running pre-commit hooks (base script located at .git/hooks/pre-commit)...
 hooks_directory='.git/hooks/pre-commit-hooks'
 if [ -e "$hooks_directory" ] ; then
   if [ "$(ls -A $hooks_directory)" ] ; then
+    # run the hooks
     pee $hooks_directory/*
+
+    # if any of the scripts exited with failure error code
+    if [[ $? != 0 ]] ; then
+      echo "COMMIT REJECTED!"
+      exit 1
+    fi
   else
     echo "[WARN] No hooks present in directory: $hooks_directory."
   fi
 else
   echo "[WARN] No hook directory present: $hooks_directory."
-fi
-
-# if any of the scripts exited with failure error code
-if [[ $? != 0 ]] ; then
-  echo "COMMIT REJECTED!"
-  exit 1
 fi

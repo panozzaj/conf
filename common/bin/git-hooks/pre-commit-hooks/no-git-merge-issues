@@ -5,9 +5,11 @@ ERRORS='(<<<<<<<|>>>>>>>)'
 
 $DEBUG_HOOKS || echo 'Checking for git merge conflict markers...'
 
-git diff --cached --name-only HEAD | \
-  GREP_COLOR='4;5;37;41' xargs grep --color --with-filename -n -E $ERRORS &&
-  echo '[ERROR] Found at least one git merge conflict marker. Exiting!' &&
-  exit 1
+files=`git diff --cached --name-only HEAD`
+if [ -e "$files" ] ; then
+  GREP_COLOR='4;5;37;41' grep --color --with-filename -n $FORBIDDEN $files &&
+    echo '[ERROR] Found at least one git merge conflict marker. Exiting!' &&
+    exit 1
+fi
 
 $DEBUG_HOOKS || echo 'No git merge conflicts.'
