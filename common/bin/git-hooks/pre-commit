@@ -1,0 +1,22 @@
+#!/bin/bash
+echo 'Running pre-commit hooks (base script located at .git/hooks/pre-commit)...'
+
+# `pee` comes from the moreutils package. This is nice because it allows us to
+# see all types of errors if there are multiple varieties. Strive to make hooks
+# return as many errors as possible per run to facilitate faster fixing.
+hooks_directory='.git/hooks/pre-commit-hooks'
+if [ -e "$hooks_directory" ] ; then
+  if [ "$(ls -A $hooks_directory)" ] ; then
+    pee $hooks_directory/*
+  else
+    echo "[WARN] No hooks present in directory: $hooks_directory."
+  fi
+else
+  echo "[WARN] No hook directory present: $hooks_directory."
+fi
+
+# if any of the scripts exited with failure error code
+if [[ $? != 0 ]] ; then
+  echo "COMMIT REJECTED!"
+  exit 1
+fi

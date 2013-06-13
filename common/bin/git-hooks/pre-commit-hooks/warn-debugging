@@ -1,0 +1,15 @@
+#!/bin/bash
+# Git pre-commit hook to check staged files for common debug print statements
+
+FILES_PATTERN='\.(rb|js|coffee)(\..+)?$'
+WARNINGS='(puts|logger\.ap|console\.log|alert\(|console\.dir|console\.debug)'
+
+$DEBUG_HOOKS || echo 'Checking for common Ruby debugging print statements...'
+
+files=`git diff --cached --name-only HEAD | grep -E $FILES_PATTERN`
+if [ -e "$files" ] ; then
+  GREP_COLOR='8;34' grep --color --with-filename -n -E $WARNINGS $files &&
+    echo "[WARN] Some debugging statements encountered."
+fi
+
+$DEBUG_HOOKS || echo "No debugging statements encountered."
