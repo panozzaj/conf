@@ -1,0 +1,23 @@
+#!/bin/bash
+# Git pre-commit hook to check all staged files for ruby check errors
+
+FILES_PATTERN='\.rb$'
+
+[ -z $DEBUG_HOOKS ] || echo 'Checking for Ruby errors...'
+
+files=`git diff --cached --name-only HEAD | grep -E $FILES_PATTERN`
+
+if [ -e "$files" ] ; then
+  failed=false
+  for file in $files; do
+    ruby -c $file
+    if [ $? != 0 ] ; then
+      failed=true
+    fi
+  done
+  if $failed ; then
+    echo '[ERROR] Found at least one Ruby error. Exiting!' && exit 1
+  fi
+fi
+
+[ -z $DEBUG_HOOKS ] || echo 'No Ruby errors found.'
