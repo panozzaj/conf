@@ -2,10 +2,10 @@
 # Git pre-commit hook to check staged spec files for
 # for save_and_open_page debugging scripts
 
-FILES_PATTERN='_spec.rb$'
+FILES_PATTERN='_spec\.rb$'
 FORBIDDEN='save_and_open_page'
 
-$DEBUG_HOOKS || echo 'Checking for save_and_open_page calls in specs...'
+[ -z $DEBUG_HOOKS ] || echo 'Checking for save_and_open_page calls in specs...'
 
 files=`git diff --cached --name-only HEAD | grep -E $FILES_PATTERN`
 if [ -e "$files" ] ; then
@@ -14,4 +14,4 @@ if [ -e "$files" ] ; then
     exit 1
 fi
 
-$DEBUG_HOOKS || echo 'No save_and_open_page calls found.'
+[ -z $DEBUG_HOOKS ] || echo 'No save_and_open_page calls found.'

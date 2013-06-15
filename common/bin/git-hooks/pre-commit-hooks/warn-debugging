@@ -4,7 +4,7 @@
 FILES_PATTERN='\.(rb|js|coffee)(\..+)?$'
 WARNINGS='(puts|logger\.ap|console\.log|alert\(|console\.dir|console\.debug)'
 
-$DEBUG_HOOKS || echo 'Checking for common Ruby debugging print statements...'
+[ -z $DEBUG_HOOKS ] || echo 'Checking for common Ruby debugging print statements...'
 
 files=`git diff --cached --name-only HEAD | grep -E $FILES_PATTERN`
 if [ -e "$files" ] ; then
@@ -12,4 +12,4 @@ if [ -e "$files" ] ; then
     echo "[WARN] Some debugging statements encountered."
 fi
 
-$DEBUG_HOOKS || echo "No debugging statements encountered."
+[ -z $DEBUG_HOOKS ] || echo "No debugging statements encountered."

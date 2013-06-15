@@ -5,7 +5,7 @@
 FILES_PATTERN='\.(rb|haml|coffee)(\..+)?$'
 FORBIDDEN='binding.pry'
 
-$DEBUG_HOOKS || echo 'Checking for binding.pry calls in .rb, .haml, .coffee scripts...'
+[ -z $DEBUG_HOOKS ] || echo 'Checking for binding.pry calls in .rb, .haml, .coffee scripts...'
 
 files=`git diff --cached --name-only HEAD | grep -E $FILES_PATTERN`
 if [ -e "$files" ] ; then
@@ -14,4 +14,4 @@ if [ -e "$files" ] ; then
     exit 1
 fi
 
-$DEBUG_HOOKS || echo 'No pry calls found in matching files.'
+[ -z $DEBUG_HOOKS ] || echo 'No pry calls found in matching files.'

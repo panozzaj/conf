@@ -3,8 +3,8 @@
 # See `man githooks` for more information on hooks.
 
 changed_files=`git diff --cached --name-only HEAD`
-if [ -z "$files" ] ; then # quick exit when no files changed
-  $DEBUG_HOOKS || echo 'No files in staging area. Exiting pre-commit hook.'
+if [ -z "$changed_files" ] ; then # quick exit when no files changed
+  [ -z $DEBUG_HOOKS ] || echo 'No files in staging area. Exiting pre-commit hook.'
   exit
 fi
 echo 'Running pre-commit hooks (base script located at .git/hooks/pre-commit)...'

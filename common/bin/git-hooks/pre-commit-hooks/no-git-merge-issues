@@ -3,7 +3,7 @@
 
 ERRORS='(<<<<<<<|>>>>>>>)'
 
-$DEBUG_HOOKS || echo 'Checking for git merge conflict markers...'
+[ -z $DEBUG_HOOKS ] || echo 'Checking for git merge conflict markers...'
 
 files=`git diff --cached --name-only HEAD`
 if [ -e "$files" ] ; then
@@ -12,4 +12,4 @@ if [ -e "$files" ] ; then
     exit 1
 fi
 
-$DEBUG_HOOKS || echo 'No git merge conflicts.'
+[ -z $DEBUG_HOOKS ] || echo 'No git merge conflicts.'
