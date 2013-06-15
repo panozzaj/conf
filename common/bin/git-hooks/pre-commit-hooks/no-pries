@@ -7,7 +7,13 @@ FORBIDDEN='binding.pry'
 
 [ -z $DEBUG_HOOKS ] || echo 'Checking for binding.pry calls in .rb, .haml, .coffee scripts...'
 
-files=`git diff --cached --name-only HEAD | grep -E $FILES_PATTERN`
+if git-rev-parse --verify HEAD >/dev/null 2>&1 ; then
+  against=HEAD
+else # Initial commit: diff against an empty tree object
+  against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+fi
+
+files=`git diff --cached --name-only $against | grep -E $FILES_PATTERN`
 if [ -e "$files" ] ; then
   GREP_COLOR='4;5;37;41' grep --color --with-filename -n $FORBIDDEN $files &&
     echo '[ERROR] Found at least one binding.pry call. Exiting!' &&
