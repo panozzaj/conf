@@ -1,0 +1,13 @@
+#!/bin/bash
+# find any files without a newline at the end
+# AP - mostly incomplete, still needs to:
+#  take path to search under
+#  filter images
+#  maybe ignore files in .gitignore
+
+for file in `find . \( -name '.git' -o -name 'tmp' \) -prune -o -type f -print`; do
+  last_char=`tail -c 1 $file`
+  if [ "$last_char" != "" ]; then
+    echo $file
+  fi
+done

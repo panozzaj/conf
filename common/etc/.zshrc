@@ -139,6 +139,17 @@ alias rdpt="rake db:test:prepare"
 alias rdv="rake db:version"
 alias rjw="rake jobs:work"
 
+# Zeus (https://github.com/burke/zeus)
+alias tzt="time zeus test"
+alias z="zeus"
+alias zc="zeus console"
+alias zs="zeus server"
+alias zt="zeus test"
+alias zpc="zeus parallel_cucumber"
+alias zpr="zeus parallel_rspec"
+alias zstart="zeus start"
+alias bezstart="bundle exec zeus start"
+
 # Rails
 alias rials="rails"
 alias rg="rails g"

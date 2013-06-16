@@ -27,6 +27,7 @@ if [ -e "$hooks_directory" ] ; then
     # if any of the scripts exited with failure error code
     if [[ $? != 0 ]] ; then
       echo "COMMIT REJECTED!"
+      echo '(You can bypass this check using `git commit -n`)'
       exit 1
     fi
   else
