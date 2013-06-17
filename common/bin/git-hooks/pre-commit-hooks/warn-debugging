@@ -13,7 +13,7 @@ else # Initial commit: diff against an empty tree object
 fi
 
 files=`git diff --cached --name-only $against | grep -E $FILES_PATTERN`
-if [ -e "$files" ] ; then
+if [ "$files" ] ; then
   GREP_COLOR='8;34' grep --color --with-filename -n -E $WARNINGS $files &&
     echo "[WARN] Some debugging statements encountered."
 fi

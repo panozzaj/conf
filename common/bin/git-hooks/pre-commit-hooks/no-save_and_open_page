@@ -14,7 +14,7 @@ else # Initial commit: diff against an empty tree object
 fi
 
 files=`git diff --cached --name-only $against | grep -E $FILES_PATTERN`
-if [ -e "$files" ] ; then
+if [ "$files" ] ; then
   GREP_COLOR='4;5;37;41' grep --color --with-filename -n $FORBIDDEN $files &&
     echo '[ERROR] Found at least one save_and_open_page call. Exiting!' &&
     exit 1

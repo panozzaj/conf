@@ -12,16 +12,19 @@ else # Initial commit: diff against an empty tree object
 fi
 
 files=`git diff --cached --name-only $against | grep -E $FILES_PATTERN`
+if [ "$files" ] ; then
+  [ -z $DEBUG_HOOKS ] || echo "Found some ruby files"
 
-if [ -e "$files" ] ; then
-  failed=false
-  for file in $files; do
-    ruby -c $file
-    if [ $? != 0 ] ; then
-      failed=true
-    fi
-  done
-  if $failed ; then
+  if [ -e ".rvmrc" ] ; then
+    # load rvm
+    [ -s "$HOME/.rvm/scripts/rvm" ] && . "$HOME/.rvm/scripts/rvm"
+    # use this directory's rvm ruby / gemset if one exists
+    . '.rvmrc' > /dev/null
+  fi
+  [ -z $DEBUG_HOOKS ] || echo `which ruby`
+
+  echo "$files" | xargs -n 1 -P 4 ruby -c > /dev/null
+  if [ $? != 0 ] ; then
     echo '[ERROR] Found at least one Ruby error. Exiting!' && exit 1
   fi
 fi
