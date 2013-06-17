@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Run this after cloning to symlink things correctly
+# Or, run again to ensure the symlinks are up to date
+# (Hence, the script should be able to be run multiple times without issues)
+
+# https://github.com/webcoyote/chef-dotfiles wants configure.sh in the dotfiles directory.
+# What you want to symlink is in here
+echo 'Configuring dotfiles repo.'

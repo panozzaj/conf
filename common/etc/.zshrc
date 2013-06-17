@@ -257,6 +257,8 @@ alias gs="git status"
 alias gwtf="git wtf -A"
 alias gwtff="git fetch && git wtf -A"
 
+alias vag="vagrant"
+
 # vim shortcuts
 alias vimrc="$EDITOR ~/conf/common/etc/.vimrc"
 

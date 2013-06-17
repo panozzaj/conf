@@ -1,12 +1,12 @@
 [submodule "common/.vim/bundle/command-t"]
 	path = common/.vim/bundle/command-t
-	url = git@github.com:wincent/Command-T.git
+	url = https://github.com/wincent/Command-T.git
 [submodule "common/.vim/bundle/vimclojure"]
 	path = common/.vim/bundle/vimclojure
 	url = https://github.com/vim-scripts/VimClojure.git
 [submodule "common/.vim/bundle/supertab-continued"]
 	path = common/.vim/bundle/supertab-continued
-	url = git://github.com/vim-scripts/SuperTab-continued..git
+	url = https://github.com/vim-scripts/SuperTab-continued..git
 [submodule "common/.vim/bundle/tlib_vim"]
 	path = common/.vim/bundle/tlib_vim
 	url = https://github.com/tomtom/tlib_vim.git
@@ -42,7 +42,7 @@
 	url = https://github.com/mileszs/ack.vim.git
 [submodule "common/.vim/bundle/closetag.vim"]
 	path = common/.vim/bundle/closetag.vim
-	url = git://github.com/docunext/closetag.vim.git
+	url = https://github.com/docunext/closetag.vim.git
 [submodule "common/.vim/bundle/surround.vim"]
 	path = common/.vim/bundle/surround.vim
 	url = https://github.com/tpope/vim-surround.git
