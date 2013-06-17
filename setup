@@ -1,9 +1,64 @@
-#!/bin/sh
+#!/usr/bin/env ruby
 
 # Run this after cloning to symlink things correctly
 # Or, run again to ensure the symlinks are up to date
 # (Hence, the script should be able to be run multiple times without issues)
 
-# https://github.com/webcoyote/chef-dotfiles wants configure.sh in the dotfiles directory.
-# What you want to symlink is in here
-echo 'Configuring dotfiles repo.'
+puts 'Configuring dotfiles repo...'
+
+def symlink_if_not_present_or_existing_symlink src, dest = File.basename(src) 
+  if !File.exist?(dest) || File.symlink?(dest)
+    `ln -sf #{src} #{dest}`
+  else
+    abort <<-EOS
+      Wanted to create symbolic link #{src} -> #{dest}, but a
+      non-symlinked file was already there, which is unexpected. Aborting!
+    EOS
+  end
+end
+
+[
+ "conf/common/etc/.ackrc",
+ "conf/common/etc/.ackrc",
+ "conf/common/etc/.cvsignore",
+ "conf/common/etc/.gemrc",
+ "conf/common/etc/.gitconfig",
+ "conf/common/etc/.gitignore",
+ "conf/common/etc/.gvimrc",
+ "conf/common/etc/.irbrc",
+ "conf/common/etc/.vimrc",
+ "conf/common/etc/.zshrc.end",
+
+ "conf/common/.vim",
+].each do |filename|
+  symlink_if_not_present_or_existing_symlink filename
+end
+
+# set up vim temporary directories
+# based on my .vimrc custom configuration
+['backup', 'swap', 'undo'].each do |tmpfile|
+  `mkdir -p .vim/tmp/#{tmpfile}`
+end
+
+# need more intelligence here
+platform = 'ubuntu-12.04'
+
+File.open('.zshrc', 'w') do |f|
+  f.puts <<-EOS
+CONF=$HOME/conf
+conf=$HOME/conf
+PLATFORM='#{platform}'
+
+path_to_zshrc=etc/.zshrc
+source $CONF/init/$path_to_zshrc
+
+PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
+  EOS
+end
+
+`mkdir -p conf/hosts/#{ENV['HOST']}/etc`
+`touch conf/hosts/#{ENV['HOST']}/etc/.zshrc`
+`mkdir -p conf/platforms/#{platform}/etc`
+`touch conf/platforms/#{platform}/etc/.zshrc`
+
+puts 'Dotfiles successfully configured!'
