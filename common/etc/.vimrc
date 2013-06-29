@@ -273,12 +273,6 @@ nnoremap Y y$
 nnoremap D d$
 nnoremap du :diffupdate<CR>
 
-" Experimental
-"  toggle trailing whitespace highlighting with leader + s
-set listchars=tab:>-,trail:· ",eol:$
-nmap <silent> <leader>s ;set nolist!<CR>
-set list
-
 " Don't expand tab in Makefiles
 autocmd FileType make set noexpandtab
 

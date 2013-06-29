@@ -10,6 +10,12 @@ nnoremap <F1> <nop>
 
 set guioptions-=T " hide the toolbar
 
+" Experimental
+"  toggle trailing whitespace highlighting with leader + s
+set listchars=tab:>-,trail:· ",eol:$
+nmap <silent> <leader>s ;set nolist!<CR>
+set list
+
 if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome")
   set guifont=Inconsolata\ 12
 elseif has("gui_macvim") || has("gui_mac")
