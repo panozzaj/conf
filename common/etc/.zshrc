@@ -257,6 +257,7 @@ alias gs="git status"
 alias gwtf="git wtf -A"
 alias gwtff="git fetch && git wtf -A"
 
+alias va="vagrant"
 alias vag="vagrant"
 
 # vim shortcuts
@@ -272,6 +273,11 @@ alias pre="pretty"
 
 alias ant='color-ant'
 alias mvn='color-mvn'
+
+alias -g pxargs="xargs -n 1"
+
+# silver searcher - use less with color support for j/k support
+alias -g ag='ag --pager "less -R"'
 
 PATH+=":"$CONF/common/bin
 

@@ -1,0 +1,3 @@
+#!/bin/sh
+
+erb -x -P -T - app/views/retailer_mailer/payment_received_notice.html.erb | ruby -c

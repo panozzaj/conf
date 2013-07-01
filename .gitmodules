@@ -178,3 +178,6 @@
 [submodule "common/.vim/bundle/tomorrow-theme-vim"]
 	path = common/.vim/bundle/tomorrow-theme-vim
 	url = https://github.com/d11wtq/tomorrow-theme-vim.git
+[submodule "common/.vim/bundle/AnsiEsc.vim"]
+	path = common/.vim/bundle/AnsiEsc.vim
+	url = https://github.com/vim-scripts/AnsiEsc.vim.git

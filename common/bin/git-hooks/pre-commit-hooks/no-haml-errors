@@ -1,9 +1,9 @@
 #!/bin/bash
-# Git pre-commit hook to check all staged files for ruby check errors
+# Git pre-commit hook to check all staged files for Haml errors
 
-FILES_PATTERN='\.rb$'
+FILES_PATTERN='\.haml$'
 
-[ -z $DEBUG_HOOKS ] || echo 'Checking for Ruby errors...'
+[ -z $DEBUG_HOOKS ] || echo 'Checking for Haml errors...'
 
 if git-rev-parse --verify HEAD >/dev/null 2>&1 ; then
   against=HEAD
@@ -13,7 +13,7 @@ fi
 
 files=`git diff --cached --name-only $against | grep -E $FILES_PATTERN`
 if [ "$files" ] ; then
-  [ -z $DEBUG_HOOKS ] || echo "Found some ruby files"
+  [ -z $DEBUG_HOOKS ] || echo "Found some .haml files"
 
   if [ -e ".rvmrc" ] ; then
     # load rvm
@@ -23,10 +23,10 @@ if [ "$files" ] ; then
   fi
   [ -z $DEBUG_HOOKS ] || echo `which ruby`
 
-  echo "$files" | xargs -n 1 ruby -c > /dev/null
+  echo "$files" | xargs -n 1 haml --check --trace > /dev/null
   if [ $? != 0 ] ; then
-    echo '[ERROR] Found at least one Ruby error. Exiting!' && exit 1
+    echo '[ERROR] Found at least one Haml template error. Exiting!' && exit 1
   fi
 fi
 
-[ -z $DEBUG_HOOKS ] || echo 'No Ruby errors found.'
+[ -z $DEBUG_HOOKS ] || echo 'No ERB errors found.'

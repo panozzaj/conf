@@ -1,0 +1,41 @@
+#!/bin/bash
+# Git pre-commit hook to check all staged files for ERB errors
+
+FILES_PATTERN='\.erb$'
+
+[ -z $DEBUG_HOOKS ] || echo 'Checking for ERB errors...'
+
+if git-rev-parse --verify HEAD >/dev/null 2>&1 ; then
+  against=HEAD
+else # Initial commit: diff against an empty tree object
+  against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+fi
+
+files=`git diff --cached --name-only $against | grep -E $FILES_PATTERN`
+if [ "$files" ] ; then
+  [ -z $DEBUG_HOOKS ] || echo "Found some .erb files"
+
+  if [ -e ".rvmrc" ] ; then
+    # load rvm
+    [ -s "$HOME/.rvm/scripts/rvm" ] && . "$HOME/.rvm/scripts/rvm"
+    # use this directory's rvm ruby / gemset if one exists
+    . '.rvmrc' > /dev/null
+  fi
+  [ -z $DEBUG_HOOKS ] || echo `which ruby`
+
+  failed=false
+  for file in $files ; do
+    [ -z $DEBUG_HOOKS ] || echo "ERB checking: $file"
+    erb -x -P -T - $file | ruby -c > /dev/null
+    if [ $? != 0 ] ; then
+      echo "[ERROR] ERB error found in file: $file"
+      failed=true
+    fi
+  done
+
+  if [ $failed == true ]; then
+    echo '[ERROR] Found at least one ERB template error. Exiting!' && exit 1
+  fi
+fi
+
+[ -z $DEBUG_HOOKS ] || echo 'No ERB errors found.'

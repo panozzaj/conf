@@ -1,6 +1,15 @@
 #!/bin/sh
-if [ $1 ]; then
-  rake routes | grep $1
+
+[ -S .zeus.sock ] && z="zeus"
+
+if [ -n "$z" ]; then
+  echo "Running under zeus."
 else
-  rake routes
+  echo "No Zeus enviroment detected."
+fi
+
+if [ $1 ]; then
+  $z rake routes | grep $1
+else
+  $z rake routes
 fi
