@@ -1,7 +1,7 @@
 #!/bin/bash
 # Git pre-commit hook to check all staged files for git merge conflict markers
 
-ERRORS='(<<<<<<<|>>>>>>>)'
+FORBIDDEN='(<<<<<<<|>>>>>>>)'
 
 [ -z $DEBUG_HOOKS ] || echo 'Checking for git merge conflict markers...'
 
