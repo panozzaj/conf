@@ -9,4 +9,3 @@ If you want to use this repository, be sure to run `git submodule update --init`
 
 At the moment, I have high-level scripts that I symlink to from ~ in to_symlink, based on host. The rest gets taken care of more or less like the aforementioned article suggests. I don't really have a need for site-specific files. I could see transitioning some of the servers that I have to this scheme. Basically I just want to DRY up my configuration, and this seems like one way to do it. I could use some sort of rsync scripting system, or even polished configuration management systems, but it seems like my requirements are beyond what these can do.
 
-At some point it might theoretically be nice to have a script that symlinks the files for me, but the number of times that I start a new system is low. I'd be more inclined to do it if I was using Vagrant or something to provision development machines.
