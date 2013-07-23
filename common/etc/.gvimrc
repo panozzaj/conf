@@ -9,6 +9,7 @@ set undoreload=10000 "maximum number lines to save for undo on a buffer reload
 nnoremap <F1> <nop>
 
 set guioptions-=T " hide the toolbar
+set guioptions-=m " hide the menu bar
 
 " Experimental
 "  toggle trailing whitespace highlighting with leader + s
