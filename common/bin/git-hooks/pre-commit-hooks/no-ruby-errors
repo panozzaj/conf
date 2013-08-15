@@ -15,11 +15,17 @@ files=`git diff --cached --name-only $against | grep -E $FILES_PATTERN`
 if [ "$files" ] ; then
   [ -z $DEBUG_HOOKS ] || echo "Found some ruby files"
 
-  if [ -e ".rvmrc" ] ; then
-    # load rvm
-    [ -s "$HOME/.rvm/scripts/rvm" ] && . "$HOME/.rvm/scripts/rvm"
+  if [ -f "$rvm_path/scripts/rvm" ] ; then   # if the system has RVM installed
+    . "$rvm_path/scripts/rvm"  # load rvm
+
     # use this directory's rvm ruby / gemset if one exists
-    . '.rvmrc' > /dev/null
+    [ -e ".rvmrc" ] &&
+      . '.rvmrc' > /dev/null
+
+    # use the ruby-version / ruby-gemset if those are provided
+    [ -f ".ruby-version" ] &&
+      rvm use `cat .ruby-version` > /dev/null &&
+      rvm gemset use `cat .ruby-gemset` > /dev/null
   fi
   [ -z $DEBUG_HOOKS ] || echo `which ruby`
 
