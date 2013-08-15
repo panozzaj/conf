@@ -181,3 +181,6 @@
 [submodule "common/.vim/bundle/AnsiEsc.vim"]
 	path = common/.vim/bundle/AnsiEsc.vim
 	url = https://github.com/vim-scripts/AnsiEsc.vim.git
+[submodule "common/.vim/bundle/vim-node.js"]
+	path = common/.vim/bundle/vim-node.js
+	url = https://github.com/mmalecki/vim-node.js.git
