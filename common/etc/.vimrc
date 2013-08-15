@@ -131,8 +131,10 @@ iabbrev Btw By the way
 iabbrev imo in my opinion
 iabbrev Imo in my opinion
 
-" I commonly fat-finger this
+" I commonly fat-finger these ruby commands
 iabbrev 3nd end
+iabbrev ned end
+iabbrev od do
 
 
 nnoremap <leader>gg :sp Gemfile<CR>
@@ -158,7 +160,7 @@ let g:Tex_DefaultTargetFormat="pdf"
 " these should be in another file, but don't care for now
 
 " should also move things from vim72/** that I added into my personal .vim directory
-au BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please stop reading unless you are Anthony." | call Wp() | endif
+au BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please stop reading unless you are Anthony." | call Wp() | call GitGutterDisable() | endif
 
 au BufRead,BufNewFile *.txt set filetype=conf
 au BufRead,BufNewFile {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc,irb_tempfile*,Vagrantfile} set ft=ruby
@@ -198,6 +200,8 @@ function! PromoteToLet()
 endfunction
 :command! PromoteToLet :call PromoteToLet()
 nnoremap <leader>l :PromoteToLet<cr>
+
+nnoremap <leader>w :%s/\s\+$//<cr>
 
 let g:vimroom_scrolloff=2
 
@@ -272,6 +276,17 @@ onoremap <C-PageDown> <C-C><C-W>w
 nnoremap Y y$
 nnoremap D d$
 nnoremap du :diffupdate<CR>
+
+" When on command-line or search, Ctrl+A goes to beginning of line (like every
+" other Mac and Unix mapping.)
+cnoremap <C-A> <Home>
+
+
+" Experimental
+"  toggle trailing whitespace highlighting with leader + s
+set listchars=tab:>-,trail:· ",eol:$
+nmap <silent> <leader>s ;set nolist!<CR>
+set list
 
 " Don't expand tab in Makefiles
 autocmd FileType make set noexpandtab

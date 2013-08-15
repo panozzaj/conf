@@ -26,6 +26,7 @@
         #remove-merged-remotes = !git-remove-merged-remotes
         remove-merged-locals = !(git branch --merged | grep -v "\\*" | xargs -n 2 git branch -d)
         sub = submodule
+        g = grep --break --heading --line-number
 [branch]
         autosetupmerge = true
 [color]
@@ -55,3 +56,5 @@
 [user]
         name = Anthony Panozzo
         email = panozzaj@gmail.com
+[grep]
+        lineNumber = true

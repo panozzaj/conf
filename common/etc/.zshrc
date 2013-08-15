@@ -140,15 +140,11 @@ alias rdv="rake db:version"
 alias rjw="rake jobs:work"
 
 # Zeus (https://github.com/burke/zeus)
-alias tzt="time zeus test"
 alias z="zeus"
-alias zc="zeus console"
-alias zs="zeus server"
-alias zt="zeus test"
-alias zpc="zeus parallel_cucumber"
-alias zpr="zeus parallel_rspec"
-alias zstart="zeus start"
-alias bezstart="bundle exec zeus start"
+alias zc="time zeus cucumber"
+alias zt="time zeus test"
+alias zpc="time zeus parallel_cucumber"
+alias zpr="time zeus parallel_rspec"
 
 # Rails
 alias rials="rails"
@@ -191,6 +187,7 @@ function reset_database() {
 alias sgi="sudo gem install"
 alias sgu="sudo gem update"
 alias gi="gem install"
+alias gu="gem uninstall"
 
 alias cuc="cucumber"
 alias -g PIPE="|"
@@ -242,21 +239,28 @@ alias gcommr="git commit -m 'Remove"
 alias gcpc="git cherry-pick --continue"
 alias gd="git diff"
 alias gdc="git diff --cached"
-alias gdw="git diff --word-diff"
+alias gdw="git diff -w"
 alias gf="git fetch"
 alias gfwtf="git fetch && git wtf -A"
 alias gl="git log --oneline --graph --decorate"
 alias glh="gl -10"
 alias glp="git log -p"
+alias glpw="git log -p -w"
 alias gmt="git mergetool"
 alias gp="git push"
 alias gpop="git pop"
 alias gpr="git pull --rebase"
 alias grc="git rebase --continue"
+alias grlh="git reflog | head"
+alias grs="git rebase --skip"
 alias gs="git status"
 alias gwtf="git wtf -A"
 alias gwtff="git fetch && git wtf -A"
 
+# javascript
+alias jsl="jslint -process"
+
+# vagrant
 alias va="vagrant"
 alias vag="vagrant"
 
@@ -277,7 +281,7 @@ alias mvn='color-mvn'
 alias -g pxargs="xargs -n 1"
 
 # silver searcher - use less with color support for j/k support
-alias -g ag='ag --pager "less -R"'
+alias -g ag='ag -i --pager "less -R"'
 
 PATH+=":"$CONF/common/bin
 
