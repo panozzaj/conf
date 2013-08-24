@@ -139,6 +139,7 @@ iabbrev od do
 
 nnoremap <leader>gg :sp Gemfile<CR>
 nnoremap <leader>gr :sp config/routes.rb<CR>
+nnoremap <leader>p ds(i 
 
 " copy current file name (relative/absolute) to system clipboard
 if has("mac") || has("gui_macvim") || has("gui_mac")
