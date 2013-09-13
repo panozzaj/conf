@@ -7,6 +7,8 @@ set nocompatible
 set history=1000 " lines of history to remember
 runtime macros/matchit.vim
 
+set esckeys " no delay for ESC, but cannot use ESC as beginning of key sequence (which is fine by me)
+
 highlight Pmenu guibg=brown gui=bold
 syntax enable
 
@@ -78,7 +80,11 @@ fun! Wp()
   set nonumber
   set spell spelllang=en_us
   set lbr
+  set nojoinspaces " when joining paragraphs, separate by one space
   set nolist " lbr command relies on list being off :(
+  " show the last line on the screen even if it doesn't fit, which is common for
+  " long lines when writing
+  set display=lastline
   if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome")
     set guifont=Inconsolata\ 16
   elseif has("gui_macvim") || has("gui_mac")
@@ -87,6 +93,8 @@ fun! Wp()
     set guifont=Inconsolata:h16
   end
 endfu
+
+
 
 cabbr cdhere cd %:p:h
 cabbr mkdirhere !mkdir -p %:h
@@ -119,22 +127,31 @@ fun! Gtd()
   cd Documents/gtd
 endfu
 
-iabbrev dts <C-R>=strftime("%Y%m%d - %H%M")<CR>
+fun! BasicAbbreviations()
+  iabbrev dts <C-R>=strftime("%Y%m%d - %H%M")<CR>
+  iabbrev dtt <C-R>=strftime("%Y%m%d")<CR>
 
-iabbrev wrt with respect to
-iabbrev otoh on the other hand
-iabbrev btw by the way
-iabbrev Wrt With respect to
-iabbrev Otoh On the other hand
-iabbrev Btw By the way
-iabbrev imo in my opinion
-iabbrev Imo in my opinion
+  iabbrev wrt with respect to
+  iabbrev otoh on the other hand
+  iabbrev btw by the way
+  iabbrev Wrt With respect to
+  iabbrev Otoh On the other hand
+  iabbrev Btw By the way
+  iabbrev imo in my opinion
+  iabbrev Imo in my opinion
 
-" I commonly fat-finger these ruby commands
-iabbrev 3nd end
-iabbrev ned end
-iabbrev od do
+  " I commonly fat-finger these ruby commands
+  iabbrev 3nd end
+  iabbrev ned end
+  iabbrev od do
 
+  " some spelling mistakes not caught by autocorrect.vim
+  iabbrev testamonial testimonial
+
+  " programming expansions
+  iabbrev prypry require 'pry'; binding.pry
+endfu
+call BasicAbbreviations()
 
 nnoremap <leader>gg :sp Gemfile<CR>
 nnoremap <leader>gr :sp config/routes.rb<CR>
@@ -144,10 +161,14 @@ nnoremap <leader>p ds(i
 if has("mac") || has("gui_macvim") || has("gui_mac")
   nnoremap <leader>cf :let @*=expand("%")<CR>
   nnoremap <leader>cF :let @*=expand("%:p")<CR>
+  nnoremap <leader>ct :let @*=expand("%:t")<CR>
+  nnoremap <leader>ch :let @*=expand("%:p:h")<CR>
 endif
 if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome") || has("unix")
   nnoremap <leader>cf :let @+=expand("%")<CR>
   nnoremap <leader>cF :let @+=expand("%:p")<CR>
+  nnoremap <leader>ct :let @+=expand("%:t")<CR>
+  nnoremap <leader>ch :let @+=expand("%:p:h")<CR>
 endif
 
 " latex-suite
@@ -166,16 +187,12 @@ au BufRead,BufNewFile *.txt set filetype=conf
 au BufRead,BufNewFile {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc,irb_tempfile*,Vagrantfile} set ft=ruby
 au FileType conf set foldmethod=manual
 au BufRead,BufNewFile *.less setfiletype less
-"au BufRead,BufNewFile *.ino setfiletype ino
 au BufRead,BufNewFile *.md set filetype=markdown
-
-iabbrev prypry require 'pry'; binding.pry
-
 
 " fabricator file shortcut
 autocmd User Rails Rnavcommand fabricator spec/fabricators -suffix=_fabricator.rb -default=model()
 
-inoremap <C-BS> <C-W>
+inoremap <C-BS> <C-W> " Ctrl+W to kill word backward in insert mode (like other apps)
 
 " Command-T overrides
 let g:CommandTMatchWindowAtTop = 1 " want the best command-t matches at the top so they never move
@@ -203,10 +220,15 @@ nnoremap <leader>l :PromoteToLet<cr>
 
 nnoremap <leader>w :%s/\s\+$//<cr>
 
-let g:vimroom_scrolloff=2
-
-" could make this only for ruby file types
-ia rdbg require 'debug'; Debugger.start; Debugger.settings[:autoeval] = 1; Debugger.settings[:autolist] = 1; debugger
+function! SetExecutableBit()
+  let fname = expand("%:p")
+  checktime
+  execute "au FileChangedShell " . fname . " :echo"
+  silent !chmod a+x %
+  checktime
+  execute "au! FileChangedShell " . fname
+endfunction
+command! Xbit call SetExecutableBit()
 
 " via: http://whynotwiki.com/Vim
 " Ruby
@@ -282,8 +304,7 @@ nnoremap du :diffupdate<CR>
 cnoremap <C-A> <Home>
 
 
-" Experimental
-"  toggle trailing whitespace highlighting with leader + s
+" Toggle trailing whitespace highlighting with leader + s  (default on)
 set listchars=tab:>-,trail:· ",eol:$
 nmap <silent> <leader>s ;set nolist!<CR>
 set list
@@ -355,7 +376,7 @@ endfunction
 
 let g:gitgutter_eager = 0 " prevent reload of all buffers on window focus (which takes a long time)
 
-nnoremap <leader>c <Esc>:call RandomColorscheme()<CR>
+nnoremap <leader>co <Esc>:call RandomColorscheme()<CR>
 
 nnoremap <leader>h :highlight clear SignColumn<CR>
 
@@ -501,11 +522,12 @@ endfunction
 " http://pastebin.com/f46e9ffca
 " toggle spellcheck and autocorrect
 function! <SID>ToggleSpellCorrect()
-    "if &spell
-        "iabclear
-    "else
-        "runtime autocorrect.vim
-    "endif
+    if &spell
+        iabclear
+        call BasicAbbreviations()
+    else
+        runtime autocorrect.vim
+    endif
     setlocal spell! spell?
 endfunction
 map <silent><F12>       ;<C-U>call <SID>ToggleSpellCorrect()<CR>
@@ -515,14 +537,6 @@ imap<silent><F12>       <C-O>;call <SID>ToggleSpellCorrect()<CR>
 " enter command mode without using shift key
 noremap ; :
 noremap : ;
-
-" Settings for VimClojure
-let vimclojure#HighlightBuiltins = 1
-let vimclojure#ParenRainbow = 1
-
-
-" Potentially dangerous, but useful at times - when vimrc is edited, reload it
-"autocmd! bufwritepost vimrc source ~/.vim_runtime/vimrc
 
 "  In visual mode when you press * or # to search for the current selection
 vnoremap <silent> * :call VisualSearch('f')<CR>
@@ -557,12 +571,6 @@ endfunction
 " Remove the Windows ^M - when the encodings get messed up
 noremap <Leader>mm mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
 
-" Keep search matches in the middle of the window.
-"nnoremap * *zzzv
-"nnoremap # #zzzv
-"nnoremap n nzzzv
-"nnoremap N Nzzzv
-
 set foldlevelstart=0
 
 
@@ -582,6 +590,8 @@ function! s:align()
   endif
 endfunction
 
+" When editing git commit message, go to top of the file (forgetting any saved
+" positions)
 autocmd BufReadPost COMMIT_EDITMSG exe "normal! gg"
 
 " Convert Ruby 1.8 hash rockets to 1.9 JSON style hashes.
@@ -591,35 +601,14 @@ command! -bar -range=% NotRocket execute '<line1>,<line2>s/:\(\w\+\)\s*=>/\1:/e'
 
 nnoremap <leader>9 :NotRocket<CR>
 
-" Space to toggle folds. (commenting out because it messes with space = advance cursor)
-"nnoremap <Space> za
-"vnoremap <Space> za
-
-
-"function! MyFoldText() " {{{
-    "let line = getline(v:foldstart)
-
-    "let nucolwidth = &fdc + &number * &numberwidth
-    "let windowwidth = winwidth(0) - nucolwidth - 3
-    "let foldedlinecount = v:foldend - v:foldstart
-
-    "" expand tabs into spaces
-    "let onetab = strpart('          ', 0, &tabstop)
-    "let line = substitute(line, '\t', onetab, 'g')
-
-    "let line = strpart(line, 0, windowwidth - 2 -len(foldedlinecount))
-    "let fillcharcount = windowwidth - len(line) - len(foldedlinecount)
-    "return line . '…' . repeat(" ",fillcharcount) . foldedlinecount . '…' . ' '
-"endfunction " }}}
-"set foldtext=MyFoldText()
-
 " kill manual key.
 nnoremap K <nop>
-
 
 " create buffer on `gf` if the file does not currently exist (slight
 " modification from help file to accommodate colon remapping)
 nnoremap gf :e <cfile><CR>
+
+set formatoptions+=j	" 'Where it makes sense, remove a comment leader when joining lines.'
 
 " function for working with files with hard line breaks
 cabbr eighty call Eighty()
@@ -645,3 +634,6 @@ else
   call RandomColorscheme()
 endif
 
+comma! -nargs=1 Silent
+      \ | execute ':silent !'.<q-args>
+      \ | execute ':redraw!'

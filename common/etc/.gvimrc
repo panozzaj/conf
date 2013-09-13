@@ -4,8 +4,8 @@ set undodir=~/.vim/tmp/undo//
 set undofile
 set undoreload=10000 "maximum number lines to save for undo on a buffer reload
 
-" kill help key
 "set fuoptions=maxvert,maxhorz
+" kill help key
 nnoremap <F1> <nop>
 
 set guioptions-=T " hide the toolbar

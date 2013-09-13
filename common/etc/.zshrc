@@ -9,7 +9,6 @@ setopt share_history
 setopt APPEND_HISTORY
 
 autoload -Uz run-help
-autoload -Uz run-help-git
 
 export HELPDIR=~/zsh_help
 
@@ -87,7 +86,10 @@ function rationalize-dot {
 zle -N rationalize-dot
 bindkey . rationalize-dot
 
-export LESS='-R -F -W -X'
+# -I = case insensitive search
+# what do the other options mean?
+export LESS='-R -F -W -X -I'
+
 alias -g L='| less'
 alias -g NV='--no-verify'
 alias -g GV='grep -v'
@@ -281,7 +283,10 @@ alias mvn='color-mvn'
 alias -g pxargs="xargs -n 1"
 
 # silver searcher - use less with color support for j/k support
-alias -g ag='ag -i --pager "less -R"'
+alias ag='ag -i --pager "less -R"'
+
+# print STDERR in red
+alias -g errred='2> >(while read line; do echo -e "\e[01;31m$line\e[0m" >&2; done)'
 
 PATH+=":"$CONF/common/bin
 

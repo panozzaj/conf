@@ -4,9 +4,15 @@
 # second - git revision to diff         (defaults to current)
 # third  - git revision to diff against (defaults to HEAD)
 zmodload zsh/mathfunc
-filename="file_for_word_count.txt"
+filename="/tmp/file_for_word_count.txt"
 git diff --word-diff=porcelain $2 -- $1 > $filename
-added=`egrep "^\+" $filename | wc -w`
-subtracted=`egrep "^\-" $filename | wc -w`
-echo $(( $added - $subtracted ))
+
+# sed stuff is to strip out leading/trailing whitespace
+added=`egrep "^\+" $filename | wc -w | sed -e 's/^ *//g' -e 's/ *$//g'`
+subtracted=`egrep "^\-" $filename | wc -w | sed -e 's/^ *//g' -e 's/ *$//g'`
+
+echo "\e[0;34m${added}\tAdded\e[0m"
+echo "\e[1;33m${subtracted}\tSubtracted\e[0m"
+echo "\e[0;32m$(( $added - $subtracted ))\tNet\e[0m"
+
 rm $filename
