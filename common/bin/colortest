@@ -2,6 +2,9 @@
 
 # by entheon, do whatever the hell you want with this file
 
+# AP 20130906 - I like the wide display better
+$ARGV[0] = "-w";
+
 print "\n";
 print "**************************\n";
 print "*XTERM 256Color Test Chart\n";
