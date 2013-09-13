@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 
+# Would be nice to make this a bash script instead so it can be run on a box
+# that does not need Ruby installed.
+
 # Run this after cloning to symlink things correctly
 # Or, run again to ensure the symlinks are up to date
 # (Hence, the script should be able to be run multiple times without issues)
@@ -64,5 +67,14 @@ source $CONF/init/$path_to_zshrc
 PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
   EOS
 end
+
+# run rake make inside ~/.vim/bundle/command-t
+# otherwise we get:
+# command-t.vim could not load the C extension
+# Please see INSTALLATION and TROUBLE-SHOOTING in the help
+# For more information type:    :help command-t
+#`cd ~/conf/common/.vim/bundle/Command-T`
+#`rvm use system`
+#`rake make`
 
 puts 'Dotfiles successfully configured!'
