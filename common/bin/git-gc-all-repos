@@ -1,0 +1,14 @@
+#!/bin/sh
+
+echo "Running \`git gc\` on all git repos under the current working directory: `pwd`"
+
+find . -type d -name .git | while read dir; do
+  echo ""
+  echo "Found .git dir in '$dir', so going to run \`git gc\` there"
+  pushd "$dir"
+  git gc
+  popd
+done
+
+echo ""
+echo "done gc'ing"
