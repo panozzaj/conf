@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# Find all git repos beneath the current directory and see what commits they
+# have that are unpushed.
+
+find . -type d -name .git | while read dir; do
+  pushd "$dir/.." > /dev/null
+  unpushed_cmd="git log --no-pager --branches --not --remotes --simplify-by-decoration --decorate --oneline --stat"
+  stash_cmd="git --no-pager stash list --stat"
+  if [[ -n `$unpushed_cmd` || -n `$stash_cmd` ]]; then
+    echo "$dir" | sed 's/\/.git$//'
+    $unpushed_cmd
+    $stash_cmd
+    echo ""
+  fi
+  popd > /dev/null
+done
