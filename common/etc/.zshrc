@@ -221,7 +221,7 @@ alias zshrc="$EDITOR ~/conf/common/etc/.zshrc"
 
 # git shortcuts
 alias g="git"
-alias gaa="git add -A"
+alias gaa="git add -A ."
 alias ganc="git amend-nc"
 alias gap="git add -p"
 alias gb="git branch"
@@ -256,6 +256,8 @@ alias grc="git rebase --continue"
 alias grlh="git reflog | head"
 alias grs="git rebase --skip"
 alias gs="git status"
+alias gski="git stash --keep-index"
+alias gstash="git stash"
 alias gwtf="git wtf -A"
 alias gwtff="git fetch && git wtf -A"
 
@@ -299,4 +301,5 @@ export RUBY_HEAP_MIN_SLOTS=800000
 export RUBY_HEAP_FREE_MIN=100000
 export RUBY_HEAP_SLOTS_INCREMENT=300000
 export RUBY_HEAP_SLOTS_GROWTH_FACTOR=1
-export RUBY_GC_MALLOC_LIMIT=79000000
+export RUBY_GC_MALLOC_LIMIT=90000000
+export RUBY_FREE_MIN=200000

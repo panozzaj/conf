@@ -4,14 +4,18 @@
 # have that are unpushed.
 
 find . -type d -name .git | while read dir; do
-  pushd "$dir/.." > /dev/null
-  unpushed_cmd="git log --branches --not --remotes --simplify-by-decoration --decorate --oneline --stat"
-  stash_cmd="git --no-pager stash list --stat"
-  if [[ -n `$unpushed_cmd` || -n `$stash_cmd` ]]; then
-    echo "$dir" | sed 's/\/.git$//'
+  pushd "$dir" > /dev/null
+  pushd .. > /dev/null
+  unpushed_cmd="git --no-pager log --branches --not --remotes --simplify-by-decoration --decorate --oneline --stat"
+  stash_cmd="git --no-pager stash list"
+  uncommitted_files_cmd="git --no-pager status --porcelain"
+  if [[ -n `$unpushed_cmd` || -n `$stash_cmd` || -n `$uncommitted_files_cmd` ]]; then
+    echo "$dir"
     $unpushed_cmd
     $stash_cmd
+    $uncommited_files_cmd
     echo ""
   fi
+  popd > /dev/null
   popd > /dev/null
 done

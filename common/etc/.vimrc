@@ -15,7 +15,7 @@ syntax enable
 set showcmd
 
 set undolevels=1000 "maximum number of changes that can be undone
-set laststatus=1 " always show statusline, unless one file present
+set laststatus=1    " always show statusline, unless one file present
 
 " open split buffers below and to right instead of above and to left
 set splitbelow
@@ -28,13 +28,6 @@ set number
 set ignorecase
 set is
 set wrap
-
-let g:closetag_html_style=1
-"source ~/.vim/closetag.vim
-
-let g:NERDShutUp=1
-let g:Twiki_FoldAtHeadings=1
-
 set visualbell " don't beep at me
 set wildmode=longest,list " bash-style file completion
 
@@ -53,38 +46,52 @@ set directory=~/.vim/tmp/swap//
 set mouse=a " mouse support for terminal vim
 set title " terminal title set to buffer name
 
-"set foldmethod=syntax
 set scrolloff=2 " leave a gap between bottom of window and cursor, if possible
 
 set synmaxcol=200 " vim is often slow with long lines that are syntax highlighted, so limit to 200 characters in length
 
-cabbr manual set foldmethod=manual
-
 set guioptions-=r " remove sidebars
 set guioptions-=L " remove sidebars
+
+set foldmethod=syntax
+set foldlevelstart=0
+
+
 
 " ctrl-p plugin
 let g:ctrlp_match_window_bottom=0 " put at top
 let g:ctrlp_match_window_reversed=0 " reverse order of items
 
+let g:closetag_html_style=1
+"source ~/.vim/closetag.vim
+
+" would need to change for linux or when I update LanguageTool version
+let g:languagetool_jar = '/usr/local/Cellar/languagetool/2.2/libexec/languagetool-commandline.jar'
+let g:languagetool_disable_rules = 'WHITESPACE_RULE,EN_QUOTES'
+
+let g:NERDShutUp=1
 
 
 
-"cabbr wp call Wp()
 fun! Wp()
-  source ~/.vim/autocorrect.vim
+  set nonumber              " remove line numbering when writing
+  set spell spelllang=en_us " enable spell checking
+  set linebreak             " break soft-wrapped lines at word boundaries
+  set nojoinspaces          " when joining paragraphs, separate by one space
+  set nolist                " lbr command relies on list being off :(
+  set display=lastline      " show the last line on the screen even if it doesn't fit,
+                            " which is common for long lines when writing
+
+  " get autocorrections
+  call AutoCorrect()
+
+  " move about as if soft-wrapped lines were actual lines
   nnoremap j gj
   nnoremap k gk
   nnoremap 0 g0
   nnoremap $ g$
-  set nonumber
-  set spell spelllang=en_us
-  set lbr
-  set nojoinspaces " when joining paragraphs, separate by one space
-  set nolist " lbr command relies on list being off :(
-  " show the last line on the screen even if it doesn't fit, which is common for
-  " long lines when writing
-  set display=lastline
+
+  " set up a more readable font when writing mode invoked
   if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome")
     set guifont=Inconsolata\ 16
   elseif has("gui_macvim") || has("gui_mac")
@@ -92,45 +99,13 @@ fun! Wp()
   elseif has("gui_win32")
     set guifont=Inconsolata:h16
   end
-endfu
 
-
-
-cabbr cdhere cd %:p:h
-cabbr mkdirhere !mkdir -p %:h
-
-cabbr autocommit call Autocommit()
-fun! Autocommit()
-  au BufWritePost * silent !git add <afile>
-  au BufWritePost * silent !git commit <afile> -m 'Generated commit'
-endfu
-
-fun! Writing()
-  call Autocommit()
-  call Wp()
-  colo lettuce
-endfu
-
-fun! Blog()
-  call Writing()
-  cd ~/Dropbox/blog_stuff
-  set syntax=markdown
-endfu
-
-fun! Log()
-  call Writing()
-  cd Documents/logs
-endfu
-
-fun! Gtd()
-  call Wp()
-  cd Documents/gtd
+  " highlight double words ("word word")
+  syn match doubleWord "\c\<\(\a\+\)\_s\+\1\>"
+  hi def link doubleWord Error
 endfu
 
 fun! BasicAbbreviations()
-  iabbrev dts <C-R>=strftime("%Y%m%d - %H%M")<CR>
-  iabbrev dtt <C-R>=strftime("%Y%m%d")<CR>
-
   iabbrev wrt with respect to
   iabbrev otoh on the other hand
   iabbrev btw by the way
@@ -147,15 +122,38 @@ fun! BasicAbbreviations()
 
   " some spelling mistakes not caught by autocorrect.vim
   iabbrev testamonial testimonial
+  iabbrev testamonials testimonials
+  iabbrev Testamonial Testimonial
+  iabbrev Testamonials Testimonials
+
+  iabbrev soultion solution
+  iabbrev soultions solutions
+  iabbrev Soultion Solution
+  iabbrev Soultions Solutions
 
   " programming expansions
   iabbrev prypry require 'pry'; binding.pry
+
+  " Some helpful shortcuts
+  iabbrev dtt <C-R>=strftime("%Y%m%d")<CR>
+  iabbrev dts <C-R>=strftime("%Y%m%d - %H%M")<CR>
 endfu
 call BasicAbbreviations()
 
-nnoremap <leader>gg :sp Gemfile<CR>
-nnoremap <leader>gr :sp config/routes.rb<CR>
-nnoremap <leader>p ds(i 
+
+
+cabbr cdhere cd %:p:h
+cabbr mkdirhere !mkdir -p %:h
+
+cabbr autocommit call Autocommit()
+fun! Autocommit()
+  au BufWritePost * silent !git add <afile>
+  au BufWritePost * silent !git commit <afile> -m 'Generated commit'
+endfu
+
+nnoremap <leader>p ds(i                       " does not work? remove surround parens and add a space
+nnoremap <leader>y :YRShow<CR>                " show kill ring list
+nnoremap <leader>z zMzv                       " show only this fold section
 
 " copy current file name (relative/absolute) to system clipboard
 if has("mac") || has("gui_macvim") || has("gui_mac")
@@ -172,27 +170,35 @@ if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome") || has("unix")
 endif
 
 " latex-suite
-filetype plugin on
 set grepprg=grep\ -nH\ $*
-filetype indent on
 let g:tex_flavor='latex'
 let g:Tex_DefaultTargetFormat="pdf"
 
 " these should be in another file, but don't care for now
 
 " should also move things from vim72/** that I added into my personal .vim directory
-au BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please stop reading unless you are Anthony." | call Wp() | call GitGutterDisable() | endif
+autocmd BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please stop reading unless you are Anthony." | call Wp() | endif
 
-au BufRead,BufNewFile *.txt set filetype=conf
-au BufRead,BufNewFile {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc,irb_tempfile*,Vagrantfile} set ft=ruby
-au FileType conf set foldmethod=manual
-au BufRead,BufNewFile *.less setfiletype less
-au BufRead,BufNewFile *.md set filetype=markdown
+autocmd BufRead,BufNewFile *.txt set filetype=conf
+autocmd BufRead,BufNewFile {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc,irb_tempfile*,Vagrantfile} set ft=ruby
+autocmd FileType conf set foldmethod=manual
+autocmd BufRead,BufNewFile *.less setfiletype less
+autocmd BufRead,BufNewFile *.md set filetype=markdown
+
+" Don't expand tab in Makefiles
+autocmd FileType make set noexpandtab
+
+" Use the javascript syntax highlighting for JSON files
+autocmd BufNewFile,BufRead *.json set ft=javascript
+autocmd BufNewFile,BufRead *.plist set ft=xml
+autocmd BufRead,BufNewFile *.erb set filetype=eruby.html
+autocmd BufRead,BufNewFile *.scss set filetype=scss
 
 " fabricator file shortcut
 autocmd User Rails Rnavcommand fabricator spec/fabricators -suffix=_fabricator.rb -default=model()
 
-inoremap <C-BS> <C-W> " Ctrl+W to kill word backward in insert mode (like other apps)
+" Ctrl+W to kill word backward in insert mode (like other apps)
+inoremap <C-BS> <C-W>
 
 " Command-T overrides
 let g:CommandTMatchWindowAtTop = 1 " want the best command-t matches at the top so they never move
@@ -285,16 +291,6 @@ inoremap <C-S-Tab> <C-O><C-W>W
 cnoremap <C-S-Tab> <C-C><C-W>W
 onoremap <C-S-Tab> <C-C><C-W>W
 
-noremap <C-PageUp> <C-W>W
-inoremap <C-PageUp> <C-O><C-W>W
-cnoremap <C-PageUp> <C-C><C-W>W
-onoremap <C-PageUp> <C-C><C-W>W
-
-noremap <C-PageDown> <C-W>w
-inoremap <C-PageDown> <C-O><C-W>w
-cnoremap <C-PageDown> <C-C><C-W>w
-onoremap <C-PageDown> <C-C><C-W>w
-
 nnoremap Y y$
 nnoremap D d$
 nnoremap du :diffupdate<CR>
@@ -309,15 +305,6 @@ set listchars=tab:>-,trail:· ",eol:$
 nmap <silent> <leader>s ;set nolist!<CR>
 set list
 
-" Don't expand tab in Makefiles
-autocmd FileType make set noexpandtab
-
-" Use the javascript syntax highlighting for JSON files
-autocmd BufNewFile,BufRead *.json set ft=javascript
-autocmd BufNewFile,BufRead *.plist set ft=xml
-autocmd BufRead,BufNewFile *.erb set filetype=eruby.html
-autocmd BufRead,BufNewFile *.scss set filetype=scss
-
 set wildignore=*.o,*.class,*.png,*.pdf,*.ps,*.gif,*.jpg,*.aux,*.toc,*.cod,*.bak,*.mp3,*.m4a,*.wmv,*.mpg,*.mov,*.doc,*.bc
 set wildignore+=vendor/rails/**
 set wildignore+=build/android  " Titanium
@@ -328,38 +315,38 @@ let spell_auto_type="tex,txt"
 " Highlight common debugging statements that should not be committed (one
 " layer of protection, at least)
 " http://stackoverflow.com/questions/11269066/toggling-a-match-in-vimrc
-highlight Debugging ctermbg=yellow ctermfg=blue guibg=yellow guifg=blue
-highlight link MaybeDebugging Debugging
-" could make these specific to the language used (filetype) but fine for now
-call matchadd("MaybeDebugging", "debugger")
-call matchadd("MaybeDebugging", "puts")
-call matchadd("MaybeDebugging", "show me the page")
-call matchadd("MaybeDebugging", "and I debug")
-call matchadd("MaybeDebugging", "console.log")
-call matchadd("MaybeDebugging", "console.dir")
-call matchadd("MaybeDebugging", "alert")
+"highlight Debugging ctermbg=yellow ctermfg=blue guibg=yellow guifg=blue
+"highlight link MaybeDebugging Debugging
+"" could make these specific to the language used (filetype) but fine for now
+"call matchadd("MaybeDebugging", "debugger")
+"call matchadd("MaybeDebugging", "puts")
+"call matchadd("MaybeDebugging", "show me the page")
+"call matchadd("MaybeDebugging", "and I debug")
+"call matchadd("MaybeDebugging", "console.log")
+"call matchadd("MaybeDebugging", "console.dir")
+"call matchadd("MaybeDebugging", "alert")
 
-function TurnOnDebuggingMatching()
-  highlight link MaybeDebugging Debugging
-  let s:hilightdebugging = 1
-endfunction
+"function TurnOnDebuggingMatching()
+"  highlight link MaybeDebugging Debugging
+"  let s:hilightdebugging = 1
+"endfunction
+"
+"function TurnOffDebuggingMatching()
+"  highlight link MaybeDebugging NONE
+"  let s:hilightdebugging = 0
+"endfunction
+"
+"function ToggleDebuggingMatching()
+"  if s:hilightdebugging
+"    call TurnOffDebuggingMatching()
+"  else
+"    call TurnOnDebuggingMatching()
+"  endif
+"endfunction
+"
+"nnoremap <leader>d :call ToggleDebuggingMatching()<CR>
 
-function TurnOffDebuggingMatching()
-  highlight link MaybeDebugging NONE
-  let s:hilightdebugging = 0
-endfunction
-
-function ToggleDebuggingMatching()
-  if s:hilightdebugging
-    call TurnOffDebuggingMatching()
-  else
-    call TurnOnDebuggingMatching()
-  endif
-endfunction
-
-nnoremap <leader>d :call ToggleDebuggingMatching()<CR>
-
-call TurnOnDebuggingMatching()
+"call TurnOnDebuggingMatching()
 
 " Colorscheme stuff
 function RandomColorscheme()
@@ -369,9 +356,9 @@ function RandomColorscheme()
   exe 'so ' . mycolors[i]
   unlet mycolors
   highlight clear SignColumn " important for vim-gitgutter plugin to not look strange
-  if s:hilightdebugging
-    call TurnOnDebuggingMatching()  " restore my custom debugging highlighting if we were using it
-  endif
+  "if s:hilightdebugging
+  "  call TurnOnDebuggingMatching()  " restore my custom debugging highlighting if we were using it
+  "endif
 endfunction
 
 let g:gitgutter_eager = 0 " prevent reload of all buffers on window focus (which takes a long time)
@@ -526,7 +513,7 @@ function! <SID>ToggleSpellCorrect()
         iabclear
         call BasicAbbreviations()
     else
-        runtime autocorrect.vim
+        call AutoCorrect()
     endif
     setlocal spell! spell?
 endfunction
@@ -571,7 +558,6 @@ endfunction
 " Remove the Windows ^M - when the encodings get messed up
 noremap <Leader>mm mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
 
-set foldlevelstart=0
 
 
 " for lining cucumber tables up
@@ -608,7 +594,7 @@ nnoremap K <nop>
 " modification from help file to accommodate colon remapping)
 nnoremap gf :e <cfile><CR>
 
-set formatoptions+=j	" 'Where it makes sense, remove a comment leader when joining lines.'
+set formatoptions+=j " 'Where it makes sense, remove a comment leader when joining lines.'
 
 " function for working with files with hard line breaks
 cabbr eighty call Eighty()
