@@ -55,7 +55,7 @@ set guioptions-=L " remove sidebars
 
 set foldmethod=syntax
 set foldlevelstart=0
-
+set nofoldenable      " disable folding
 
 
 " ctrl-p plugin
@@ -579,6 +579,8 @@ endfunction
 " When editing git commit message, go to top of the file (forgetting any saved
 " positions)
 autocmd BufReadPost COMMIT_EDITMSG exe "normal! gg"
+" Same for `hub pull-request` file name
+autocmd BufReadPost PULLREQ_EDITMSG exe "normal! gg"
 
 " Convert Ruby 1.8 hash rockets to 1.9 JSON style hashes.
 " Based on https://github.com/hashrocket/dotmatrix/commit/6c77175adc19e94594e8f2d6ec29371f5539ceeb

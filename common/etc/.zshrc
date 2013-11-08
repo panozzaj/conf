@@ -58,6 +58,9 @@ bindkey "\e[3~" delete-char
 # General utility and correction
 #####
 
+# otherwise I may delete files unintentionally, etc.
+alias r='echo "Neutered r command"'
+
 ### Some general shortcuts
 fn () {
     if [ $# -eq 0 ]; then
@@ -129,17 +132,19 @@ alias bul="bundle update --local"
 # Rake
 alias ®="rake "
 alias rkae="rake"
-alias rdm="rake db:migrate"
+alias rdm="echo 'rake db:migrate' && rake db:migrate"
 alias rdr="rake db:rollback"
 alias rdd="rake db:drop"
 alias rdc="rake db:create"
+alias rdmall="rdm && rdtp && rpp"
 alias rdmtp="rdm && rdtp"
 alias rdsl="rake db:schema:load"
 alias rds="rake db:seed"
-alias rdtp="rake db:test:prepare"
+alias rdtp="echo 'rake db:test:prepare' && rake db:test:prepare"
 alias rdpt="rake db:test:prepare"
 alias rdv="rake db:version"
 alias rjw="rake jobs:work"
+alias rpp="echo 'rake parallel:prepare' && rake parallel:prepare"
 
 # Zeus (https://github.com/burke/zeus)
 alias z="zeus"
@@ -199,12 +204,6 @@ function gcuc() {
   git status --porcelain | grep -v -e '^ D' | grep -v -e '^D' | awk 'match($1, ""){print $2}' | grep features/ | xargs cucumber
 }
 
-# RSpec
-alias rsm="rake spec:models"
-alias rsc="rake spec:controllers"
-alias rsv="rake spec:views"
-alias rsh="rake spec:helpers"
-
 # Pow
 alias psr="powify server restart"
 
@@ -235,9 +234,6 @@ alias gco="git checkout"
 alias gco-="git checkout -"
 alias gcom="git commit"
 alias gcomm="git commit -m"
-alias gcomma="git commit -m 'Add"
-alias gcommf="git commit -m 'Fix"
-alias gcommr="git commit -m 'Remove"
 alias gcpc="git cherry-pick --continue"
 alias gd="git diff"
 alias gdc="git diff --cached"
@@ -260,6 +256,7 @@ alias gski="git stash --keep-index"
 alias gstash="git stash"
 alias gwtf="git wtf -A"
 alias gwtff="git fetch && git wtf -A"
+alias hpr="hub pull-request"
 
 # javascript
 alias jsl="jslint -process"
