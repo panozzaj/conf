@@ -78,7 +78,7 @@ fun! Wp()
   set spell spelllang=en_us " enable spell checking
   set linebreak             " break soft-wrapped lines at word boundaries
   set nojoinspaces          " when joining paragraphs, separate by one space
-  set nolist                " lbr command relies on list being off :(
+  set nolist                " linebreak command relies on list being off :(
   set display=lastline      " show the last line on the screen even if it doesn't fit,
                             " which is common for long lines when writing
 
@@ -119,8 +119,9 @@ fun! BasicAbbreviations()
   iabbrev 3nd end
   iabbrev ned end
   iabbrev od do
+  iabbrev p[ []
 
-  " some spelling mistakes not caught by autocorrect.vim
+  " some spelling mistakes not (yet) caught by autocorrect.vim
   iabbrev testamonial testimonial
   iabbrev testamonials testimonials
   iabbrev Testamonial Testimonial
@@ -131,8 +132,25 @@ fun! BasicAbbreviations()
   iabbrev Soultion Solution
   iabbrev Soultions Solutions
 
+  iabbrev facililty facility
+  iabbrev facilty facility
+
+  iabbrev prenset present
+  iabbrev Prenset Present
+
+  iabbrev everythign everything
+  iabbrev Everythign Everything
+
+  iabbrev propogated propagated
+  iabbrev Propogated Propagated
+
+  iabbrev defecit deficit
+  iabbrev Defecit Deficit
+
   " programming expansions
   iabbrev prypry require 'pry'; binding.pry
+  iabbrev fgc FactoryGirl.create(
+  iabbrev _saop save_and_open_page
 
   " Some helpful shortcuts
   iabbrev dtt <C-R>=strftime("%Y%m%d")<CR>
@@ -183,7 +201,6 @@ autocmd BufRead,BufNewFile *.txt set filetype=conf
 autocmd BufRead,BufNewFile {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc,irb_tempfile*,Vagrantfile} set ft=ruby
 autocmd FileType conf set foldmethod=manual
 autocmd BufRead,BufNewFile *.less setfiletype less
-autocmd BufRead,BufNewFile *.md set filetype=markdown
 
 " Don't expand tab in Makefiles
 autocmd FileType make set noexpandtab
@@ -359,6 +376,11 @@ function RandomColorscheme()
   "if s:hilightdebugging
   "  call TurnOnDebuggingMatching()  " restore my custom debugging highlighting if we were using it
   "endif
+
+  " set autocomplete popup menu to somewhat readable color
+  " (some color schemes have bad default here)
+  highlight Pmenu guibg=black guifg=lightmagenta
+  highlight Pmenusel guibg=lightmagenta guifg=black
 endfunction
 
 let g:gitgutter_eager = 0 " prevent reload of all buffers on window focus (which takes a long time)
@@ -557,7 +579,6 @@ endfunction
 
 " Remove the Windows ^M - when the encodings get messed up
 noremap <Leader>mm mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
-
 
 
 " for lining cucumber tables up

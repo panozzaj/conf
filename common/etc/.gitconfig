@@ -36,6 +36,7 @@
         excludesfile = ~/.cvsignore
 [diff]
         renames = copies
+	noprefix = true
 [difftool "sourcetree"]
         cmd = opendiff \"$LOCAL\" \"$REMOTE\"
 [github]

@@ -82,6 +82,7 @@ Ferriss's
 Firefox
 Fizzbuzz
 Flener
+Floobits
 Formtastic
 Frantz
 G1
@@ -101,25 +102,31 @@ Gmail
 Gmailing
 Godin's
 Goldratt's
+Granza
 Gribble
 HAML
 HL7
 HOSS
+HTML5
 HTTPS
 Hadoop
 Haml
 Heroku
 Heroku's
 Hmm
+Homebrew
 Hulman
 IHIE
 ILSC
 IMS
 INFJ
+IPN
 ISFJ
 IWST
 Indy.rb
+Inline
 Intellivision
+Ipsum
 JCF
 JML
 JSG
@@ -138,6 +145,7 @@ Kyra
 LLC
 LSM
 LaBella
+LanguageTool
 Laniel
 LastBite
 Lauer's
@@ -145,6 +153,7 @@ Leanpub
 LibreOffice
 Liederkranz
 LinkedIn
+Lorem
 MBP
 MCT
 MP3
@@ -165,6 +174,7 @@ Mendeley
 Metova
 Mmm
 MongoDB
+Monon
 N64
 NES
 NPCs
@@ -200,6 +210,7 @@ Posterous
 PostgreSQL
 Qdoba
 RNO
+RPG
 RSS
 RTF
 RV's
@@ -240,6 +251,7 @@ Shalloway
 Shipley
 Skype
 SpeakEasy
+SpiderOak
 Spolsky
 SportZone
 Spotify
@@ -276,6 +288,7 @@ VM
 Venkat's
 Venti
 Verizon
+Vundle
 WFYI
 WIP
 WTF
@@ -301,6 +314,7 @@ Yogülatte
 YouTube
 ZK
 Zeo
+Zeumo
 Zynga
 actualizers
 advisor
@@ -321,6 +335,8 @@ autoloading
 autosaved
 bachelorette
 backend
+backtick
+backticks
 badass
 bio
 biphasic
@@ -341,10 +357,12 @@ cancelled
 cancelling
 canoeing
 cashflow
+changesets
 cloudworker
 cloudworking
 codebase
 colocated
+colorscheme
 config
 constitutionalist
 contrarianism
@@ -360,6 +378,8 @@ demotivated
 demotivating
 derring
 diff
+diffing
+diffs
 distractable
 docx4j
 dogfooding
@@ -376,6 +396,7 @@ fallback
 favicon
 filesystem
 followup
+foo/!
 foosball
 fractally
 freakout
@@ -393,6 +414,8 @@ googled
 grep
 gvim
 half-assed
+hangry
+hardcode
 hardcoded
 hardcoding
 hashtags
@@ -408,8 +431,10 @@ iPod
 ideastreet
 if's
 inbox
+incentivizes
 inline
 internet
+ironman
 ish
 jPod
 jQuery
@@ -417,11 +442,14 @@ javascript
 javascripts
 js
 kanban
+keybinding
+keybindings
 keygen
 keylogger
 leaderboard
 lifecycle
 lockdown
+logfile
 lossiness
 lovesack
 lunchmeat
@@ -468,6 +496,7 @@ php
 pickler
 piracetam
 plugin
+plugin's
 plugins
 png
 podcast
@@ -489,9 +518,11 @@ rebase
 refactor
 refactorings
 referenceable
+reflow
 replicable
 repo
 repos
+reprioritization
 reprioritize
 ribbonfarm
 roadmap
@@ -502,6 +533,7 @@ rsynced
 rvm
 rvmrc
 satisficing
+screencast
 screencasts
 screenshot
 screenshots
@@ -509,13 +541,14 @@ scss
 sellable
 sftp
 skillset
+snertz
 spam
 spellchecker
+spellfile
 spellfiles
 standoffishness
 standup
 standups
-strategizing
 strategizing
 stylesheet
 stylesheets
@@ -527,6 +560,7 @@ subvocalize
 sudo
 symlink
 symlinks
+tarballs
 tddium
 techno
 teleported
@@ -537,6 +571,8 @@ timeframe
 timeline
 timelines
 timesheet
+tmux
+tmux's
 toolbars
 touchpad
 trackbacks
@@ -544,6 +580,8 @@ tradeoff
 tradeoffs
 transhumanism
 txt
+unarchivig
+unarchiving
 unbillable
 undead
 underengineering
@@ -554,6 +592,7 @@ unfulfilling
 uploader
 versioning
 vim
+vimballs
 vimrc
 voicemail
 warmup

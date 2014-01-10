@@ -129,6 +129,9 @@ alias bil="bundle install --local"
 alias bu="bundle update"
 alias bul="bundle update --local"
 
+alias prs="parallel_rspec spec"
+alias pcf="parallel_cucumber features"
+
 # Rake
 alias ®="rake "
 alias rkae="rake"
@@ -148,6 +151,7 @@ alias rpp="echo 'rake parallel:prepare' && rake parallel:prepare"
 
 # Zeus (https://github.com/burke/zeus)
 alias z="zeus"
+alias zs="zeus start"
 alias zc="time zeus cucumber"
 alias zt="time zeus test"
 alias zpc="time zeus parallel_cucumber"
@@ -223,17 +227,17 @@ alias g="git"
 alias gaa="git add -A ."
 alias ganc="git amend-nc"
 alias gap="git add -p"
+alias gb-="git checkout -"
 alias gb="git branch"
 alias gba="git branch -a"
 alias gbb="git bisect bad"
 alias gbg="git bisect good"
-alias gb-="git checkout -"
 alias gc="git commit"
-alias gca="git amend-nc"
-alias gco="git checkout"
 alias gco-="git checkout -"
+alias gco="git checkout"
 alias gcom="git commit"
 alias gcomm="git commit -m"
+alias gcp="git cherry-pick"
 alias gcpc="git cherry-pick --continue"
 alias gd="git diff"
 alias gdc="git diff --cached"
@@ -249,9 +253,12 @@ alias gp="git push"
 alias gpop="git pop"
 alias gpr="git pull --rebase"
 alias grc="git rebase --continue"
+alias gri="git rebase --interactive"
 alias grlh="git reflog | head"
 alias grs="git rebase --skip"
+alias grsh="git reset --soft 'HEAD^'"
 alias gs="git status"
+alias gss="git show --stat"
 alias gski="git stash --keep-index"
 alias gstash="git stash"
 alias gwtf="git wtf -A"
@@ -300,3 +307,16 @@ export RUBY_HEAP_SLOTS_INCREMENT=300000
 export RUBY_HEAP_SLOTS_GROWTH_FACTOR=1
 export RUBY_GC_MALLOC_LIMIT=90000000
 export RUBY_FREE_MIN=200000
+
+# Add the following to your ~/.bashrc or ~/.zshrc
+#
+# Alternatively, copy/symlink this file and source in your shell.  See `hitch --setup-path`.
+
+hitch() {
+  command hitch "$@"
+  if [[ -s "$HOME/.hitch_export_authors" ]] ; then source "$HOME/.hitch_export_authors" ; fi
+}
+alias unhitch='hitch -u'
+
+# Uncomment to persist pair info between terminal instances
+# hitch

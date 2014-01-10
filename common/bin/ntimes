@@ -1,0 +1,19 @@
+#!/bin/bash
+
+successes=0
+failures=0
+
+for ((n=0; n < $1; n++)); do
+  # run all arguments except for the count as new command
+  ${@:2}
+
+  if [[ $? == 0 ]]; then
+    successes=$[successes + 1]
+  else
+    failures=$[failures + 1]
+    say -v Zarvox -r400 "failure"
+  fi
+
+  echo -e "\nSuccesses: $successes"
+  echo -e "Failures: $failures\n"
+done
