@@ -94,3 +94,36 @@
 [submodule "common/.vim/bundle/vim-online-thesaurus"]
 	path = common/.vim/bundle/vim-online-thesaurus
 	url = https://github.com/beloglazov/vim-online-thesaurus.git
+[submodule "common/.vim/bundle/colorschemes/grb256"]
+	path = common/.vim/bundle/colorschemes/grb256
+	url = https://github.com/m-martinez/grb256.git
+[submodule "common/.vim/bundle/colorschemes/ir_black"]
+	path = common/.vim/bundle/colorschemes/ir_black
+	url = https://github.com/twerth/ir_black.git
+[submodule "common/.vim/bundle/colorschemes/vim-detailed"]
+	path = common/.vim/bundle/colorschemes/vim-detailed
+	url = https://github.com/rking/vim-detailed.git
+[submodule "common/.vim/bundle/colorschemes/jellybeans.vim"]
+	path = common/.vim/bundle/colorschemes/jellybeans.vim
+	url = https://github.com/nanotech/jellybeans.vim.git
+[submodule "common/.vim/bundle/colorschemes/vim-github-colorscheme"]
+	path = common/.vim/bundle/colorschemes/vim-github-colorscheme
+	url = https://github.com/endel/vim-github-colorscheme.git
+[submodule "common/.vim/bundle/colorschemes/proton"]
+	path = common/.vim/bundle/colorschemes/proton
+	url = https://github.com/vim-scripts/proton.git
+[submodule "common/.vim/bundle/colorschemes/mayansmoke"]
+	path = common/.vim/bundle/colorschemes/mayansmoke
+	url = https://github.com/vim-scripts/mayansmoke.git
+[submodule "common/.vim/bundle/colorschemes/molokai"]
+	path = common/.vim/bundle/colorschemes/molokai
+	url = https://github.com/tomasr/molokai.git
+[submodule "common/.vim/bundle/colorschemes/base16-vim"]
+	path = common/.vim/bundle/colorschemes/base16-vim
+	url = https://github.com/chriskempson/base16-vim.git
+[submodule "common/.vim/bundle/colorschemes/vim-lucius"]
+	path = common/.vim/bundle/colorschemes/vim-lucius
+	url = https://github.com/jonathanfilip/vim-lucius.git
+[submodule "common/.vim/bundle/colorschemes/jellyx.vim"]
+	path = common/.vim/bundle/colorschemes/jellyx.vim
+	url = https://github.com/guns/jellyx.vim.git
