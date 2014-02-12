@@ -151,11 +151,12 @@ alias rpp="echo 'rake parallel:prepare' && rake parallel:prepare"
 
 # Zeus (https://github.com/burke/zeus)
 alias z="zeus"
-alias zs="zeus start"
 alias zc="time zeus cucumber"
-alias zt="time zeus test"
+alias zrdtp="zeus rake db:test:prepare"
 alias zpc="time zeus parallel_cucumber"
 alias zpr="time zeus parallel_rspec"
+alias zt="time zeus test"
+alias zs="zeus start"
 
 # Rails
 alias rials="rails"

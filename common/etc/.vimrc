@@ -1,6 +1,10 @@
 " vim: set ts=2 sw=2:
 filetype off
-execute pathogen#infect()
+execute pathogen#infect('bundle/{}', '~/.vim/bundle/colorschemes/{}')
+
+" did not work:
+"execute pathogen#infect('bundle/{}', 'bundle/colorschemes/{}')
+
 filetype plugin indent on
 set nocompatible
 
@@ -148,8 +152,8 @@ fun! BasicAbbreviations()
   iabbrev Defecit Deficit
 
   " programming expansions
-  iabbrev prypry require 'pry'; binding.pry
-  iabbrev fgc FactoryGirl.create(
+  iabbrev _pry require 'pry'; binding.pry
+  iabbrev _fgc FactoryGirl.create
   iabbrev _saop save_and_open_page
 
   " Some helpful shortcuts
@@ -214,8 +218,12 @@ autocmd BufRead,BufNewFile *.scss set filetype=scss
 " fabricator file shortcut
 autocmd User Rails Rnavcommand fabricator spec/fabricators -suffix=_fabricator.rb -default=model()
 
-" Ctrl+W to kill word backward in insert mode (like other apps)
+" Ctrl+W, Alt+W to kill word backward in insert mode (like other apps)
 inoremap <C-BS> <C-W>
+inoremap <A-BS> <C-W>
+" Ctrl+W, Alt+W to kill word backward in command mode
+cnoremap <C-BS> <C-W>
+cnoremap <A-BS> <C-W>
 
 " Command-T overrides
 let g:CommandTMatchWindowAtTop = 1 " want the best command-t matches at the top so they never move

@@ -26,12 +26,11 @@ if repo !~ /^http/
   end
 end
 
-puts repo
-
 repo += '.git' unless repo =~ /\.git$/ # in case I cmd/ctrl + L on github page instead of copying from repo box
 repo =~ /([^\/]*)\.git$/
 project_name = $1
+subpath = [ARGV[1], $1].compact.join('/')
 
-destination = File.join('common', '.vim', 'bundle', project_name)
-puts "Installing #{ARGV[1]} -> #{destination}"
+destination = File.join('common', '.vim', 'bundle', subpath)
+puts "Installing #{ARGV[0]} -> #{destination}"
 print `git submodule add #{repo} #{destination}`

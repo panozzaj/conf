@@ -2,7 +2,7 @@
 # Git pre-commit hook to check staged files for common debug print statements
 
 FILES_PATTERN='\.(rb|js|coffee)(\..+)?$'
-WARNINGS='(puts|logger\.ap|console\.log|alert\(|console\.dir|console\.debug)'
+WARNINGS='(debugger|puts|logger\.ap|console\.log|alert\(|console\.dir|console\.debug)'
 
 [ -z $DEBUG_HOOKS ] || echo 'Checking for common Ruby debugging print statements...'
 
