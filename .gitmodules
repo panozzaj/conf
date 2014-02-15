@@ -127,3 +127,6 @@
 [submodule "common/.vim/bundle/file-line"]
 	path = common/.vim/bundle/file-line
 	url = https://github.com/vim-scripts/file-line.git
+[submodule "common/.vim/bundle/floobits-vim"]
+	path = common/.vim/bundle/floobits-vim
+	url = https://github.com/Floobits/floobits-vim.git
