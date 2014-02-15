@@ -5,7 +5,7 @@
 
 # Run this after cloning to symlink things correctly
 # Or, run again to ensure the symlinks are up to date
-# (Hence, the script should be able to be run multiple times without issues)
+# (Hence, the script should be idempotent)
 
 if ARGV.count != 2
   puts 'This script sets up the dotfiles (conf) folder on this system.'
@@ -75,13 +75,16 @@ end
 # command-t.vim could not load the C extension
 # Please see INSTALLATION and TROUBLE-SHOOTING in the help
 # For more information type:    :help command-t
-#`cd ~/conf/common/.vim/bundle/Command-T`
-#`rvm use system`
-#`rake make`
+puts 'Configuring Command-T'
+# print output to inspect / debug if something goes wrong
+`./conf/setup_command_t`
 
 puts 'Setting up submodules...'
-IO.popen(`git submodule update --init --recursive`) do |f|
-  puts f.gets
+
+Dir.chdir('conf') do
+  IO.popen('git submodule update --init --recursive') do |f|
+    puts f.gets
+  end
 end
 
 puts 'Dotfiles successfully configured!'

@@ -1,0 +1,4 @@
+#!/bin/sh
+cd ~/conf/common/.vim/bundle/Command-T
+rvm use system
+rake make

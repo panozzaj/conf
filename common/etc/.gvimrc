@@ -18,6 +18,7 @@ nmap <silent> <leader>s ;set nolist!<CR>
 set list
 
 if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome")
+  set novisualbell
   set guifont=Inconsolata\ 12
 elseif has("gui_macvim") || has("gui_mac")
   set guifont=Inconsolata:h18
