@@ -75,9 +75,8 @@ end
 # command-t.vim could not load the C extension
 # Please see INSTALLATION and TROUBLE-SHOOTING in the help
 # For more information type:    :help command-t
-puts 'Configuring Command-T'
-# print output to inspect / debug if something goes wrong
-`./conf/setup_command_t`
+puts 'Configuring Command-T (Vim plugin)...'
+`./conf/setup_command_t 2>&1 > /dev/null`
 
 puts 'Setting up submodules...'
 
