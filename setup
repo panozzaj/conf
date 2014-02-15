@@ -79,4 +79,9 @@ end
 #`rvm use system`
 #`rake make`
 
+puts 'Setting up submodules...'
+IO.popen(`git submodule update --init --recursive`) do |f|
+  puts f.gets
+end
+
 puts 'Dotfiles successfully configured!'
