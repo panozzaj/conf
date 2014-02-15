@@ -4,9 +4,6 @@
 [submodule "common/.vim/bundle/Command-T"]
 	path = common/.vim/bundle/Command-T
 	url = https://github.com/wincent/Command-T.git
-[submodule "common/.vim/bundle/vim-file-line"]
-	path = common/.vim/bundle/vim-file-line
-	url = https://github.com/avakhov/vim-file-line.git
 [submodule "common/.vim/bundle/html5-syntax.vim"]
 	path = common/.vim/bundle/html5-syntax.vim
 	url = https://github.com/othree/html5-syntax.vim.git
@@ -127,3 +124,6 @@
 [submodule "common/.vim/bundle/colorschemes/jellyx.vim"]
 	path = common/.vim/bundle/colorschemes/jellyx.vim
 	url = https://github.com/guns/jellyx.vim.git
+[submodule "common/.vim/bundle/file-line"]
+	path = common/.vim/bundle/file-line
+	url = https://github.com/vim-scripts/file-line.git
