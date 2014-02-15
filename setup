@@ -9,12 +9,13 @@
 
 if ARGV.count != 2
   puts 'This script sets up the dotfiles (conf) folder on this system.'
+  puts 'It should be run from your home directory.'
   abort 'Usage: setup <platform_name> <host_name>'
 end
 
 puts 'Configuring dotfiles repo...'
 
-def symlink_if_not_present_or_existing_symlink src, dest = File.basename(src) 
+def symlink_if_not_present_or_existing_symlink src, dest = File.basename(src)
   if !File.exist?(dest) || File.symlink?(dest)
     `ln -sf #{src} .`
   else
