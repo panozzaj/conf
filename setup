@@ -18,10 +18,11 @@ def symlink_if_not_present_or_existing_symlink src, dest = File.basename(src)
   if !File.exist?(dest) || File.symlink?(dest)
     `ln -sf #{src} .`
   else
-    abort <<-EOS
-      Wanted to create symbolic link #{src} -> #{dest}, but a
-      non-symlinked file was already there, which is unexpected. Aborting!
-    EOS
+    # AP 20140214 - this is a bit paranoid
+    #abort <<-EOS
+    #  Wanted to create symbolic link #{src} -> #{dest}, but a
+    #  non-symlinked file was already there, which is unexpected. Aborting!
+    #EOS
   end
 end
 
@@ -44,7 +45,7 @@ end
 # set up vim temporary directories
 # based on my .vimrc custom configuration
 ['backup', 'swap', 'undo'].each do |tmpfile|
-  `mkdir -p .vim/tmp/#{tmpfile}`
+  `mkdir -p ~/.vim/tmp/#{tmpfile}`
 end
 
 platform = ARGV[0]
