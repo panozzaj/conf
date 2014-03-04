@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo 'This script removes any remote or local branches that are merged into master'
+
 current_branch=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 if [ "$current_branch" != "master" ]; then
   echo "WARNING: You are on branch $current_branch, NOT master."
@@ -9,6 +11,7 @@ echo -e "Fetching merged branches...\n"
 
 git remote update --prune
 remote_branches=$(git branch -r --merged | grep -v '/master$' | grep -v "/$current_branch$")
+
 local_branches=$(git branch --merged | grep -v 'master$' | grep -v "$current_branch$")
 if [ -z "$remote_branches" ] && [ -z "$local_branches" ]; then
   echo "No existing branches have been merged into $current_branch."

@@ -108,15 +108,6 @@ alias -g NE="2> /dev/null"
 export GREP_OPTIONS='--color=auto'
 export GREP_COLOR='1;29'
 
-function run_times() {
-    number=$1
-    shift
-    for i in `seq $number`; do
-      echo "Run #${number}"
-      $@
-    done
-}
-
 #####
 # COMMAND SHORTCUTS
 #####
@@ -152,6 +143,7 @@ alias rpp="echo 'rake parallel:prepare' && rake parallel:prepare"
 # Zeus (https://github.com/burke/zeus)
 alias z="zeus"
 alias zc="time zeus cucumber"
+alias zrdm="zeus rake db:migrate"
 alias zrdtp="zeus rake db:test:prepare"
 alias zpc="time zeus parallel_cucumber"
 alias zpr="time zeus parallel_rspec"

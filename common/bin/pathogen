@@ -33,4 +33,6 @@ subpath = [ARGV[1], $1].compact.join('/')
 
 destination = File.join('common', '.vim', 'bundle', subpath)
 puts "Installing #{ARGV[0]} -> #{destination}"
-print `git submodule add #{repo} #{destination}`
+command = "git submodule add #{repo} #{destination}"
+puts command
+print `#{command}`

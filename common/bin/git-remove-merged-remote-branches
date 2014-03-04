@@ -1,0 +1,26 @@
+#!/bin/sh
+
+echo 'This script removes any remote branches that are merged into master'
+
+echo 'Will run:'
+
+git branch -a --merged remotes/origin/master | \
+  grep -v master | \
+  grep "remotes/origin/" | \
+  cut -d "/" -f 3- | \
+  xargs -n 1 echo git push --delete origin
+
+while true; do
+    read -p "Are you sure? [yn]" yn
+    case $yn in
+        [Yy]* ) make install; break;;
+        [Nn]* ) exit;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+git branch -a --merged remotes/origin/master | \
+  grep -v master | \
+  grep "remotes/origin/" | \
+  cut -d "/" -f 3- | \
+  xargs -n 1 git push --delete origin

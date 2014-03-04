@@ -130,3 +130,9 @@
 [submodule "common/.vim/bundle/floobits-vim"]
 	path = common/.vim/bundle/floobits-vim
 	url = https://github.com/Floobits/floobits-vim.git
+[submodule "common/.vim/bundle/colorschemes/vim-hemisu"]
+	path = common/.vim/bundle/colorschemes/vim-hemisu
+	url = https://github.com/noahfrederick/vim-hemisu.git
+[submodule "common/.vim/bundle/colorschemes/summerfruit256.vim"]
+	path = common/.vim/bundle/colorschemes/summerfruit256.vim
+	url = https://github.com/vim-scripts/summerfruit256.vim.git
