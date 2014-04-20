@@ -14,7 +14,7 @@
         comm = commit -m
         edit-unmerged = !git-edit-unmerged
         exclude = !([ ! -e .git/info/exclude ] && mkdir -p .git/info && touch .git/info/exclude) | echo $2 >> .git/info/exclude
-        ignore = !([ ! -e .gitignore ] && touch .gitignore) | echo $2 >> .gitignore
+        ignore = !git-custom-ignore $2
         local-ignore = !([ ! -e .git/info/exclude ] && mkdir -p .git/info && touch .git/info/exclude) | echo $2 >> .git/info/exclude
         ls-ignored = ls-files --exclude-standard --ignored --others
         man = help

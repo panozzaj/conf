@@ -1,0 +1,6 @@
+#!/bin/sh
+if [ ! -e .gitignore ]; then
+  touch .gitignore
+fi
+sed -i '' -e '$a\' .gitignore
+echo $1 >> .gitignore
