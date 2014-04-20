@@ -136,3 +136,6 @@
 [submodule "common/.vim/bundle/colorschemes/summerfruit256.vim"]
 	path = common/.vim/bundle/colorschemes/summerfruit256.vim
 	url = https://github.com/vim-scripts/summerfruit256.vim.git
+[submodule "common/.vim/bundle/vim-vinegar"]
+	path = common/.vim/bundle/vim-vinegar
+	url = https://github.com/tpope/vim-vinegar.git
