@@ -2,7 +2,7 @@
 
 usage = <<-EOS
 Usage:
- pathogen REPO
+ pathogen REPO [location=bundle]
 
 Will install, say, https://github.com/tpope/vim-endwise.git to common/.vim/bundle/vim-endwise
 by doing git submodule add https://github.com/tpope/vim-endwise.git common/.vim/bundle/vim-endwise
@@ -12,6 +12,8 @@ a correct repository url for ease of copying.
 
 Will also take just a Github username/reponame combo
 For example, tpope/vim-haml will install https://github.com/tpope/vim-haml.
+
+For colorschemes, specify bundle-colorschemes as the second parameter
 EOS
 
 abort usage unless ARGV.length > 0
@@ -29,9 +31,9 @@ end
 repo += '.git' unless repo =~ /\.git$/ # in case I cmd/ctrl + L on github page instead of copying from repo box
 repo =~ /([^\/]*)\.git$/
 project_name = $1
-subpath = [ARGV[1], $1].compact.join('/')
+bundle_directory = ARGV[1] || 'bundle'
 
-destination = File.join('common', '.vim', 'bundle', subpath)
+destination = File.join('common', '.vim', bundle_directory , project_name)
 puts "Installing #{ARGV[0]} -> #{destination}"
 command = "git submodule add #{repo} #{destination}"
 puts command

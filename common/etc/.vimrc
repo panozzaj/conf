@@ -1,9 +1,6 @@
 " vim: set ts=2 sw=2:
 filetype off
-execute pathogen#infect('bundle/{}', '~/.vim/bundle/colorschemes/{}')
-
-" did not work:
-"execute pathogen#infect('bundle/{}', 'bundle/colorschemes/{}')
+execute pathogen#infect('bundle/{}', 'bundle-colorschemes/{}')
 
 filetype plugin indent on
 set nocompatible
