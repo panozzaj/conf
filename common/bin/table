@@ -7,7 +7,8 @@ end
 def print_table schema, table_name
   print_until_end = false
   schema.split("\n").each do |line|
-    if line =~ /^\s+create_table "#{table_name}"/
+    if line =~ /^\s+create_table "#{table_name}"/ || # schema
+       line =~ /^CREATE TABLE #{table_name} /        # structure
       print_until_end = true
     end
 
@@ -15,11 +16,13 @@ def print_table schema, table_name
       puts line
     end
 
-    if line =~ /^\s+end\s*$/
+    if line =~ /^\s+end\s*$/ || # schema
+       line =~ /^\);$/          # structure
       print_until_end = false
     end
 
-    if line =~ /^\s+add_index "#{table_name}"/
+    if line =~ /^\s+add_index "#{table_name}"/ ||
+       line =~ /^CREATE.* INDEX index_#{table_name}/
       puts line
     end
   end
@@ -30,11 +33,13 @@ table_names = ARGV
 print_usage_and_exit if table_names.empty?
 
 schema_filename = './db/schema.rb'
-unless File.exists?(schema_filename)
-  abort "#{schema_filename} does not exist"
+structure_filename = './db/structure.sql'
+unless File.exists?(schema_filename) || File.exists?(structure_filename)
+  abort "Error: neither #{schema_filename} nor #{structure_filename} exists."
 end
 
-schema = File.read(schema_filename)
+schema = File.read(structure_filename) rescue nil
+schema ||= File.read(schema_filename) rescue nil
 
 table_names.each do |table_name|
   print_table schema, table_name
