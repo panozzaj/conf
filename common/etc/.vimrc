@@ -170,23 +170,27 @@ fun! Autocommit()
   au BufWritePost * silent !git commit <afile> -m 'Generated commit'
 endfu
 
-nnoremap <leader>p ds(i                       " does not work? remove surround parens and add a space
-nnoremap <leader>y :YRShow<CR>                " show kill ring list
-nnoremap <leader>z zMzv                       " show only this fold section
-
+nnoremap <leader>p ds(i         " does not work? remove surround parens and add a space
+nnoremap <leader>y :YRShow<CR>  " show kill ring list
+nnoremap <leader>z zMzv         " show only this fold section
 " copy current file name (relative/absolute) to system clipboard
 if has("mac") || has("gui_macvim") || has("gui_mac")
-  nnoremap <leader>cf :let @*=expand("%")<CR>
-  nnoremap <leader>cF :let @*=expand("%:p")<CR>
-  nnoremap <leader>ct :let @*=expand("%:t")<CR>
-  nnoremap <leader>ch :let @*=expand("%:p:h")<CR>
+  nnoremap <leader>cf :let @*=expand("%")<CR>     " relative path  (src/foo.txt)
+  nnoremap <leader>cF :let @*=expand("%:p")<CR>   " absolute path  (/something/src/foo.txt)
+  nnoremap <leader>ct :let @*=expand("%:t")<CR>   " filename       (foo.txt)
+  nnoremap <leader>ch :let @*=expand("%:p:h")<CR> " directory name (/something/src)
 endif
 if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome") || has("unix")
-  nnoremap <leader>cf :let @+=expand("%")<CR>
-  nnoremap <leader>cF :let @+=expand("%:p")<CR>
-  nnoremap <leader>ct :let @+=expand("%:t")<CR>
-  nnoremap <leader>ch :let @+=expand("%:p:h")<CR>
+  nnoremap <leader>cf :let @+=expand("%")<CR>     " relative path  (src/foo.txt)
+  nnoremap <leader>cF :let @+=expand("%:p")<CR>   " absolute path  (/something/src/foo.txt)
+  nnoremap <leader>ct :let @+=expand("%:t")<CR>   " filename       (foo.txt)
+  nnoremap <leader>ch :let @+=expand("%:p:h")<CR> " directory name (/something/src)
 endif
+
+
+" Jekyll shortcuts
+nnoremap <leader>jp :! ./scripts/preview %<CR> " preview jekyll post in browser
+
 
 " latex-suite
 set grepprg=grep\ -nH\ $*
