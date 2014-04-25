@@ -16,9 +16,6 @@
 [submodule "common/.vim/bundle/scss-syntax.vim"]
 	path = common/.vim/bundle/scss-syntax.vim
 	url = https://github.com/cakebaker/scss-syntax.vim.git
-[submodule "common/.vim/bundle/SuperTab-continued."]
-	path = common/.vim/bundle/SuperTab-continued.
-	url = https://github.com/vim-scripts/SuperTab-continued..git
 [submodule "common/.vim/bundle/vim-surround"]
 	path = common/.vim/bundle/vim-surround
 	url = https://github.com/tpope/vim-surround.git
@@ -136,3 +133,6 @@
 [submodule "common/.vim/bundle/vim-liquid"]
 	path = common/.vim/bundle/vim-liquid
 	url = https://github.com/tpope/vim-liquid.git
+[submodule "common/.vim/bundle/supertab"]
+	path = common/.vim/bundle/supertab
+	url = https://github.com/ervandew/supertab.git
