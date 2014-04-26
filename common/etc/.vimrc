@@ -151,6 +151,7 @@ fun! BasicAbbreviations()
   " programming expansions
   iabbrev _pry require 'pry'; binding.pry
   iabbrev _fgc FactoryGirl.create
+  iabbrev _fgb FactoryGirl.build
   iabbrev _saop save_and_open_page
 
   " Some helpful shortcuts
@@ -187,6 +188,8 @@ if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome") || has("unix")
   nnoremap <leader>ch :let @+=expand("%:p:h")<CR> " directory name (/something/src)
 endif
 
+" make current file executable
+nnoremap <leader>x :! chmod +x %<CR>
 
 " Jekyll shortcuts
 nnoremap <leader>jp :! ./scripts/preview %<CR> " preview jekyll post in browser

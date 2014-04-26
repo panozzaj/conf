@@ -94,7 +94,6 @@ bindkey . rationalize-dot
 export LESS='-R -F -W -X -I'
 
 alias -g L='| less'
-alias -g NV='--no-verify'
 alias -g GV='grep -v'
 
 # Spelling corrections for common commands
@@ -126,29 +125,40 @@ alias pcf="parallel_cucumber features"
 # Rake
 alias ®="rake "
 alias rkae="rake"
-alias rdm="echo 'rake db:migrate' && rake db:migrate"
-alias rdr="rake db:rollback"
-alias rdd="rake db:drop"
 alias rdc="rake db:create"
+alias rdd="rake db:drop"
+alias rdm="rake db:migrate"
 alias rdmall="rdm && rdtp && rpp"
 alias rdmtp="rdm && rdtp"
-alias rdsl="rake db:schema:load"
-alias rds="rake db:seed"
-alias rdtp="echo 'rake db:test:prepare' && rake db:test:prepare"
 alias rdpt="rake db:test:prepare"
+alias rdr="rake db:rollback"
+alias rds="rake db:seed"
+alias rdsl="rake db:schema:load"
+alias rdtp="rake db:test:prepare"
 alias rdv="rake db:version"
 alias rjw="rake jobs:work"
-alias rpp="echo 'rake parallel:prepare' && rake parallel:prepare"
+alias rpp="rake parallel:prepare"
 
 # Zeus (https://github.com/burke/zeus)
 alias z="zeus"
 alias zc="time zeus cucumber"
-alias zrdm="zeus rake db:migrate"
-alias zrdtp="zeus rake db:test:prepare"
-alias zpc="time zeus parallel_cucumber"
-alias zpr="time zeus parallel_rspec"
 alias zt="time zeus test"
 alias zs="zeus start"
+
+# Zeus + Rake
+alias zr="zeus rake"
+alias zpc="time zeus parallel_cucumber"
+alias zpr="time zeus parallel_rspec"
+alias zrdc="zr db:create"
+alias zrdd="zr db:drop"
+alias zrdm="zr db:migrate"
+alias zrdmall="zrdm && zrdtp && zrpp"
+alias zrdmtp="zrdm && zrdtp"
+alias zrdpt="zr db:test:prepare"
+alias zrdr="zr db:rollback"
+alias zrdtp="zr db:test:prepare"
+alias zrds="zr db:seed"
+alias zrdsl="zr db:schema:load"
 
 # Rails
 alias rials="rails"
@@ -308,6 +318,3 @@ hitch() {
   if [[ -s "$HOME/.hitch_export_authors" ]] ; then source "$HOME/.hitch_export_authors" ; fi
 }
 alias unhitch='hitch -u'
-
-# Uncomment to persist pair info between terminal instances
-# hitch
