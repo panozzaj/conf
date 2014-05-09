@@ -665,6 +665,16 @@ nnoremap gf :e <cfile><CR>
 
 set formatoptions+=j " 'Where it makes sense, remove a comment leader when joining lines.'
 
+" For working with soft-wrapped files [experimental]
+" Anywhere on sentence, take that sentence and make it the first of a new paragraph
+nnoremap <leader>s} )(i<BS><CR><CR><ESC>
+" Anywhere on sentence, take that sentence and make it the last of this paragraph
+nnoremap <leader>s{ ()i<BS><CR><CR><ESC>
+" Join this paragraph with the previous paragraph
+nnoremap <leader>j{ {k3J
+" Join this paragraph with the next paragraph
+nnoremap <leader>j} 3J
+
 " function for working with files with hard line breaks
 cabbr eighty call Eighty()
 fun! Eighty()
