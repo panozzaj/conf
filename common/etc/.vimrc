@@ -398,7 +398,7 @@ let spell_auto_type="tex,txt"
 "call TurnOnDebuggingMatching()
 
 " Colorscheme stuff
-function RandomColorscheme()
+function! RandomColorscheme()
   " random color, from http://vim.1045645.n5.nabble.com/Random-color-scheme-at-start-td1165585.html
   let mycolors = split(globpath(&rtp,"**/colors/*.vim"),"\n")
   let i = localtime() % len(mycolors)
@@ -425,7 +425,7 @@ nnoremap <leader>h :highlight clear SignColumn<CR>
 
 
 " Turns an word into a regex to match that word
-function English(word)
+function! English(word)
   " Case-insensitive, and properly bounded.
   return '\c\<' . a:word . '\>'
 endfunction
@@ -672,7 +672,10 @@ if &l:diff
   colors peachpuff
   set diffopt+=iwhite   " ignore whitespace differences for diff
 else
-  call RandomColorscheme()
+  if !exists("g:randomizedColorsOnStart")
+    call RandomColorscheme()
+  endif
+  let g:randomizedColorsOnStart=1
 endif
 
 " see https://coderwall.com/p/ozhuxg
