@@ -171,21 +171,41 @@ fun! Autocommit()
   au BufWritePost * silent !git commit <afile> -m 'Generated commit'
 endfu
 
-nnoremap <leader>p ds(i         " does not work? remove surround parens and add a space
-nnoremap <leader>y :YRShow<CR>  " show kill ring list
-nnoremap <leader>z zMzv         " show only this fold section
+" does not work? trying to remove surround parens and add a space
+nnoremap <leader>p ds(i
+
+" show kill ring list
+nnoremap <leader>y :YRShow<CR>
+
+" show only this fold section
+nnoremap <leader>z zMzv
+
 " copy current file name (relative/absolute) to system clipboard
 if has("mac") || has("gui_macvim") || has("gui_mac")
-  nnoremap <leader>cf :let @*=expand("%")<CR>     " relative path  (src/foo.txt)
-  nnoremap <leader>cF :let @*=expand("%:p")<CR>   " absolute path  (/something/src/foo.txt)
-  nnoremap <leader>ct :let @*=expand("%:t")<CR>   " filename       (foo.txt)
-  nnoremap <leader>ch :let @*=expand("%:p:h")<CR> " directory name (/something/src)
+  " relative path  (src/foo.txt)
+  nnoremap <leader>cf :let @*=expand("%")<CR>
+
+  " absolute path  (/something/src/foo.txt)
+  nnoremap <leader>cF :let @*=expand("%:p")<CR>
+
+  " filename       (foo.txt)
+  nnoremap <leader>ct :let @*=expand("%:t")<CR>
+
+  " directory name (/something/src)
+  nnoremap <leader>ch :let @*=expand("%:p:h")<CR>
 endif
 if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome") || has("unix")
-  nnoremap <leader>cf :let @+=expand("%")<CR>     " relative path  (src/foo.txt)
-  nnoremap <leader>cF :let @+=expand("%:p")<CR>   " absolute path  (/something/src/foo.txt)
-  nnoremap <leader>ct :let @+=expand("%:t")<CR>   " filename       (foo.txt)
-  nnoremap <leader>ch :let @+=expand("%:p:h")<CR> " directory name (/something/src)
+  " relative path  (src/foo.txt)
+  nnoremap <leader>cf :let @+=expand("%")<CR>
+
+  " absolute path  (/something/src/foo.txt)
+  nnoremap <leader>cF :let @+=expand("%:p")<CR>
+
+  " filename       (foo.txt)
+  nnoremap <leader>ct :let @+=expand("%:t")<CR>
+
+  " directory name (/something/src)
+  nnoremap <leader>ch :let @+=expand("%:p:h")<CR>
 endif
 
 " make current file executable
