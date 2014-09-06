@@ -5,12 +5,15 @@
 AJP
 AMs
 ASTA
+AWS
 Accessorize
 Admin
 Adwords
 Aeropress
 AlleyCats
+Andronico's
 AngelList
+Anki
 App
 Arduino
 Arens
@@ -26,6 +29,7 @@ Beefaroni
 Belcher
 Belcher's
 Belshaw
+Bitcoin
 Blackhawks
 Blank's
 Bongee's
@@ -51,10 +55,12 @@ ClassRealm
 Clojure
 Cloran
 CoffeeScript
+Cordova
 Costco
 Courtny
 Cowan
 Craigslist
+Crypton
 Cutie
 Cygwin
 DWY
@@ -62,6 +68,7 @@ DateTime
 Dewan
 Deyo's
 Disqus
+Doony
 Downloadable
 Dropbox
 EIN
@@ -71,6 +78,7 @@ ENTP's
 ENTPs
 ERB
 ESOP
+Elantra
 Elon
 FGA
 FTW
@@ -91,6 +99,7 @@ G1
 GAJ
 GFS
 GMail
+GRPG
 GTD
 Gemfile
 Gemfiles
@@ -109,6 +118,7 @@ Gribble
 Gruber
 HAML
 HL7
+HN
 HOSS
 HTML5
 HTTPS
@@ -147,6 +157,7 @@ Kucha
 Kyra
 LLC
 LSM
+LTS
 LaBella
 LanguageTool
 Laniel
@@ -183,10 +194,12 @@ N64
 NES
 NPCs
 NTP
+Napa
 NetHack
 Nvidia
 OODA
 OTOH
+OpenSSL
 Ouspensky
 Overanalysis
 Overcategorization
@@ -210,6 +223,8 @@ Peopleware
 Philbrook
 PhoneGap
 Pickler
+PorchLight
+Porchlight
 Posterous
 PostgreSQL
 Qdoba
@@ -263,6 +278,8 @@ Spotify
 Starbucks
 Stultz
 Subvocalization
+SuperMemo
+SuperMemo's
 Survivorman
 SxSW
 TBD
@@ -272,6 +289,7 @@ TODOs
 Taigan
 Talentopoly
 Texted
+Theanine
 ThoughtWorks
 Timebox
 Torvalds
@@ -286,6 +304,7 @@ UTF
 Ubuntu
 Ueland
 Uhl
+Unfollowed
 Uploader
 Uploadify
 VC
@@ -347,6 +366,7 @@ badass
 bio
 biphasic
 biscotti
+bitcoin
 blackhat
 blog
 blogged
@@ -374,6 +394,8 @@ config
 constitutionalist
 contrarianism
 coworking
+creatine
+cron
 crowdsourced
 crowdsourcing
 css
@@ -383,6 +405,7 @@ db
 dealbreaker
 demotivated
 demotivating
+derisking
 derring
 diff
 diffing
@@ -390,11 +413,13 @@ diffs
 distractable
 docx4j
 dogfooding
+dotfiles
 douchebag
 drilldowns
 earlyvangelists
 ebook
 ebooks
+endorphins
 entrepreneurially
 erb
 f.lux
@@ -404,6 +429,7 @@ favicon
 filesystem
 followup
 foo/!
+foodist
 foosball
 fractally
 freakout
@@ -428,10 +454,12 @@ hardcoded
 hardcoding
 hashtags
 healthcare
+hotspot
 html
 http
 https
 i.e.
+iDoneThis
 iGoDigital
 iPad
 iPhone
@@ -468,6 +496,7 @@ meh
 melatonin
 meme
 memes
+mentation
 merlot
 metadata
 microbusinesses
@@ -499,6 +528,7 @@ paintballing
 pandoc
 passphrase
 pdf
+per se
 personas
 php
 pickler
@@ -535,6 +565,8 @@ reprioritize
 ribbonfarm
 roadmap
 roadmapping
+roadtrip
+rollercoaster
 rspec
 rsync
 rsynced
@@ -552,6 +584,7 @@ skillset
 snertz
 spam
 spamminess
+spamming
 spellchecker
 spellfile
 spellfiles
@@ -572,15 +605,19 @@ symlink
 symlinks
 tarballs
 tddium
+teardown
 techno
 teleported
 telnetting
 texted
+theanine
+timebox
 timeboxed
 timeframe
 timeline
 timelines
 timesheet
+timestamp
 tmux
 tmux's
 toolbars
@@ -589,16 +626,20 @@ trackbacks
 tradeoff
 tradeoffs
 transhumanism
+twitch.tv
 txt
 unarchivig
 unarchiving
 unbillable
+uncaptured
 undead
 underengineering
 underperforming
 unfollowing
 unfriending
 unfulfilling
+unlaunched
+unpushed
 uploader
 versioning
 vim
@@ -621,13 +662,3 @@ worldviews
 www
 xUnit
 yml
-HN
-OpenSSL
-Andronico's
-cron
-teardown
-Doony
-dotfiles
-LTS
-unpushed
-AWS
