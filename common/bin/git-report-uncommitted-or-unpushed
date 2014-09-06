@@ -3,19 +3,46 @@
 # Find all git repos beneath the current directory and see what commits they
 # have that are unpushed.
 
-find . -type d -name .git | while read dir; do
+# TODO: make directory relative if unspecified, or provide directory to check as argument
+#directory=($1 || '.')
+#echo $directory
+#exit
+
+find . -type d -name .git -exec echo {} \; | while read dir; do
   pushd "$dir" > /dev/null
   pushd .. > /dev/null
+
   unpushed_cmd="git --no-pager log --branches --not --remotes --simplify-by-decoration --decorate --oneline --stat"
-  stash_cmd="git --no-pager stash list"
+  stash_cmd="git --no-pager stash list --stat"
   uncommitted_files_cmd="git --no-pager status --porcelain"
+
   if [[ -n `$unpushed_cmd` || -n `$stash_cmd` || -n `$uncommitted_files_cmd` ]]; then
-    echo "$dir"
-    $unpushed_cmd
-    $stash_cmd
-    $uncommited_files_cmd
+    echo "================================="
+    echo "Unpushed changes on $dir"
+    echo "================================="
+
+    if [[ -n `$unpushed_cmd` ]]; then
+      echo 'Unpushed:'
+      $unpushed_cmd
+    fi
+
+    if [[ -n `$stash_cmd` ]]; then
+      echo 'Stashed:'
+      $stash_cmd | cut -d ':' -f 1 | while read stashname; do
+        echo "\n$stashname:"
+        git log --oneline $stashname | head -1
+        git stash show $stashname
+      done
+    fi
+
+    if [[ -n `$uncommitted_files_cmd` ]]; then
+      echo 'Uncommitted:'
+      $uncommitted_files_cmd
+    fi
+
     echo ""
   fi
+
   popd > /dev/null
   popd > /dev/null
 done
