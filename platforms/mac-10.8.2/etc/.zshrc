@@ -2,6 +2,7 @@
 PATH+=:$CONF/platforms/$PLATFORM/bin
 PATH+=:/opt/local/bin
 PATH+=:/usr/local/share/npm/bin
+PATH+=:/usr/texbin
 MANPATH+=:/opt/local/share/man
 INFOPATH+=:/opt/local/share/info
 

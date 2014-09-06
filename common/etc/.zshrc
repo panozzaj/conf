@@ -90,8 +90,18 @@ zle -N rationalize-dot
 bindkey . rationalize-dot
 
 # -I = case insensitive search
-# what do the other options mean?
+# -R = display raw characters (git diff colored output, etc.)
+# -F = don't use pager if only one screen worth of content (no unnecessary 'q')
+# -X = no need to clear screen when less invoked
+# -W = temporarily highlights the first new line after
+#      any forward movement command larger than one line.
 export LESS='-R -F -W -X -I'
+
+# make less a directory do an `ls` instead of giving error
+# also expands archive files
+# see http://unix.stackexchange.com/questions/107563
+# and http://www.freebsd.org/cgi/man.cgi?query=less&sektion=1#INPUT_PREPROCESSOR
+export LESSOPEN="| ~/conf/common/bin/lessopen %s"
 
 alias -g L='| less'
 alias -g GV='grep -v'
@@ -122,6 +132,13 @@ alias bul="bundle update --local"
 alias prs="parallel_rspec spec"
 alias pcf="parallel_cucumber features"
 
+# TODO: explain rake commands with echoes when they are running
+#function verbose_alias() {
+#  a=$(shift $1)
+#  alias $a="$@"
+#}
+#verbose_alias "fooey" "echo 'test'" ; fooey
+
 # Rake
 alias ®="rake "
 alias rkae="rake"
@@ -138,6 +155,9 @@ alias rdtp="rake db:test:prepare"
 alias rdv="rake db:version"
 alias rjw="rake jobs:work"
 alias rpp="rake parallel:prepare"
+
+# Spring
+alias br="bin/rspec"
 
 # Zeus (https://github.com/burke/zeus)
 alias z="zeus"
@@ -159,6 +179,7 @@ alias zrdr="zr db:rollback"
 alias zrdtp="zr db:test:prepare"
 alias zrds="zr db:seed"
 alias zrdsl="zr db:schema:load"
+alias zrpp="zr parallel:prepare"
 
 # Rails
 alias rials="rails"
@@ -226,31 +247,37 @@ alias reload!="source ~/.zshrc"
 alias zshrc="$EDITOR ~/conf/common/etc/.zshrc"
 
 # git shortcuts
+function ggrep() {
+  git grep $1 $(git rev-list --all)
+}
 alias g="git"
-alias gaa="git add -A ."
+alias gaa="git add --all ."
+alias gam="git amend"
 alias ganc="git amend-nc"
-alias gap="git add -p"
+alias gap="git add --patch"
 alias gb-="git checkout -"
 alias gb="git branch"
-alias gba="git branch -a"
+alias gba="git branch --all"
 alias gbb="git bisect bad"
 alias gbg="git bisect good"
 alias gc="git commit"
 alias gco-="git checkout -"
 alias gco="git checkout"
 alias gcom="git commit"
-alias gcomm="git commit -m"
+alias gcomm="git commit --message"
 alias gcp="git cherry-pick"
 alias gcpc="git cherry-pick --continue"
 alias gd="git diff"
 alias gdc="git diff --cached"
-alias gdw="git diff -w"
+alias gdcw="git diff --cached --ignore-all-space"
+alias gdw="git diff --ignore-all-space"
+alias geu="git edit-unmerged"
 alias gf="git fetch"
 alias gfwtf="git fetch && git wtf -A"
 alias gl="git log --oneline --graph --decorate"
 alias glh="gl -10"
-alias glp="git log -p"
-alias glpw="git log -p -w"
+alias glp="git log --patch"
+alias glpw="git log --patch --ignore-all-space"
 alias gmt="git mergetool"
 alias gp="git push"
 alias gpop="git pop"
@@ -294,6 +321,9 @@ alias -g pxargs="xargs -n 1"
 # silver searcher - use less with color support for j/k support
 alias ag='ag -i --pager "less -R"'
 
+# might be better platform independent, but YAGNI right now
+alias xe="xargs mvim"
+
 # print STDERR in red
 alias -g errred='2> >(while read line; do echo -e "\e[01;31m$line\e[0m" >&2; done)'
 
@@ -302,8 +332,12 @@ PATH+=":"$CONF/common/bin
 # load up rvm
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"  # This loads RVM into a shell session.
 
+export NVM_DIR="/Users/anthonypanozzo/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
+
 # some Ruby compiler optimizations
 # see http://stackoverflow.com/questions/4461346/slow-rails-stack
+# TODO: pretty old.. not sure if this is actually useful nowadays
 export RUBY_HEAP_FREE_MIN=100000
 export RUBY_HEAP_SLOTS_INCREMENT=300000
 export RUBY_HEAP_SLOTS_GROWTH_FACTOR=1

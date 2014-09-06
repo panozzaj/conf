@@ -147,6 +147,9 @@ fun! BasicAbbreviations()
 
   iabbrev defecit deficit
   iabbrev Defecit Deficit
+  
+  iabbrev migth might
+  iabbrev Migth Might
 
   " programming expansions
   iabbrev _pry require 'pry'; binding.pry
@@ -155,8 +158,10 @@ fun! BasicAbbreviations()
   iabbrev _saop save_and_open_page
 
   " Some helpful shortcuts
-  iabbrev dtt <C-R>=strftime("%Y%m%d")<CR>
-  iabbrev dts <C-R>=strftime("%Y%m%d - %H%M")<CR>
+  iabbrev dtt <C-R>=strftime("%F")<CR>
+  iabbrev dts <C-R>=strftime("%F %H%M")<CR>
+  iabbrev dtsiso <C-R>=strftime("%FT%T%z")<CR>
+  iabbrev dtsrfc <C-R>=strftime("%a, %d %b %Y %H:%M:%S %z")<CR>
 endfu
 call BasicAbbreviations()
 
@@ -182,6 +187,9 @@ nnoremap <leader>z zMzv
 
 " copy current file name (relative/absolute) to system clipboard
 if has("mac") || has("gui_macvim") || has("gui_mac")
+  " relative path  (src/foo.txt)
+  nnoremap <leader>cf :let @*=expand("%")<CR>
+
   " relative path  (src/foo.txt)
   nnoremap <leader>cf :let @*=expand("%")<CR>
 
@@ -261,7 +269,6 @@ autocmd BufReadPost *
   \ if line("'\"") > 0 && line("'\"") <= line("$") |
   \ exe "normal g`\"" |
   \ endif
-
 
 function! PromoteToLet()
   :normal! dd
@@ -719,7 +726,7 @@ comma! -nargs=1 Silent
 function! KillLine()
   let [text_before_cursor, text_after_cursor] = SplitLineTextAtCursor()
   if len(text_after_cursor) == 0
-    normal! J
+    normal! dd
   else
     normal! d$
   endif
