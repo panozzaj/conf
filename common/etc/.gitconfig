@@ -25,6 +25,7 @@
         praise = blame
         #remove-merged-remotes = !git-remove-merged-remotes
         remove-merged-locals = !(git branch --merged | grep -v "\\*" | xargs -n 2 git branch -d)
+        rest = reset
         sub = submodule
         g = grep --break --heading --line-number
 [branch]
