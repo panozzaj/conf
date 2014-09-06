@@ -1,6 +1,8 @@
 #!/bin/sh
 
 # regenerate tmp/routes if it is not already generated or it is older than the routes config file
+mkdir tmp
+
 if [ ! -f tmp/routes ] || [ tmp/routes -ot config/routes.rb ]; then
   if [ ! -f tmp/routes ]; then
     generating='Generating'
