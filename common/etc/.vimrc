@@ -1,9 +1,10 @@
 " vim: set ts=2 sw=2:
-filetype off
+set nocompatible
+
+runtime bundle/vim-pathogen/autoload/pathogen.vim
 execute pathogen#infect('bundle/{}', 'bundle-colorschemes/{}')
 
 filetype plugin indent on
-set nocompatible
 
 set history=1000 " lines of history to remember
 runtime macros/matchit.vim
