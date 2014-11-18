@@ -356,9 +356,6 @@ PATH+=":"$CONF/common/bin
 # load up rvm
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"  # This loads RVM into a shell session.
 
-export NVM_DIR="/Users/anthonypanozzo/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
-
 # some Ruby compiler optimizations
 # see http://stackoverflow.com/questions/4461346/slow-rails-stack
 # TODO: pretty old.. not sure if this is actually useful nowadays
