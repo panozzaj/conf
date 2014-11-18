@@ -22,11 +22,13 @@
         modified-but-not-deleted = ! git status --porcelain | egrep -v ' D' | cut -d ' ' -f 3
         pick = cherry-pick
         pop = stash pop
+        pup = !git push -u ${1-origin} `git symbolic-ref --short HEAD`
         praise = blame
         #remove-merged-remotes = !git-remove-merged-remotes
         remove-merged-locals = !(git branch --merged | grep -v "\\*" | xargs -n 2 git branch -d)
         rest = reset
         sub = submodule
+        sup = !git branch --set-upstream-to=${1-origin}/`git symbolic-ref --short HEAD`
         g = grep --break --heading --line-number
 [branch]
         autosetupmerge = true
@@ -37,7 +39,7 @@
         excludesfile = ~/.cvsignore
 [diff]
         renames = copies
-	noprefix = true
+        noprefix = true
 [difftool "sourcetree"]
         cmd = opendiff \"$LOCAL\" \"$REMOTE\"
 [github]

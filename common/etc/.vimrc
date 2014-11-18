@@ -62,6 +62,8 @@ set nofoldenable      " disable folding
 " ctrl-p plugin
 let g:ctrlp_match_window_bottom=0 " put at top
 let g:ctrlp_match_window_reversed=0 " reverse order of items
+"let g:ctrlp_custom_ignore = '\v[\/](node_modules|target|dist|tmp|log|.bower-cache|.bower-registry|.bower-tmp|bower_components)|(\.(swp|ico|png|jpg|git|svn))$'
+
 
 let g:closetag_html_style=1
 "source ~/.vim/closetag.vim
@@ -72,6 +74,8 @@ let g:languagetool_disable_rules = 'WHITESPACE_RULE,EN_QUOTES'
 
 let g:NERDShutUp=1
 
+" sass/haml checking is slow by default, so only check when we explicitly ask
+let g:syntastic_mode_map = { 'passive_filetypes': ['sass', 'scss', 'haml'] }
 
 
 fun! Wp()
@@ -147,7 +151,7 @@ fun! BasicAbbreviations()
 
   iabbrev defecit deficit
   iabbrev Defecit Deficit
-  
+
   iabbrev migth might
   iabbrev Migth Might
 
@@ -231,7 +235,7 @@ let g:Tex_DefaultTargetFormat="pdf"
 " these should be in another file, but don't care for now
 
 " should also move things from vim72/** that I added into my personal .vim directory
-autocmd BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please stop reading unless you are Anthony." | call Wp() | endif
+autocmd BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please stop reading unless you are Anthony." | call Wp() | call gitgutter#disable() | endif
 
 autocmd BufRead,BufNewFile *.txt set filetype=conf
 autocmd BufRead,BufNewFile {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc,irb_tempfile*,Vagrantfile} set ft=ruby
@@ -361,9 +365,19 @@ set listchars=tab:>-,trail:· ",eol:$
 nmap <silent> <leader>s ;set nolist!<CR>
 set list
 
+" Control-T also looks at these, so remove anything that I wouldn't typically
+" want to open
 set wildignore=*.o,*.class,*.png,*.pdf,*.ps,*.gif,*.jpg,*.aux,*.toc,*.cod,*.bak,*.mp3,*.m4a,*.wmv,*.mpg,*.mov,*.doc,*.bc
 set wildignore+=vendor/rails/**
-set wildignore+=build/android  " Titanium
+set wildignore+=build/android    " Titanium
+set wildignore+=node_modules/**  " npm
+set wildignore+=bower_components/**,.bower-cache/**,.bower-registry/**,.bower-tmp/** " bower
+set wildignore+=.git/**          " vcs
+
+" client-specific ignores, might regret this later but speeds up for now
+set wildignore+=mobile/**        
+set wildignore+=test/coverage/**        
+
 
 " Enable automatic spell checking for txt and tex files
 let spell_auto_type="tex,txt"

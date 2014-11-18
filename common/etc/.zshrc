@@ -1,16 +1,21 @@
-# The following lines were added by compinstall
-zmodload zsh/complist
-autoload -Uz compinit && compinit
+# TODO: understand what this is and if we need it or not.
+# For some reason this is clobbering my git filename completion
+# with latest homebrew install of git and zsh (2014-09-10)
+#zmodload zsh/complist
+#autoload -Uz compinit && compinit
 
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=** r:|=**' 'l:|=* r:|=*'
-
 zmodload zsh/datetime
 setopt share_history
 setopt APPEND_HISTORY
 
-autoload -Uz run-help
+# from `brew info zsh` install instructions
+unalias run-help
+autoload run-help
+HELPDIR=/usr/local/share/zsh/help
 
-export HELPDIR=~/zsh_help
+# get popup help for git commands
+autoload run-help-git
 
 # End of lines added by compinstall
 
@@ -78,16 +83,19 @@ alias ll='ls -l'
 setopt AUTOCD
 alias -- -="cd -" # the -- signifies that the variable will start with a -, so `-` will invoke `cd -`
 
-# when you are typing and you have more than two dots in a row, converts the third dot to /.. on the fly
-function rationalize-dot {
-    if [[ $LBUFFER = *.. ]]; then
-        LBUFFER+=/..
-    else
-        LBUFFER+=.
-    fi
-}
-zle -N rationalize-dot
-bindkey . rationalize-dot
+# when you are typing and you have more than two dots in a row, converts the
+# third dot to /.. on the fly
+# AP: I don't really use this any more and it messes things up just often
+# enough to make me not like it
+#function rationalize-dot {
+#    if [[ $LBUFFER = *.. ]]; then
+#        LBUFFER+=/..
+#    else
+#        LBUFFER+=.
+#    fi
+#}
+#zle -N rationalize-dot
+#bindkey . rationalize-dot
 
 # -I = case insensitive search
 # -R = display raw characters (git diff colored output, etc.)
@@ -252,7 +260,10 @@ function ggrep() {
 }
 alias g="git"
 alias gaa="git add --all ."
+alias gai="git add --interactive"
+alias gaia="git add --intent-to-add"
 alias gam="git amend"
+alias gamend="git amend"
 alias ganc="git amend-nc"
 alias gap="git add --patch"
 alias gb-="git checkout -"
@@ -278,9 +289,11 @@ alias gl="git log --oneline --graph --decorate"
 alias glh="gl -10"
 alias glp="git log --patch"
 alias glpw="git log --patch --ignore-all-space"
+alias gmom="echo 'git merge origin/master --ff-only'; git merge origin/master --ff-only"
 alias gmt="git mergetool"
 alias gp="git push"
 alias gpop="git pop"
+alias gpup="git pup"
 alias gpr="git pull --rebase"
 alias grc="git rebase --continue"
 alias gri="git rebase --interactive"
@@ -291,9 +304,20 @@ alias gs="git status"
 alias gss="git show --stat"
 alias gski="git stash --keep-index"
 alias gstash="git stash"
+alias gsup="git sup"
 alias gwtf="git wtf -A"
 alias gwtff="git fetch && git wtf -A"
 alias hpr="hub pull-request"
+
+# grunt
+alias gr="grunt"
+alias grj="grunt jshint"
+alias grjm="grunt jshint test:mocha"
+alias grje="grunt jshint test:e2e"
+alias grm="grunt test:mocha"
+
+# npm
+alias ni="npm install"
 
 # javascript
 alias jsl="jslint -process"

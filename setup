@@ -30,6 +30,7 @@ end
 [
  "conf/common/etc/.ackrc",
  "conf/common/etc/.cvsignore",
+ "conf/common/etc/.emacs",
  "conf/common/etc/.gemrc",
  "conf/common/etc/.gitconfig",
  "conf/common/etc/.gitignore",
@@ -48,6 +49,10 @@ end
 ['backup', 'swap', 'undo'].each do |tmpfile|
   `mkdir -p ~/.vim/tmp/#{tmpfile}`
 end
+
+# set up emacs temporary directory
+# based on my .emacs custom configuration
+`mkdir -p ~/conf/tmp/emacs`
 
 platform = ARGV[0]
 host = ARGV[1]
