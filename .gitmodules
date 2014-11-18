@@ -94,9 +94,9 @@
 [submodule "common/.vim/bundle/floobits-vim"]
 	path = common/.vim/bundle/floobits-vim
 	url = https://github.com/Floobits/floobits-vim.git
-[submodule "common/.vim/bundle-colorschemes/grb256"]
-	path = common/.vim/bundle-colorschemes/grb256
-	url = https://github.com/m-martinez/grb256.git
+[submodule "common/.vim/bundle/vim-vinegar"]
+	path = common/.vim/bundle/vim-vinegar
+	url = https://github.com/tpope/vim-vinegar.git
 [submodule "common/.vim/bundle-colorschemes/ir_black"]
 	path = common/.vim/bundle-colorschemes/ir_black
 	url = https://github.com/twerth/ir_black.git
@@ -178,3 +178,6 @@
 [submodule "common/.vim/bundle/vim-ruby-refactoring"]
 	path = common/.vim/bundle/vim-ruby-refactoring
 	url = https://github.com/ecomba/vim-ruby-refactoring.git
+[submodule "common/.vim/bundle/vim-pathogen"]
+	path = common/.vim/bundle/vim-pathogen
+	url = https://github.com/tpope/vim-pathogen.git
