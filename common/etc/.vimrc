@@ -39,7 +39,6 @@ set hlsearch
 set guicursor=a:blinkon0 " Set the cursor to not blink
 
 set expandtab
-
 set smarttab
 set smartindent
 set backupdir=~/.vim/tmp/backup// " change backup directory so backups don't go everywhere
@@ -77,6 +76,36 @@ let g:NERDShutUp=1
 
 " sass/haml checking is slow by default, so only check when we explicitly ask
 let g:syntastic_mode_map = { 'passive_filetypes': ['sass', 'scss', 'haml'] }
+
+let g:syntastic_javascript_checkers = ['jshint']
+
+" Better :sign interface symbols
+let g:syntastic_error_symbol = '✗'
+let g:syntastic_warning_symbol = '!'
+
+" Custom syntastic settings:
+function! s:find_jshintrc(dir)
+    let l:found = globpath(a:dir, '.jshintrc')
+    if filereadable(l:found)
+        return l:found
+    endif
+
+    let l:parent = fnamemodify(a:dir, ':h')
+    if l:parent != a:dir
+        return s:find_jshintrc(l:parent)
+    endif
+
+    return "~/.jshintrc"
+endfunction
+
+function! UpdateJsHintConf()
+    let l:dir = expand('%:p:h')
+    let l:jshintrc = s:find_jshintrc(l:dir)
+    let g:syntastic_javascript_jshint_args = '--config ' + l:jshintrc
+    "let g:syntastic_javascript_jshint_conf = l:jshintrc
+endfunction
+
+au BufEnter *.js call UpdateJsHintConf()
 
 
 fun! Wp()
@@ -221,6 +250,15 @@ nnoremap <leader>x :! chmod +x %<CR>
 " Jekyll shortcuts
 nnoremap <leader>jp :! ./scripts/preview %<CR> " preview jekyll post in browser
 
+nnoremap <leader>e :Errors<CR>
+nnoremap <leader>q :q<CR>
+nnoremap <leader>w :w<CR>
+iabbrev <// </<C-X><C-O><ESC>==
+
+" obliterates m register, but I would think this is rarely used?
+nnoremap <C-Up> "mddk"mP
+nnoremap <C-Down> "mdd"mp
+
 
 " latex-suite
 set grepprg=grep\ -nH\ $*
@@ -303,19 +341,19 @@ let g:surround_35  = "#{\r}"   " #
 """""""""""""""""""""""""""""""""""
 " some from mswin.vim for consistency/quickness
 " CTRL-X and SHIFT-Del are Cut
-vnoremap <C-X> "+x
-vnoremap <S-Del> "+x
+"vnoremap <C-X> "+x
+"vnoremap <S-Del> "+x
 
 " CTRL-C and CTRL-Insert are Copy
-vnoremap <C-C> "+y
-vnoremap <C-Insert> "+y
+"vnoremap <C-C> "+y
+"vnoremap <C-Insert> "+y
 
 " CTRL-V and SHIFT-Insert are Paste
-map <C-V>       "+gP
-map <S-Insert>          "+gP
+"map <C-V>       "+gP
+"map <S-Insert>          "+gP
 
-cmap <C-V>      <C-R>+
-cmap <S-Insert>         <C-R>+
+"cmap <C-V>      <C-R>+
+"cmap <S-Insert>         <C-R>+
 
 " Pasting blockwise and linewise selections is not possible in Insert and
 " Visual mode without the +virtualedit feature.  They are pasted as if they
@@ -325,8 +363,8 @@ cmap <S-Insert>         <C-R>+
 exe 'inoremap <script> <C-V>' paste#paste_cmd['i']
 exe 'vnoremap <script> <C-V>' paste#paste_cmd['v']
 
-imap <S-Insert>         <C-V>
-vmap <S-Insert>         <C-V>
+"imap <S-Insert>         <C-V>
+"vmap <S-Insert>         <C-V>
 
 " Use CTRL-Q to do what CTRL-V used to do
 noremap <C-Q>           <C-V>
@@ -369,9 +407,11 @@ set wildignore+=node_modules/**  " npm
 set wildignore+=bower_components/**,.bower-cache/**,.bower-registry/**,.bower-tmp/** " bower
 set wildignore+=.git/**          " vcs
 
-" client-specific ignores, might regret this later but speeds up for now
-set wildignore+=mobile/**        
-set wildignore+=test/coverage/**        
+
+" Haven-specific ignores, might regret this later but speeds up for now
+set wildignore+=public/lib/ionic/**
+set wildignore+=cordova/**
+set wildignore+=test/coverage/**
 
 
 " Enable automatic spell checking for txt and tex files
@@ -413,6 +453,14 @@ let spell_auto_type="tex,txt"
 
 "call TurnOnDebuggingMatching()
 
+" set autocomplete popup menu to somewhat readable color
+" (some color schemes have bad default here)
+function! ResetPopupMenu()
+  highlight Pmenu guibg=black guifg=lightmagenta
+  highlight Pmenusel guibg=lightmagenta guifg=black
+endfunction
+
+
 " Colorscheme stuff
 function! RandomColorscheme()
   " random color, from http://vim.1045645.n5.nabble.com/Random-color-scheme-at-start-td1165585.html
@@ -424,21 +472,13 @@ function! RandomColorscheme()
   "if s:hilightdebugging
   "  call TurnOnDebuggingMatching()  " restore my custom debugging highlighting if we were using it
   "endif
+  call ResetPopupMenu()
 
-  " set autocomplete popup menu to somewhat readable color
-  " (some color schemes have bad default here)
-  highlight Pmenu guibg=black guifg=lightmagenta
-  highlight Pmenusel guibg=lightmagenta guifg=black
 endfunction
 
 let g:gitgutter_eager = 0 " prevent reload of all buffers on window focus (which takes a long time)
 
 nnoremap <leader>co <Esc>:call RandomColorscheme()<CR>
-
-nnoremap <leader>h :highlight clear SignColumn<CR>
-
-
-
 
 " Turns an word into a regex to match that word
 function! English(word)
@@ -691,6 +731,12 @@ nnoremap <leader>j{ {k3J
 " Join this paragraph with the next paragraph
 nnoremap <leader>j} 3J
 
+nnoremap <leader>rt :! grunt --no-color test:e2e --specs=% --no-colors<CR>
+
+nnoremap <leader>w :w<CR>
+nnoremap <leader>q :q<CR>
+nnoremap <leader>= <Cq<CR>
+
 " function for working with files with hard line breaks
 cabbr eighty call Eighty()
 fun! Eighty()
@@ -707,6 +753,9 @@ endif
 if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome") || has("unix")
   source ~/conf/platforms/ubuntu-10.04/etc/.vimrc
 endif
+
+" xmledit plugin - use for html
+let g:xmledit_enable_html=1
 
 if &l:diff
   colors peachpuff
@@ -765,7 +814,8 @@ inoremap <M-h> <C-w>
 " Would mess with digraphs
 "inoremap <C-k> <C-r>=<SID>kill_line()<CR>
 
-nnoremap <C-k> :call KillLine()<CR>
+" messes with ultisnips default "previous field" mapping
+"nnoremap <C-k> :call KillLine()<CR>
 nnoremap <C-x><C-o> <C-W><C-W>
 nnoremap <C-x><C-2> :vsplit
 nnoremap <C-x><C-3> :split

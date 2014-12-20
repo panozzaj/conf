@@ -4,13 +4,17 @@
 #zmodload zsh/complist
 #autoload -Uz compinit && compinit
 
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=** r:|=**' 'l:|=* r:|=*'
+zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
+#zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=** r:|=**' 'l:|=* r:|=*'
 zmodload zsh/datetime
 setopt share_history
 setopt APPEND_HISTORY
 
+fpath=($conf/common/etc/.zsh/ $fpath)
+zstyle ':completion:*:*:git:*' script $conf/common/bin/git-completion.bash
+
 # from `brew info zsh` install instructions
-unalias run-help
+[[ -e $(alias run-help) ]] && unalias run-help
 autoload run-help
 HELPDIR=/usr/local/share/zsh/help
 
@@ -109,7 +113,8 @@ export LESS='-R -F -W -X -I'
 # also expands archive files
 # see http://unix.stackexchange.com/questions/107563
 # and http://www.freebsd.org/cgi/man.cgi?query=less&sektion=1#INPUT_PREPROCESSOR
-export LESSOPEN="| ~/conf/common/bin/lessopen %s"
+#export LESSOPEN="| ~/conf/common/bin/lessopen %s"
+# AP: not needed in newer less programs
 
 alias -g L='| less'
 alias -g GV='grep -v'
@@ -119,6 +124,9 @@ alias dc='cd'
 alias pw='pwd'
 alias pdw='pwd'
 alias grpe='grep'
+
+# magic power for mkdir (and less typing)
+alias mp="mkdir -p"
 
 alias -g NE="2> /dev/null"
 
@@ -252,7 +260,13 @@ alias fs="foreman start"
 # zsh shorcuts
 alias reload="source ~/.zshrc"
 alias reload!="source ~/.zshrc"
+
+# zshrc editing shortcuts
 alias zshrc="$EDITOR ~/conf/common/etc/.zshrc"
+alias zsrhc="$EDITOR ~/conf/common/etc/.zshrc"
+alias zshrcp="$EDITOR ~/conf/platform/$PLATFORM/etc/.zshrc"
+alias zshrch="$EDITOR ~/conf/hosts/$HOST/etc/.zshrc"
+alias zshrci="$EDITOR ~/conf/init/etc/.zshrc"
 
 # git shortcuts
 function ggrep() {
@@ -271,6 +285,7 @@ alias gb="git branch"
 alias gba="git branch --all"
 alias gbb="git bisect bad"
 alias gbg="git bisect good"
+alias gbr="git branch --remote"
 alias gc="git commit"
 alias gco-="git checkout -"
 alias gco="git checkout"
@@ -298,29 +313,44 @@ alias gpr="git pull --rebase"
 alias grc="git rebase --continue"
 alias gri="git rebase --interactive"
 alias grlh="git reflog | head"
+alias grom="git rebase origin/master"
 alias grs="git rebase --skip"
-alias grsh="git reset --soft 'HEAD^'"
+alias grsh="git reset --soft 'HEAD^' && git reset"
 alias gs="git status"
-alias gss="git show --stat"
 alias gski="git stash --keep-index"
+alias gss="git show --stat"
+alias gssp="git stash show --patch"
 alias gstash="git stash"
 alias gsup="git sup"
+alias gwip="git add -A . ; git commit -nm 'WIP'"
 alias gwtf="git wtf -A"
 alias gwtff="git fetch && git wtf -A"
 alias hpr="hub pull-request"
+alias squash="git commit -nm 'SQUASH ME'"
+alias fixup="git commit -nm 'FIXUP ME'"
 
 # grunt
 alias gr="grunt"
+alias gra="grunt test:appium"
+alias gre="grunt test:e2e"
 alias grj="grunt jshint"
-alias grjm="grunt jshint test:mocha"
 alias grje="grunt jshint test:e2e"
+alias grjm="grunt jshint test:mocha"
+alias grk="grunt test:karma"
 alias grm="grunt test:mocha"
+alias grml="grunt test:mocha:local"
+alias grmo="grunt mobileapp"
+alias grmol="grunt mobileapp --backend=http://localhost:9559"
+alias grt="grunt test"
+
+# cordova
+alias emui="pushd cordova ; cordova emulate ios ; popd"
 
 # npm
 alias ni="npm install"
 
 # javascript
-alias jsl="jslint -process"
+#alias jsl="jslint -process"
 
 # vagrant
 alias va="vagrant"
@@ -328,6 +358,7 @@ alias vag="vagrant"
 
 # vim shortcuts
 alias vimrc="$EDITOR ~/conf/common/etc/.vimrc"
+vim="$conf/common/.vim"
 
 alias py="python"
 

@@ -37,6 +37,7 @@
         interactive = auto
 [core]
         excludesfile = ~/.cvsignore
+        editor = $EDITOR -f
 [diff]
         renames = copies
         noprefix = true
