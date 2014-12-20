@@ -1,0 +1,144 @@
+snippet use
+'use strict';
+endsnippet
+
+snippet ife
+if ($1) {
+    $2
+} else {
+    $3
+}
+endsnippet
+
+snippet clv
+console.log('$1: ', ${1});
+endsnippet
+
+snippet cl
+console.log('${1}');
+endsnippet
+
+snippet cev
+console.error('$1: ', ${1:err});
+endsnippet
+
+snippet ce
+console.error('${1}');
+endsnippet
+
+snippet req
+$1 = require('${1}')
+endsnippet
+
+snippet reqbb
+BBPromise = require('bluebird')
+endsnippet
+
+snippet reqfac
+Factory = require('factory-lady')
+endsnippet
+
+snippet reqmon
+mongoose = require('mongoose')
+endsnippet
+
+snippet reqas
+actionSink = require('../util/appActionSink')
+endsnippet
+
+snippet req_
+_ = require('lodash')
+endsnippet
+
+snippet reqlo
+_ = require('lodash')
+endsnippet
+
+snippet newbb
+new BBPromise(function(resolve, reject) {
+    ${1}
+});
+endsnippet
+
+# AP: these might be better moved to a spec-specific file
+snippet fgc
+Factory.create('${1/.*/\u$0/}', function(_${1}) {
+    $1 = _$1;
+    done();
+});
+endsnippet
+
+snippet fgb
+Factory.build('${1/.*/\u$0/}', function(_${1}) {
+    $1 = _$1;
+    done();
+});
+endsnippet
+
+snippet hcl
+Helper.createList('${1}', ${2:2}, {
+    ${3}
+}, function(${4:list}) {
+    ${1/.*/\l$0/}s = $4;
+    done();
+});
+endsnippet
+
+snippet asle
+actionSink.logError('${1}', ${2:req}, ${3:err});
+endsnippet
+
+snippet asla
+actionSink.logAction('${1}', ${2:req});
+endsnippet
+
+snippet aslf
+actionSink.logFailure('${1}', ${2:req});
+endsnippet
+
+snippet aslas
+actionSink.logAssert('${1}', ${2:req});
+endsnippet
+
+snippet mm
+$1 = mongoose.model('${1}')
+endsnippet
+
+snippet findone
+${1}.findOne({ ${2} }, function(err, ${1/.*/\l$0/}) {
+    if (err || !${1/.*/\l$0/}) {
+        ${3}
+    } else {
+    }
+});
+endsnippet
+
+snippet acont
+'use strict';
+
+(function() {
+    angular
+        .module('${1}')
+        .controller('${2}', $2);
+
+    $2.inject = [];
+
+    function $2() {
+        var vm = this;
+    }
+})();
+endsnippet
+
+snippet bef
+beforeEach(function(done) {
+    ${1}
+    done();
+});
+endsnippet
+
+snippet it
+it('${1:description}', function(done) {
+    $2
+    done();
+});
+endsnippet

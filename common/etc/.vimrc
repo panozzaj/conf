@@ -156,12 +156,6 @@ fun! BasicAbbreviations()
   iabbrev migth might
   iabbrev Migth Might
 
-  " programming expansions
-  iabbrev _pry require 'pry'; binding.pry
-  iabbrev _fgc FactoryGirl.create
-  iabbrev _fgb FactoryGirl.build
-  iabbrev _saop save_and_open_page
-
   " Some helpful shortcuts
   iabbrev dtt <C-R>=strftime("%F")<CR>
   iabbrev dts <C-R>=strftime("%F %H%M")<CR>
