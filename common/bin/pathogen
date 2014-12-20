@@ -28,6 +28,7 @@ if repo !~ /^http/
   end
 end
 
+repo = repo.gsub(/\/$/, '') # trim any trailing slashes in url
 repo += '.git' unless repo =~ /\.git$/ # in case I cmd/ctrl + L on github page instead of copying from repo box
 repo =~ /([^\/]*)\.git$/
 project_name = $1
