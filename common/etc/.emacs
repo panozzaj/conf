@@ -3,9 +3,9 @@
 ;;;;;;;;;;;
 
 ; melpa-stable for package manager
-(require 'package)
-(add-to-list 'package-archives
-  '("melpa-stable" . "http://melpa-stable.milkbox.net/packages/") t)
+;(require 'package)
+;(add-to-list 'package-archives
+;  '("melpa-stable" . "http://melpa-stable.milkbox.net/packages/") t)
 
 (when (< emacs-major-version 24)
   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
