@@ -58,9 +58,6 @@
 [submodule "common/.vim/bundle/vim-css3-syntax"]
 	path = common/.vim/bundle/vim-css3-syntax
 	url = https://github.com/hail2u/vim-css3-syntax.git
-[submodule "common/.vim/bundle/vim-css-color"]
-	path = common/.vim/bundle/vim-css-color
-	url = https://github.com/skammer/vim-css-color.git
 [submodule "common/.vim/bundle/vim-coffee-script"]
 	path = common/.vim/bundle/vim-coffee-script
 	url = https://github.com/kchmck/vim-coffee-script.git
@@ -190,3 +187,9 @@
 [submodule "common/.vim/bundle/vim-git"]
 	path = common/.vim/bundle/vim-git
 	url = https://github.com/tpope/vim-git.git
+[submodule "common/.vim/bundle/vim-enmasse"]
+	path = common/.vim/bundle/vim-enmasse
+	url = https://github.com/Wolfy87/vim-enmasse.git
+[submodule "common/.vim/bundle/common/.vim/bundle/vim-less"]
+	path = common/.vim/bundle/common/.vim/bundle/vim-less
+	url = https://github.com/groenewege/vim-less.git
