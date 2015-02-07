@@ -1,3 +1,15 @@
+snippet (ƒ "something" i
+(function($1) {
+    $2
+})
+endsnippet
+
+snippet ƒ "something"
+function($1) {
+    $2
+}
+endsnippet
+
 snippet use
 'use strict';
 endsnippet
@@ -39,7 +51,12 @@ Factory = require('factory-lady')
 endsnippet
 
 snippet reqmon
-mongoose = require('mongoose')
+mongoose = BBPromise.promisifyAll(require('mongoose'))
+endsnippet
+
+snippet reqmonbb
+BBPromise = require('bluebird'),
+mongoose = BBPromise.promisifyAll(require('mongoose'))
 endsnippet
 
 snippet reqas
@@ -61,22 +78,22 @@ new BBPromise(function(resolve, reject) {
 endsnippet
 
 # AP: these might be better moved to a spec-specific file
-snippet fgc
+snippet fc
 Factory.create('${1/.*/\u$0/}', function(_${1}) {
     $1 = _$1;
     done();
 });
 endsnippet
 
-snippet fgb
+snippet fb
 Factory.build('${1/.*/\u$0/}', function(_${1}) {
     $1 = _$1;
     done();
 });
 endsnippet
 
-snippet hcl
-Helper.createList('${1}', ${2:2}, {
+snippet fcl
+FactoryExtensions.createList('${1}', ${2:2}, {
     ${3}
 }, function(${4:list}) {
     ${1/.*/\l$0/}s = $4;
