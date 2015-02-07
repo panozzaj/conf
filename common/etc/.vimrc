@@ -62,7 +62,7 @@ set nofoldenable      " disable folding
 " ctrl-p plugin
 let g:ctrlp_match_window_bottom=0 " put at top
 let g:ctrlp_match_window_reversed=0 " reverse order of items
-"let g:ctrlp_custom_ignore = '\v[\/](node_modules|target|dist|tmp|log|.bower-cache|.bower-registry|.bower-tmp|bower_components)|(\.(swp|ico|png|jpg|git|svn))$'
+let g:ctrlp_custom_ignore = '\v[\/](node_modules|target|dist|tmp|log|.bower-cache|.bower-registry|.bower-tmp|bower_components)|(\.(swp|ico|png|jpg|git|svn))$'
 
 
 let g:closetag_html_style=1
@@ -155,6 +155,10 @@ fun! BasicAbbreviations()
   iabbrev ned end
   iabbrev od do
   iabbrev p[ []
+  iabbrev retrun return
+  iabbrev retunr return
+  iabbrev retunr return
+  iabbrev retun return
 
   " some spelling mistakes not (yet) caught by autocorrect.vim
   iabbrev testamonial testimonial
@@ -250,7 +254,7 @@ nnoremap <leader>x :! chmod +x %<CR>
 " Jekyll shortcuts
 nnoremap <leader>jp :! ./scripts/preview %<CR> " preview jekyll post in browser
 
-nnoremap <leader>e :Errors<CR>
+nnoremap <leader>e :Errors<CR><C-W><C-W>
 nnoremap <leader>q :q<CR>
 nnoremap <leader>w :w<CR>
 iabbrev <// </<C-X><C-O><ESC>==
@@ -473,8 +477,26 @@ function! RandomColorscheme()
   "  call TurnOnDebuggingMatching()  " restore my custom debugging highlighting if we were using it
   "endif
   call ResetPopupMenu()
-
+  " need to reset the css colors after calling random colorscheme
+  source ~/conf/common/.vim/bundle/vim-css-color/after/syntax/css.vim
 endfunction
+
+let g:niji_matching_filetypes = ['javascript']
+
+" see http://ctoomey.com/posts/an-incremental-approach-to-vim/#know-your-leader
+function! ListLeaders()
+     silent! redir @a
+     silent! nmap <LEADER>
+     silent! redir END
+     silent! new
+     silent! put! a
+     silent! g/^s*$/d
+     silent! %s/^.*,//
+     silent! normal ggVg
+     silent! sort
+     silent! let lines = getline(1,"$")
+endfunction
+nnoremap <leader>\ :call ListLeaders()<CR>
 
 let g:gitgutter_eager = 0 " prevent reload of all buffers on window focus (which takes a long time)
 
@@ -635,6 +657,8 @@ imap<silent><F12>       <C-O>;call <SID>ToggleSpellCorrect()<CR>
 noremap ; :
 noremap : ;
 
+let g:syntastic_check_on_open = 1
+
 "  In visual mode when you press * or # to search for the current selection
 vnoremap <silent> * :call VisualSearch('f')<CR>
 vnoremap <silent> # :call VisualSearch('b')<CR>
@@ -755,7 +779,7 @@ if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome") || has("unix")
 endif
 
 " xmledit plugin - use for html
-let g:xmledit_enable_html=1
+"let g:xmledit_enable_html=1
 
 if &l:diff
   colors peachpuff
