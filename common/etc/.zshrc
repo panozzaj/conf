@@ -266,6 +266,7 @@ alias zshrc="$EDITOR ~/conf/common/etc/.zshrc"
 alias zsrhc="$EDITOR ~/conf/common/etc/.zshrc"
 alias zshrcp="$EDITOR ~/conf/platform/$PLATFORM/etc/.zshrc"
 alias zshrch="$EDITOR ~/conf/hosts/$HOST/etc/.zshrc"
+alias zshrcl="$EDITOR ~/conf/hosts/$HOST/etc/.zshrc" # local
 alias zshrci="$EDITOR ~/conf/init/etc/.zshrc"
 
 # git shortcuts
@@ -290,12 +291,14 @@ alias gc="git commit"
 alias gco-="git checkout -"
 alias gco="git checkout"
 alias gcom="git commit"
+alias gcop="git checkout --patch"
 alias gcomm="git commit --message"
 alias gcp="git cherry-pick"
 alias gcpc="git cherry-pick --continue"
 alias gd="git diff"
 alias gdc="git diff --cached"
 alias gdcw="git diff --cached --ignore-all-space"
+alias gdom="git diff origin/master"
 alias gdw="git diff --ignore-all-space"
 alias geu="git edit-unmerged"
 alias gf="git fetch"
@@ -331,20 +334,27 @@ alias fixup="git commit -nm 'FIXUP ME'"
 
 # grunt
 alias gr="grunt"
-alias gra="grunt test:appium"
-alias gre="grunt test:e2e"
 alias grj="grunt jshint"
-alias grje="grunt jshint test:e2e"
-alias grjm="grunt jshint test:mocha"
-alias grk="grunt test:karma"
-alias grm="grunt test:mocha"
-alias grml="grunt test:mocha:local"
 alias grmo="grunt mobileapp"
-alias grmol="grunt mobileapp --backend=http://localhost:9559"
+alias grmoa="grunt mobileapp --backend=localhost:3000"
+alias grmot="grunt mobileapp --backend=http://localhost:9559"
+
+# grunt testing
 alias grt="grunt test"
+alias grta="grunt test:appium"
+alias grtaf="grunt test:appium:full"
+alias grtk="grunt test:karma"
+alias grtm="grunt test:mocha"
+alias grtml="grunt test:mocha:local"
+alias grtp="grunt test:protractor"
 
 # cordova
-alias emui="pushd cordova ; cordova emulate ios ; popd"
+alias cemui="pushd cordova ; cordova emulate ios ; popd"
+alias cemua="pushd cordova ; cordova emulate android ; popd"
+alias cruna="pushd cordova ; cordova run android ; popd"
+alias ccemui="grunt mobileapp --backend=localhost:3000 && cemui"
+alias ccemua="grunt mobileapp --backend=10.0.2.2:3000 && cemua"
+alias ccruna="grunt mobileapp --backend=localhost:3000 && cruna"
 
 # npm
 alias ni="npm install"
@@ -374,7 +384,7 @@ alias mvn='color-mvn'
 alias -g pxargs="xargs -n 1"
 
 # silver searcher - use less with color support for j/k support
-alias ag='ag -i --pager "less -R"'
+alias ag='ag -i --pager "less -R" --color-match="1;31"'
 
 # might be better platform independent, but YAGNI right now
 alias xe="xargs mvim"
