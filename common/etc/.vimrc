@@ -12,7 +12,6 @@ runtime macros/matchit.vim
 set esckeys " no delay for ESC, but cannot use ESC as beginning of key sequence (which is fine by me)
 
 highlight Pmenu guibg=brown gui=bold
-syntax enable
 
 set showcmd
 
@@ -159,6 +158,10 @@ fun! BasicAbbreviations()
   iabbrev retunr return
   iabbrev retunr return
   iabbrev retun return
+  iabbrev serviceORder serviceOrder
+  iabbrev serviceORders serviceOrders
+  iabbrev ServiceORders ServiceOrders
+  iabbrev ServiceORder ServiceOrder
 
   " some spelling mistakes not (yet) caught by autocorrect.vim
   iabbrev testamonial testimonial
@@ -188,6 +191,9 @@ fun! BasicAbbreviations()
 
   iabbrev migth might
   iabbrev Migth Might
+
+  iabbrev kidn kind
+  iabbrev Kidn Kind
 
   " Some helpful shortcuts
   iabbrev dtt <C-R>=strftime("%F")<CR>
@@ -258,6 +264,7 @@ nnoremap <leader>w :w<CR>
 iabbrev <// </<C-X><C-O><ESC>==
 
 " obliterates m register, but I would think this is rarely used?
+" mostly unused because of vim-unimpaired's bindings of ]e, [e
 nnoremap <C-Up> "mddk"mP
 nnoremap <C-Down> "mdd"mp
 
@@ -741,8 +748,6 @@ nnoremap K <nop>
 " modification from help file to accommodate colon remapping)
 nnoremap gf :e <cfile><CR>
 
-set formatoptions+=j " 'Where it makes sense, remove a comment leader when joining lines.'
-
 " For working with soft-wrapped files [experimental]
 " Anywhere on sentence, take that sentence and make it the first of a new paragraph
 nnoremap <leader>s} )(i<BS><CR><CR><ESC>
@@ -841,3 +846,9 @@ inoremap <M-h> <C-w>
 nnoremap <C-x><C-o> <C-W><C-W>
 nnoremap <C-x><C-2> :vsplit
 nnoremap <C-x><C-3> :split
+
+nnoremap ! :!
+
+syntax off
+
+let g:tern#command = '/Users/anthony/conf/common/.vim/bundle/tern_for_vim/node_modules/.bin/tern'

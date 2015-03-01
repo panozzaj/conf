@@ -205,3 +205,18 @@
 [submodule "common/.vim/bundle/vim-mustache-handlebars"]
 	path = common/.vim/bundle/vim-mustache-handlebars
 	url = https://github.com/mustache/vim-mustache-handlebars.git
+[submodule "common/.vim/bundle/vim-projectionist"]
+	path = common/.vim/bundle/vim-projectionist
+	url = https://github.com/tpope/vim-projectionist.git
+[submodule "common/.vim/bundle/vim-elixir"]
+	path = common/.vim/bundle/vim-elixir
+	url = https://github.com/elixir-lang/vim-elixir.git
+[submodule "common/.vim/bundle/vim-test"]
+	path = common/.vim/bundle/vim-test
+	url = https://github.com/janko-m/vim-test.git
+[submodule "common/.vim/bundle/gundo.vim"]
+	path = common/.vim/bundle/gundo.vim
+	url = https://github.com/sjl/gundo.vim.git
+[submodule "common/.vim/bundle/tern_for_vim"]
+	path = common/.vim/bundle/tern_for_vim
+	url = https://github.com/marijnh/tern_for_vim.git

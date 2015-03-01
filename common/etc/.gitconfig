@@ -25,7 +25,8 @@
         pup = !git push -u ${1-origin} `git symbolic-ref --short HEAD`
         praise = blame
         #remove-merged-remotes = !git-remove-merged-remotes
-        remove-merged-locals = !(git branch --merged | grep -v "\\*" | xargs -n 2 git branch -d)
+        reset-whitespace = !(git diff -b --numstat | egrep $'^0\t0\t' | cut -d$'\t' -f3- | xargs git checkout HEAD --)
+        remove-merged = !(git branch --merged | grep -v '^* master$' | grep -v '^  master$' | xargs git branch -d)
         rest = reset
         sub = submodule
         sup = !git branch --set-upstream-to=${1-origin}/`git symbolic-ref --short HEAD`

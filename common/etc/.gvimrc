@@ -25,3 +25,6 @@ elseif has("gui_macvim") || has("gui_mac")
 elseif has("gui_win32")
   set guifont=Inconsolata:h12
 end
+
+set formatoptions+=j " 'Where it makes sense, remove a comment leader when joining lines.'
+
