@@ -47,7 +47,5 @@ export RUBYOPT="-ropenssl"
 # see http://blog.ghostinthemachines.com/2010/01/19/mac-os-x-fork-resource-temporarily-unavailable/
 ulimit -u 512
 
-# set up zsh git completion
-# these contatin the homebrew paths so they are here in platform .zshrc
-#zstyle ':completion:::git:*' script /usr/local/etc/bash_completion.d/git-completion.bash
-#fpath=(/usr/local/share/zsh/site-functions $fpath)
+# load zsh completions for various tools (see `brew info zsh-completions`)
+fpath=(/usr/local/share/zsh-completions $fpath)

@@ -1,8 +1,6 @@
-# TODO: understand what this is and if we need it or not.
-# For some reason this is clobbering my git filename completion
-# with latest homebrew install of git and zsh (2014-09-10)
-#zmodload zsh/complist
-#autoload -Uz compinit && compinit
+# load ability to do completions
+autoload -Uz compinit && compinit
+zmodload zsh/complist
 
 zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
 #zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=** r:|=**' 'l:|=* r:|=*'
@@ -349,6 +347,7 @@ alias grta="grunt test:appium"
 alias grtaf="grunt test:appium:full"
 alias grtk="grunt test:karma"
 alias grtm="grunt test:mocha"
+alias grtmg="grunt test:mocha --grep"
 alias grtml="grunt test:mocha:local"
 alias grtp="grunt test:protractor"
 
@@ -397,6 +396,7 @@ alias xe="xargs mvim"
 alias -g errred='2> >(while read line; do echo -e "\e[01;31m$line\e[0m" >&2; done)'
 
 PATH+=":"$CONF/common/bin
+PATH+=":/usr/local/sbin"
 
 # load up rvm
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"  # This loads RVM into a shell session.
@@ -418,3 +418,6 @@ hitch() {
   if [[ -s "$HOME/.hitch_export_authors" ]] ; then source "$HOME/.hitch_export_authors" ; fi
 }
 alias unhitch='hitch -u'
+
+export NVM_DIR="/Users/anthony/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
