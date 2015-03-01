@@ -850,5 +850,3 @@ nnoremap <C-x><C-3> :split
 nnoremap ! :!
 
 syntax off
-
-let g:tern#command = '/Users/anthony/conf/common/.vim/bundle/tern_for_vim/node_modules/.bin/tern'
