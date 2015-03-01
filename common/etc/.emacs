@@ -1,10 +1,10 @@
 ; melpa-stable for package manager
-;(require 'package)
-;(add-to-list 'package-archives
-;  '("melpa-stable" . "http://melpa-stable.milkbox.net/packages/") t)
+(require 'package)
+(add-to-list 'package-archives
+  '("melpa-stable" . "http://melpa-stable.milkbox.net/packages/") t)
 
-;(when (< emacs-major-version 24)
-;  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
+(when (< emacs-major-version 24)
+  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
 
 ; otherwise conflicts with Karma (default is 9876)
 ;(setq *ORGTRELLO-PROXY-PORT* 9875)
@@ -45,7 +45,7 @@
     ("032fe1f3acb2dcca1d451b891e1275a7d51f62c355e7883a8342e5734153a072" "40c4ae07d79f89c8f4e35b11066e059d289da043e70a37b5e4a87b0a06f26d07" "053bd530ce8c35805d34320bbd11f0680a74409901249cad53157053d42e9aeb" "536c5fc0de7ac2a7ba53b072286fcf09cbd05eb53e84eca9fc9f743837bfb42c" "dcfd4272e86ca2080703e9ef00657013409315d5eb13ea949929f391cdd2aa80" "e5377626af4d9c413b309267384647f42a8cfd047e0a0b57c3b703a3c170d86b" "1dec44213e780f4220cab0b45ae60063a1fecfa26a678ccce07fca4b30b92dc5" "47bff723f2aca3a9a5726abcc52a7cc4192b556dd80b3f773589994d2ed24d16" "6634408f60b490958b19759ebf1f56d97b8b8c69d44186a6c1a8056702a73301" default)))
  '(org-agenda-files
    (quote
-    ("~/Dropbox/org/inbox.org_archive" "~/Dropbox/org/index.org_archive" "~/Dropbox/org/index.org" "~/Dropbox/org/habits.org")))
+    ("~/Dropbox/org/index.org" "~/Dropbox/org/index.org_archive" "~/Dropbox/org/habits.org")))
  '(org-agenda-ndays 7)
  '(org-agenda-show-all-dates t)
  '(org-agenda-start-on-weekday nil)
@@ -54,7 +54,7 @@
  '(org-habit-show-habits t)
  '(org-modules
    (quote
-    (org-bbdb org-bibtex org-docview org-expiry org-gnus org-habit org-info org-irc org-mhe org-rmail org-w3m)))
+    (org-bbdb org-bibtex org-docview org-gnus org-habit org-info org-irc org-mhe org-rmail org-w3m)))
  '(org-refile-targets (quote ((org-agenda-files :maxlevel . 3))))
  '(rainbow-identifiers-cie-l*a*b*-lightness 80)
  '(rainbow-identifiers-cie-l*a*b*-saturation 18)
