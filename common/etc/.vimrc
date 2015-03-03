@@ -850,3 +850,30 @@ nnoremap <C-x><C-3> :split
 nnoremap ! :!
 
 syntax off
+set noshowmode " I generally have a good idea of when I am insert mode?
+
+" tern for vim
+"let g:tern_show_argument_hints = 'on_hold'
+"let g:tern_show_signature_in_pum = 1
+
+" Unite.vim settings
+" see https://github.com/Shougo/unite.vim/blob/master/doc/unite.txt
+" for more detailed explanations
+" seems slow and matches not that great right now
+
+"call unite#filters#matcher_default#use(['matcher_fuzzy'])
+nnoremap <leader>f :Unite file_rec/async<CR>
+call unite#custom#source('file_rec/async', 'sorters', ['sorter_selecta', 'sorter_rank'])
+
+" Search through yank history.
+let g:unite_source_history_yank_enable = 1
+nnoremap <leader>y :<C-u>Unite history/yank<CR>
+
+" ignore things in wildignore
+call unite#custom#source('file_rec/async', 'ignore_globs', split(&wildignore, ','))
+
+" Like ctrlp.vim settings.
+call unite#custom#profile('default', 'context', {
+\   'start_insert': 1,
+\   'winheight': 10,
+\ })
