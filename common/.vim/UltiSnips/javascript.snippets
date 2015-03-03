@@ -93,7 +93,7 @@ Factory.build('${1/.*/\u$0/}', function(_${1}) {
 endsnippet
 
 snippet fcl
-FactoryExtensions.createList('${1}', ${2:2}, {
+Factory.createList('${1}', ${2:2}, {
     ${3}
 }, function(${4:list}) {
     ${1/.*/\l$0/}s = $4;
@@ -121,22 +121,13 @@ snippet mm
 $1 = mongoose.model('${1}')
 endsnippet
 
-snippet findone
-${1}.findOne({ ${2} }, function(err, ${1/.*/\l$0/}) {
-    if (err || !${1/.*/\l$0/}) {
-        ${3}
-    } else {
-    }
-});
-endsnippet
-
 snippet acont
 'use strict';
 
 (function() {
     angular
-        .module('${1}')
-        .controller('${2}', $2);
+    .module('${1}')
+    .controller('${2}', $2);
 
     $2.inject = [];
 
