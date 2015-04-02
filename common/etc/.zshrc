@@ -10,6 +10,10 @@ zmodload zsh/datetime
 setopt share_history
 setopt APPEND_HISTORY
 
+# enable certain git suffixes, at the cost of some glob functionality
+# see http://stackoverflow.com/questions/6091827
+setopt NO_EXTENDED_GLOB
+
 fpath=($conf/common/etc/.zsh/ $fpath)
 zstyle ':completion:*:*:git:*' script $conf/common/bin/git-completion.bash
 
