@@ -235,3 +235,6 @@
 [submodule "common/.vim/bundle/vim-node"]
 	path = common/.vim/bundle/vim-node
 	url = https://github.com/moll/vim-node.git
+[submodule "common/.vim/bundle/vim-rsi"]
+	path = common/.vim/bundle/vim-rsi
+	url = https://github.com/tpope/vim-rsi.git
