@@ -353,14 +353,17 @@ alias grtk="grunt test:karma"
 alias grtm="grunt test:mocha"
 alias grtmg="grunt test:mocha --grep"
 alias grtml="grunt test:mocha:local"
+alias grtmn="grunt test:mocha --grep @network"
 alias grtp="grunt test:protractor"
 
 # cordova
 alias cemui="pushd cordova ; cordova emulate ios ; popd"
 alias cemua="pushd cordova ; cordova emulate android ; popd"
 alias cruna="pushd cordova ; cordova run android ; popd"
+alias cruni="pushd cordova ; cordova run ios ; popd"
 alias ccemui="grunt mobileapp --backend=localhost:3000 && cemui"
 alias ccemua="grunt mobileapp --backend=10.0.2.2:3000 && cemua"
+alias ccruni="grunt mobileapp --backend=http://anthony-panozzo.local:3000 && cruni"
 alias ccruna="grunt mobileapp --backend=localhost:3000 && cruna"
 
 # npm
