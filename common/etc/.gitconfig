@@ -39,6 +39,7 @@
 [core]
         excludesfile = ~/.cvsignore
         editor = $EDITOR -f
+        ignorecase = false
 [diff]
         renames = copies
         noprefix = true
