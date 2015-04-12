@@ -262,7 +262,20 @@ if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome") || has("unix")
 endif
 
 " make current file executable
-nnoremap <leader>x :! chmod +x %<CR>
+nnoremap <leader>x :call SetExecutableBit()<CR>
+
+" see http://vim.wikia.com/wiki/Setting_file_attributes_without_reloading_a_buffer
+function! SetExecutableBit()
+  let fname = expand("%:p")
+  checktime
+  execute "au FileChangedShell " . fname . " :echo"
+  silent !chmod a+x %
+  checktime
+  execute "au! FileChangedShell " . fname
+  echo ' '
+  echo 'File is now executable.'
+endfunction
+command! Xbit call SetExecutableBit()
 
 " Jekyll shortcuts
 nnoremap <leader>jp :! ./scripts/preview %<CR> " preview jekyll post in browser
