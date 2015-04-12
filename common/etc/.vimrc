@@ -292,6 +292,8 @@ let g:Tex_DefaultTargetFormat="pdf"
 
 " these should be in another file, but don't care for now
 
+autocmd FileType less set omnifunc=csscomplete#CompleteCSS
+
 " should also move things from vim72/** that I added into my personal .vim directory
 autocmd BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please stop reading unless you are Anthony." | call Wp() | call gitgutter#disable() | endif
 
@@ -706,10 +708,12 @@ nnoremap <C-x><C-o> <C-W><C-W>
 nnoremap <C-x><C-2> :vsplit
 nnoremap <C-x><C-3> :split
 
-nnoremap ! :!
+" space at end is helpful for speed reasons
+nnoremap ! :! 
 
-syntax off
-set noshowmode " I generally have a good idea of when I am insert mode?
+" Retains current last output, which adds context.
+" I generally have a good idea of when I am insert mode
+set noshowmode
 
 " tern for vim
 "let g:tern_show_argument_hints = 'on_hold'
