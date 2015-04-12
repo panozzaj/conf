@@ -428,3 +428,7 @@ alias unhitch='hitch -u'
 
 export NVM_DIR="/Users/anthony/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
+
+export PATH=$PATH:/usr/local/opt/go/libexec/bin
+export GOPATH=$PATH:$HOME/go
+export PATH=$PATH:$GOPATH/bin
