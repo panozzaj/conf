@@ -1,10 +1,12 @@
-snippet (ƒ "something" i
+priority 
+
+snippet (ƒ "fast function" i
 (function($1) {
     $2
 })
 endsnippet
 
-snippet ƒ "something"
+snippet ƒ "fast function 2"
 function($1) {
     $2
 }
@@ -38,37 +40,70 @@ snippet ce
 console.error('${1}');
 endsnippet
 
-snippet req
-$1 = require('${1}')
+snippet "req" "_"
+var $1 = require('${1}');
 endsnippet
 
-snippet reqbb
-BBPromise = require('bluebird')
+snippet "var req" "_" b
+var $1 = require('${1}');
 endsnippet
 
-snippet reqfac
-Factory = require('factory-lady')
+snippet reqbb "_"
+var BBPromise = require('bluebird');
 endsnippet
 
-snippet reqmon
-mongoose = BBPromise.promisifyAll(require('mongoose'))
+snippet "var reqbb" "_" b
+var BBPromise = require('bluebird');
+endsnippet
+
+snippet reqfac "_"
+var Factory = require('factory-lady');
+endsnippet
+
+snippet "var reqfac" "_" b
+var Factory = require('factory-lady');
+endsnippet
+
+snippet reqmon "_"
+var mongoose = BBPromise.promisifyAll(require('mongoose'));
+endsnippet
+
+snippet "var reqmon" "_" b
+var mongoose = BBPromise.promisifyAll(require('mongoose'));
 endsnippet
 
 snippet reqmonbb
-BBPromise = require('bluebird'),
-mongoose = BBPromise.promisifyAll(require('mongoose'))
+var BBPromise = require('bluebird');
+var mongoose = BBPromise.promisifyAll(require('mongoose'));
+endsnippet
+
+snippet "var reqmonbb" "_" b
+var BBPromise = require('bluebird');
+var mongoose = BBPromise.promisifyAll(require('mongoose'));
 endsnippet
 
 snippet reqas
-actionSink = require('../util/appActionSink')
+var actionSink = require('../util/appActionSink');
+endsnippet
+
+snippet "var reqas" "_" b
+var actionSink = require('../util/appActionSink');
 endsnippet
 
 snippet req_
-_ = require('lodash')
+var _ = require('lodash');
+endsnippet
+
+snippet "var req_" "_" b
+var _ = require('lodash');
 endsnippet
 
 snippet reqlo
-_ = require('lodash')
+var _ = require('lodash');
+endsnippet
+
+snippet "var reqlo" "_" b
+var _ = require('lodash');
 endsnippet
 
 snippet newbb
@@ -77,25 +112,33 @@ new BBPromise(function(resolve, reject) {
 });
 endsnippet
 
+snippet bbres
+BBPromise.resolve(${1});
+endsnippet
+
+snippet bbrej
+BBPromise.reject(${1});
+endsnippet
+
 # AP: these might be better moved to a spec-specific file
 snippet fc
-Factory.create('${1/.*/\u$0/}', function(_${1}) {
+Factory.create('${1/.*/\u$0/}').then(function(_${1}) {
     $1 = _$1;
     done();
 });
 endsnippet
 
 snippet fb
-Factory.build('${1/.*/\u$0/}', function(_${1}) {
+Factory.build('${1/.*/\u$0/}').then(function(_${1}) {
     $1 = _$1;
     done();
 });
 endsnippet
 
 snippet fcl
-Factory.createList('${1}', ${2:2}, {
+Factory.createListPromise('${1}', ${2:2}, {
     ${3}
-}, function(${4:list}) {
+}).then(function(${4:list}) {
     ${1/.*/\l$0/}s = $4;
     done();
 });
@@ -118,7 +161,11 @@ actionSink.logAssert('${1}', ${2:req});
 endsnippet
 
 snippet mm
-$1 = mongoose.model('${1}')
+var $1 = mongoose.model('${1}');
+endsnippet
+
+snippet "var mm" "_" b
+var $1 = mongoose.model('${1}');
 endsnippet
 
 snippet acont
@@ -148,5 +195,11 @@ snippet it
 it('${1:description}', function(done) {
     $2
     done();
+});
+endsnippet
+
+snippet then "then" i
+then(function($1) {
+    $2
 });
 endsnippet
