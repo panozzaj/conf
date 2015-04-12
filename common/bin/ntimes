@@ -17,3 +17,11 @@ for ((n=0; n < $1; n++)); do
   echo -e "\nSuccesses: $successes"
   echo -e "Failures: $failures\n"
 done
+
+sleep 1
+
+if [[ 0 -eq $failures ]]; then
+  say -v Alex -r200 "Success!"
+else
+  say -v Zarvox -r200 "At least some failed..."
+fi
