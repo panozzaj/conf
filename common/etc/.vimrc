@@ -106,6 +106,13 @@ endfunction
 
 au BufEnter *.js call UpdateJsHintConf()
 
+" see https://github.com/scrooloose/syntastic
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
+" syntastic_auto_loc_list is cool, but can be intrusive
+" on HTML files or other bad syntax files
+"let g:syntastic_auto_loc_list = 1
 
 fun! Wp()
   set nonumber              " remove line numbering when writing
