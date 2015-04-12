@@ -169,6 +169,8 @@ fun! BasicAbbreviations()
   iabbrev serviceORders serviceOrders
   iabbrev ServiceORders ServiceOrders
   iabbrev ServiceORder ServiceOrder
+  iabbrev done(): done();
+  iabbrev }): });
 
   " some spelling mistakes not (yet) caught by autocorrect.vim
   iabbrev testamonial testimonial
