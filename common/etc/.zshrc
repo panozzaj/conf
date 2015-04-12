@@ -432,3 +432,5 @@ export NVM_DIR="/Users/anthony/.nvm"
 export PATH=$PATH:/usr/local/opt/go/libexec/bin
 export GOPATH=$PATH:$HOME/go
 export PATH=$PATH:$GOPATH/bin
+
+alias news="newsbeuter -C ~/Dropbox/newsbeuter/config -u ~/Dropbox/newsbeuter/urls"
