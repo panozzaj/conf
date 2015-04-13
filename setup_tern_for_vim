@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+cd ~/conf/common/.vim/bundle/tern_for_vim
+
+echo 'here 1'
+# load nvm
+. ~/.nvm/nvm.sh
+
+nvm use v0.12.0
+echo 'here 3'
+npm install
+echo 'here 4'
