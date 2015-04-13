@@ -196,9 +196,6 @@
 [submodule "common/.vim/bundle/vim-css-color"]
 	path = common/.vim/bundle/vim-css-color
 	url = https://github.com/ap/vim-css-color.git
-[submodule "common/.vim/bundle/vim-lambdify"]
-	path = common/.vim/bundle/vim-lambdify
-	url = https://github.com/calebsmith/vim-lambdify.git
 [submodule "common/.vim/bundle/vim-dispatch"]
 	path = common/.vim/bundle/vim-dispatch
 	url = https://github.com/tpope/vim-dispatch.git
