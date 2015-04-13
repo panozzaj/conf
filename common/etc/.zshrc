@@ -434,3 +434,5 @@ export GOPATH=$PATH:$HOME/go
 export PATH=$PATH:$GOPATH/bin
 
 alias news="newsbeuter -C ~/Dropbox/newsbeuter/config -u ~/Dropbox/newsbeuter/urls"
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
