@@ -16,8 +16,6 @@
 #
 #  fpath=(~/.zsh $fpath)
 
-echo 'zsh compl _git'
-
 complete ()
 {
 	# do nothing
