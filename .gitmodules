@@ -235,3 +235,6 @@
 [submodule "common/.vim/bundle/vim-rsi"]
 	path = common/.vim/bundle/vim-rsi
 	url = https://github.com/tpope/vim-rsi.git
+[submodule "common/.vim/bundle/taglist.vim"]
+	path = common/.vim/bundle/taglist.vim
+	url = https://github.com/vim-scripts/taglist.vim.git
