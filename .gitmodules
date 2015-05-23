@@ -238,3 +238,6 @@
 [submodule "common/.vim/bundle/taglist.vim"]
 	path = common/.vim/bundle/taglist.vim
 	url = https://github.com/vim-scripts/taglist.vim.git
+[submodule "common/.vim/bundle-colorschemes/vim-colorscheme-primary"]
+	path = common/.vim/bundle-colorschemes/vim-colorscheme-primary
+	url = https://github.com/google/vim-colorscheme-primary.git
