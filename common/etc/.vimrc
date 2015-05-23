@@ -324,13 +324,18 @@ function! SetExecutableBit()
 endfunction
 command! Xbit call SetExecutableBit()
 
+command! Vimrc vsp ~/.vimrc
+command! Vvimrc vsp ~/.vimrc
+command! Svimrc sp ~/.vimrc
+
 " Jekyll shortcuts
 nnoremap <leader>jp :! ./scripts/preview %<CR> " preview jekyll post in browser
+nnoremap <leader>jt :! jsctags -o tags server test admin<CR>
 
 nnoremap <leader>e :Errors<CR><C-W><C-W>
 nnoremap <leader>q :q<CR>
 nnoremap <leader>w :w<CR>
-iabbrev <// </<C-X><C-O><ESC>==
+iabbrev </ </<C-X><C-O><ESC>==A
 
 " latex-suite
 set grepprg=grep\ -nH\ $*
@@ -403,23 +408,6 @@ let g:surround_113 = "#{\r}"   " v
 let g:surround_35  = "#{\r}"   " #
 
 
-"""""""""""""""""""""""""""""""""""
-" some from mswin.vim for consistency/quickness
-" CTRL-X and SHIFT-Del are Cut
-"vnoremap <C-X> "+x
-"vnoremap <S-Del> "+x
-
-" CTRL-C and CTRL-Insert are Copy
-"vnoremap <C-C> "+y
-"vnoremap <C-Insert> "+y
-
-" CTRL-V and SHIFT-Insert are Paste
-"map <C-V>       "+gP
-"map <S-Insert>          "+gP
-
-"cmap <C-V>      <C-R>+
-"cmap <S-Insert>         <C-R>+
-
 " Pasting blockwise and linewise selections is not possible in Insert and
 " Visual mode without the +virtualedit feature.  They are pasted as if they
 " were characterwise instead.
@@ -428,22 +416,16 @@ let g:surround_35  = "#{\r}"   " #
 exe 'inoremap <script> <C-V>' paste#paste_cmd['i']
 exe 'vnoremap <script> <C-V>' paste#paste_cmd['v']
 
-"imap <S-Insert>         <C-V>
-"vmap <S-Insert>         <C-V>
-
-" Use CTRL-Q to do what CTRL-V used to do
+" Use CTRL-Q to enter block selection mode
 noremap <C-Q>           <C-V>
 
-" CTRL-Tab is Next window
+" CTRL-Tab is next window
 noremap <C-Tab> <C-W>w
 inoremap <C-Tab> <C-O><C-W>w
 cnoremap <C-Tab> <C-C><C-W>w
 onoremap <C-Tab> <C-C><C-W>w
 
-"""""""""""""""""""""""""""""""""""
-" some additional things I added to be more consistent with other
-" tab/window-like applications
-" CTRL-Shift-Tab is Previous window
+" CTRL-Shift-Tab is previous window
 noremap <C-S-Tab> <C-W>W
 inoremap <C-S-Tab> <C-O><C-W>W
 cnoremap <C-S-Tab> <C-C><C-W>W
@@ -455,7 +437,9 @@ nnoremap du :diffupdate<CR>
 
 " Toggle trailing whitespace highlighting with leader + s  (default on)
 set listchars=tab:>-,trail:· ",eol:$
-nmap <silent> <leader>s ;set nolist!<CR>
+"nnoremap <silent> <leader>s :set nolist!<CR>
+nnoremap <leader>s :sp<CR>
+nnoremap <leader>v :vsp<CR>
 set list
 
 " Control-T also looks at these, so remove anything that I wouldn't typically
@@ -569,7 +553,7 @@ noremap ; :
 noremap : ;
 
 
-"  In visual mode when you press * or # to search for the current selection
+" In visual mode when you press * or # to search for the current selection
 vnoremap <silent> * :call VisualSearch('f')<CR>
 vnoremap <silent> # :call VisualSearch('b')<CR>
 
@@ -579,7 +563,6 @@ function! CmdLine(str)
     unmenu Foo
 endfunction
 
-" From an idea by Michael Naumann
 function! VisualSearch(direction) range
     let l:saved_reg = @"
     execute "normal! vgvy"
@@ -598,6 +581,7 @@ function! VisualSearch(direction) range
     let @/ = l:pattern
     let @" = l:saved_reg
 endfunction
+
 
 " Remove the Windows ^M - when the encodings get messed up
 noremap <Leader>mm mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
@@ -651,9 +635,9 @@ nnoremap gf :e <cfile><CR>
 
 " For working with soft-wrapped files [experimental]
 " Anywhere on sentence, take that sentence and make it the first of a new paragraph
-nnoremap <leader>s} )(i<BS><CR><CR><ESC>
+"nnoremap <leader>s} )(i<BS><CR><CR><ESC>
 " Anywhere on sentence, take that sentence and make it the last of this paragraph
-nnoremap <leader>s{ ()i<BS><CR><CR><ESC>
+"nnoremap <leader>s{ ()i<BS><CR><CR><ESC>
 " Join this paragraph with the previous paragraph
 nnoremap <leader>j{ {k3J
 " Join this paragraph with the next paragraph
@@ -707,22 +691,22 @@ comma! -nargs=1 Silent
 " Well, I never thought it would come to this, but... emacs-like bindings.
 " Pulled from https://github.com/maxbrunsfeld/vim-emacs-bindings.
 
-function! KillLine()
-  let [text_before_cursor, text_after_cursor] = SplitLineTextAtCursor()
-  if len(text_after_cursor) == 0
-    normal! dd
-  else
-    normal! d$
-  endif
-  return ''
-endfunction
+"function! KillLine()
+"  let [text_before_cursor, text_after_cursor] = SplitLineTextAtCursor()
+"  if len(text_after_cursor) == 0
+"    normal! dd
+"  else
+"    normal! d$
+"  endif
+"  return ''
+"endfunction
 
-function! SplitLineTextAtCursor()
-  let line_text = getline(line('.'))
-  let text_after_cursor  = line_text[col('.')-1 :]
-  let text_before_cursor = (col('.') > 1) ? line_text[: col('.')-2] : ''
-  return [text_before_cursor, text_after_cursor]
-endfunction
+"function! SplitLineTextAtCursor()
+"  let line_text = getline(line('.'))
+"  let text_after_cursor  = line_text[col('.')-1 :]
+"  let text_before_cursor = (col('.') > 1) ? line_text[: col('.')-2] : ''
+"  return [text_before_cursor, text_after_cursor]
+"endfunction
 
 "" some emacs-like bindings. might be obviated by https://github.com/tpope/vim-rsi
 "inoremap <C-b> <Left>
@@ -751,8 +735,7 @@ endfunction
 "cnoremap <C-A> <Home>
 
 
-" messes with ultisnips default "previous field" mapping
-"nnoremap <C-k> :call KillLine()<CR>
+"nnoremap <C-k> :call KillLine()<CR>  " messes with ultisnips default "previous field" mapping
 nnoremap <C-x><C-o> <C-W><C-W>
 nnoremap <C-x><C-2> :vsplit
 nnoremap <C-x><C-3> :split
@@ -767,6 +750,7 @@ set noshowmode
 " tern for vim
 "let g:tern_show_argument_hints = 'on_hold'
 "let g:tern_show_signature_in_pum = 1
+
 
 " Unite.vim settings
 " see https://github.com/Shougo/unite.vim/blob/master/doc/unite.txt
@@ -789,3 +773,19 @@ call unite#custom#profile('default', 'context', {
 \   'start_insert': 1,
 \   'winheight': 10,
 \ })
+
+
+
+" http://stackoverflow.com/questions/8450919/how-can-i-delete-all-hidden-buffers
+function! DeleteHiddenBuffers()
+    let tpbl=[]
+    call map(range(1, tabpagenr('$')), 'extend(tpbl, tabpagebuflist(v:val))')
+    for buf in filter(range(1, bufnr('$')), 'bufexists(v:val) && index(tpbl, v:val)==-1')
+        silent execute 'bwipeout' buf
+    endfor
+endfunction
+
+if has("gui_running")
+  " for some reason this wasn't working by default for me?
+  source ~/.gvimrc
+endif
