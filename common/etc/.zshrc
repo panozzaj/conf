@@ -339,9 +339,18 @@ alias gsup="git sup"
 alias gwip="git add -A . ; git commit -nm 'WIP'"
 alias gwtf="git wtf -A"
 alias gwtff="git fetch && git wtf -A"
-alias hpr="GIT_EDITOR='mvim --nofork' hub pull-request"
 alias squash="git commit -nm 'SQUASH ME'"
 alias fixup="git commit -nm 'FIXUP ME'"
+
+function hpr {
+    if [[ $@ == "" ]]; then
+      echo "hub pull-request"
+      `GIT_EDITOR='mvim --nofork' hub pull-request`
+    else
+      echo "hub pull-request -b joinhaven:$1 -h joinhaven:`git symbolic-ref --short HEAD`"
+      `GIT_EDITOR='mvim --nofork' hub pull-request -b joinhaven:$1 -h joinhaven:\`git symbolic-ref --short HEAD\``
+    fi
+}
 
 # grunt
 alias gr="grunt"
