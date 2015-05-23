@@ -451,4 +451,8 @@ export PATH=$PATH:$GOPATH/bin
 
 alias news="newsbeuter -C ~/Dropbox/newsbeuter/config -u ~/Dropbox/newsbeuter/urls"
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+function install_jsctags {
+  npm install jsctags
+  # https://github.com/mozilla/doctorjs/issues/52
+  gsed -i '51i tags: [],' ./node_modules/jsctags/jsctags/ctags/index.js
+}
