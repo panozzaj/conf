@@ -77,34 +77,80 @@ let g:NERDShutUp=1
 let g:syntastic_mode_map = { 'passive_filetypes': ['sass', 'scss', 'haml'] }
 
 let g:syntastic_javascript_checkers = ['jshint']
+let g:syntastic_check_on_open = 1
 
 " Better :sign interface symbols
 let g:syntastic_error_symbol = '✗'
 let g:syntastic_warning_symbol = '!'
 
+if !exists('g:syntastic_html_tidy_ignore_errors')
+    let g:syntastic_html_tidy_ignore_errors = []
+endif
+
+if !exists('g:syntastic_html_tidy_blocklevel_tags')
+    let g:syntastic_html_tidy_blocklevel_tags = []
+endif
+
+" Ignore ionic tags in HTML syntax checking
+" See http://stackoverflow.com/questions/30366621
+" ignore errors about Ionic tags
+let g:syntastic_html_tidy_ignore_errors += [
+      \ "<ion-",
+      \ "discarding unexpected </ion-"]
+
+" Angular's attributes confuse HTML Tidy
+let g:syntastic_html_tidy_ignore_errors += [
+      \ " proprietary attribute \"ng-"]
+
+" Angular UI-Router attributes confuse HTML Tidy
+let g:syntastic_html_tidy_ignore_errors += [
+      \ " proprietary attribute \"ui-sref"]
+
+" Angular in particular often makes 'empty' blocks, so ignore
+" this error. We might improve how we do this though.
+" See also https://github.com/scrooloose/syntastic/wiki/HTML:---tidy
+" specifically g:syntastic_html_tidy_empty_tags
+let g:syntastic_html_tidy_ignore_errors += ["trimming empty "]
+
+" Angualar ignores
+let g:syntastic_html_tidy_blocklevel_tags += [
+      \ 'ng-include',
+      \ 'ng-form'
+      \ ]
+
+" Angular UI-router ignores
+let g:syntastic_html_tidy_ignore_errors += [
+      \ " proprietary attribute \"ui-sref"]
+
+" Project-level ignores
+let g:syntastic_html_tidy_blocklevel_tags += ['hvn-control']
+let g:syntastic_html_tidy_ignore_errors += [
+      \ " proprietary attribute \"debounce\""]
+
+" Try to use HTML5 Tidy for better checking?
+let g:syntastic_html_tidy_exec = '/usr/local/bin/tidy5'
+
 " Custom syntastic settings:
 function! s:find_jshintrc(dir)
-    let l:found = globpath(a:dir, '.jshintrc')
-    if filereadable(l:found)
-        return l:found
-    endif
+  let l:found = globpath(a:dir, '.jshintrc')
+  if filereadable(l:found)
+    return l:found
+  endif
 
-    let l:parent = fnamemodify(a:dir, ':h')
-    if l:parent != a:dir
-        return s:find_jshintrc(l:parent)
-    endif
+  let l:parent = fnamemodify(a:dir, ':h')
+  if l:parent != a:dir
+    return s:find_jshintrc(l:parent)
+  endif
 
-    return "~/.jshintrc"
+  return "~/.jshintrc"
 endfunction
 
 function! UpdateJsHintConf()
-    let l:dir = expand('%:p:h')
-    let l:jshintrc = s:find_jshintrc(l:dir)
-    let g:syntastic_javascript_jshint_args = '--config ' + l:jshintrc
-    "let g:syntastic_javascript_jshint_conf = l:jshintrc
+  let l:dir = expand('%:p:h')
+  let l:jshintrc = s:find_jshintrc(l:dir)
+  let g:syntastic_javascript_jshint_args = '--config ' + l:jshintrc
+  "let g:syntastic_javascript_jshint_conf = l:jshintrc
 endfunction
-
-au BufEnter *.js call UpdateJsHintConf()
 
 " see https://github.com/scrooloose/syntastic
 let g:syntastic_always_populate_loc_list = 1
@@ -514,7 +560,6 @@ endfunction
 noremap ; :
 noremap : ;
 
-let g:syntastic_check_on_open = 1
 
 "  In visual mode when you press * or # to search for the current selection
 vnoremap <silent> * :call VisualSearch('f')<CR>
