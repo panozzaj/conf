@@ -28,3 +28,6 @@ end
 
 set formatoptions+=j " 'Where it makes sense, remove a comment leader when joining lines.'
 
+" default new window size should be decent
+set lines=40
+set columns=80
