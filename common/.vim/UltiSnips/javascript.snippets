@@ -1,3 +1,7 @@
+###########
+# GENERAL #
+###########
+
 snippet (ƒ "fast function" i
 (function($1) {
     $2
@@ -22,6 +26,11 @@ if ($1) {
 }
 endsnippet
 
+snippet clvi
+var util = require('util');
+console.log('$1: ', util.inspect(${1}, false, null));
+endsnippet
+
 snippet clv
 console.log('$1: ', ${1});
 endsnippet
@@ -38,71 +47,56 @@ snippet ce
 console.error('${1}');
 endsnippet
 
-snippet "req" "_"
-var $1 = require('${1}');
-endsnippet
 
-snippet "var req" "_" b
-var $1 = require('${1}');
+####################
+# REQURE SHORTCUTS #
+####################
+
+snippet "req"
+$1 = require('${1}')
 endsnippet
 
 snippet reqbb "_"
-var BBPromise = require('bluebird');
-endsnippet
-
-snippet "var reqbb" "_" b
-var BBPromise = require('bluebird');
+BBPromise = require('bluebird')
 endsnippet
 
 snippet reqfac "_"
-var Factory = require('factory-lady');
-endsnippet
-
-snippet "var reqfac" "_" b
-var Factory = require('factory-lady');
+Factory = require('factory-lady')
 endsnippet
 
 snippet reqmon "_"
-var mongoose = BBPromise.promisifyAll(require('mongoose'));
-endsnippet
-
-snippet "var reqmon" "_" b
-var mongoose = BBPromise.promisifyAll(require('mongoose'));
+mongoose = BBPromise.promisifyAll(require('mongoose'))
 endsnippet
 
 snippet reqmonbb
-var BBPromise = require('bluebird');
-var mongoose = BBPromise.promisifyAll(require('mongoose'));
-endsnippet
-
-snippet "var reqmonbb" "_" b
-var BBPromise = require('bluebird');
-var mongoose = BBPromise.promisifyAll(require('mongoose'));
+BBPromise = require('bluebird'),
+mongoose = BBPromise.promisifyAll(require('mongoose'))
 endsnippet
 
 snippet reqas
-var actionSink = require('../util/appActionSink');
-endsnippet
-
-snippet "var reqas" "_" b
-var actionSink = require('../util/appActionSink');
+actionSink = require('../util/appActionSink')
 endsnippet
 
 snippet req_
-var _ = require('lodash');
-endsnippet
-
-snippet "var req_" "_" b
-var _ = require('lodash');
+_ = require('lodash')
 endsnippet
 
 snippet reqlo
-var _ = require('lodash');
+_ = require('lodash')
 endsnippet
 
-snippet "var reqlo" "_" b
-var _ = require('lodash');
+snippet reqsup
+request = BBPromise.promisifyAll(require('superagent'))
 endsnippet
+
+snippet cec
+$1 = CustomErrors.create('${1}');
+endsnippet
+
+
+############
+# PROMISES #
+############
 
 snippet newbb
 new BBPromise(function(resolve, reject) {
@@ -110,26 +104,121 @@ new BBPromise(function(resolve, reject) {
 });
 endsnippet
 
-snippet bbres
+snippet "(?i)bbnew" "New Bluebird promise" r
+new BBPromise(function(resolve, reject) {
+    ${1}
+});
+endsnippet
+
+snippet "(?i)bbres" "Bluebird promise resolve" r
 BBPromise.resolve(${1});
 endsnippet
 
-snippet bbrej
+snippet "(?i)bbrej" "Bluebird promise reject" r
 BBPromise.reject(${1});
 endsnippet
+
+snippet "(?i)bbmap" "Bluebird map" r
+BBPromise.map(${1}s, function($1) {
+    return ${3};
+});
+endsnippet
+
+snippet "(?i)bball" "Bluebird all" r
+BBPromise.all([
+    ${1}
+]).spread(function(${2}) {
+});
+endsnippet
+
+snippet "(?i)bbjoin" "Bluebird join" r
+BBPromise.join(
+    ${1},
+    function(${2}) {
+});
+endsnippet
+
+snippet then "then" i
+then(function($1) {
+    $2
+});
+endsnippet
+
+snippet then( "then" i
+then(function($1) {
+    $2
+});
+endsnippet
+
+snippet then(f "then" i
+then(function($1) {
+    $2
+});
+endsnippet
+
+snippet }).t "then" i
+}).then(function($1) {
+    $2
+});
+endsnippet
+
+snippet })t "then" i
+}).then(function($1) {
+    $2
+});
+endsnippet
+
+snippet catch "catch" i
+catch(function(err) {
+    $1
+});
+endsnippet
+
+snippet catch( "catch" i
+catch(function(err) {
+    $1
+});
+endsnippet
+
+snippet }).c "catch" i
+}).catch(function(err) {
+    $1
+});
+endsnippet
+
+snippet })c "then" i
+}).catch(function(err) {
+    $1
+});
+endsnippet
+
+
+##########
+# LODASH #
+##########
+
+snippet _map
+_.map($1s, function(${1}) {
+    return ${2};
+});
+endsnippet
+
+
+
+################
+# FACTORY LADY #
+################
 
 # AP: these might be better moved to a spec-specific file
 snippet fc
 Factory.create('${1/.*/\u$0/}').then(function(_${1}) {
     $1 = _$1;
-    done();
 });
 endsnippet
 
 snippet fb
 Factory.build('${1/.*/\u$0/}').then(function(_${1}) {
     $1 = _$1;
-    done();
 });
 endsnippet
 
@@ -138,9 +227,13 @@ Factory.createListPromise('${1}', ${2:2}, {
     ${3}
 }).then(function(${4:list}) {
     ${1/.*/\l$0/}s = $4;
-    done();
 });
 endsnippet
+
+
+###############
+# ACTION SINK #
+###############
 
 snippet asle
 actionSink.logError('${1}', ${2:req}, ${3:err});
@@ -158,13 +251,24 @@ snippet aslas
 actionSink.logAssert('${1}', ${2:req});
 endsnippet
 
+
+############
+# MONGOOSE #
+############
+
 snippet mm
-var $1 = mongoose.model('${1}');
+$1 = mongoose.model('${1}')
 endsnippet
 
-snippet "var mm" "_" b
-var $1 = mongoose.model('${1}');
+snippet .fa "" i
+.findAsync({${1}}).then(function(${2}) {
+    ${3}
+});
 endsnippet
+
+###########
+# ANGULAR #
+###########
 
 snippet acont
 'use strict';
@@ -182,22 +286,50 @@ snippet acont
 })();
 endsnippet
 
-snippet bef
-beforeEach(function(done) {
-    ${1}
-    done();
-});
-endsnippet
 
-snippet it
-it('${1:description}', function(done) {
+###########
+# TESTING #
+###########
+
+snippet xit
+xit('${1:description}', function() {
     $2
     done();
 });
 endsnippet
 
-snippet then "then" i
-then(function($1) {
+snippet xdes
+xdescribe('${1:description}', function() {
     $2
 });
+endsnippet
+
+snippet request
+request.${1:get}(config.baseUrl + '${2}')
+.set('Authorization', 'Bearer ' + user.createLoginToken())
+.endAsync().then(function(response) {
+    response.status.should.equal(200);
+});
+endsnippet
+
+snippet controllertest
+'use strict';
+
+require('should');
+
+var Factory = require('factory-lady');
+var BBPromise = require('bluebird');
+var request = BBPromise.promisifyAll(require('superagent'));
+var mongoose = BBPromise.promisifyAll(require('mongoose'));
+var config = require('../../../config/config');
+endsnippet
+
+snippet modeltest
+'use strict';
+
+require('should');
+
+var Factory = require('factory-lady');
+var BBPromise = require('bluebird');
+var mongoose = BBPromise.promisifyAll(require('mongoose'));
 endsnippet
