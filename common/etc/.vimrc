@@ -160,6 +160,7 @@ let g:syntastic_check_on_wq = 0
 " on HTML files or other bad syntax files
 "let g:syntastic_auto_loc_list = 1
 
+
 fun! Wp()
   set nonumber              " remove line numbering when writing
   set spell spelllang=en_us " enable spell checking
@@ -336,29 +337,42 @@ set grepprg=grep\ -nH\ $*
 let g:tex_flavor='latex'
 let g:Tex_DefaultTargetFormat="pdf"
 
-" these should be in another file, but don't care for now
 
-autocmd FileType less set omnifunc=csscomplete#CompleteCSS
+" see http://learnvimscriptthehardway.stevelosh.com/chapters/14.html
+augroup panozzaj_group
+  autocmd BufEnter *.js call UpdateJsHintConf()
 
-" should also move things from vim72/** that I added into my personal .vim directory
-autocmd BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please stop reading unless you are Anthony." | call Wp() | call gitgutter#disable() | endif
+  autocmd BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please stop reading unless you are Anthony." | call Wp() | call gitgutter#disable() | endif
 
-autocmd BufRead,BufNewFile *.txt set filetype=conf
-autocmd BufRead,BufNewFile {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc,irb_tempfile*,Vagrantfile} set ft=ruby
-autocmd FileType conf set foldmethod=manual
-autocmd BufRead,BufNewFile *.less setfiletype less
+  autocmd BufNewFile,BufRead *.txt set filetype=conf
+  autocmd BufNewFile,BufRead *.less set filetype=less
+  autocmd BufNewFile,BufRead {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc,irb_tempfile*,Vagrantfile} set filetype=ruby
+  autocmd BufNewFile,BufRead *.json set filetype=javascript
+  autocmd BufNewFile,BufRead *.plist set filetype=xml
+  autocmd BufNewFile,BufRead *.erb set filetype=eruby.html
+  autocmd BufNewFile,BufRead *.scss set filetype=scss
 
-" Don't expand tab in Makefiles
-autocmd FileType make set noexpandtab
+  autocmd FileType conf set foldmethod=manual
+  autocmd FileType less set omnifunc=csscomplete#CompleteCSS
+  autocmd FileType make set noexpandtab " Don't expand tab in Makefiles
 
-" Use the javascript syntax highlighting for JSON files
-autocmd BufNewFile,BufRead *.json set ft=javascript
-autocmd BufNewFile,BufRead *.plist set ft=xml
-autocmd BufRead,BufNewFile *.erb set filetype=eruby.html
-autocmd BufRead,BufNewFile *.scss set filetype=scss
+  autocmd User Rails Rnavcommand fabricator spec/fabricators -suffix=_fabricator.rb -default=model()  " fabricator file shortcut
 
-" fabricator file shortcut
-autocmd User Rails Rnavcommand fabricator spec/fabricators -suffix=_fabricator.rb -default=model()
+  " on file load, go to the last known cursor position if it is valid
+  autocmd BufReadPost *
+    \ if line("'\"") > 0 && line("'\"") <= line("$") |
+    \ exe "normal g`\"" |
+    \ endif
+augroup END
+
+augroup commit_message_overrides
+  " When editing git commit message, go to top of the file
+  " (forget any saved positions)
+  autocmd BufReadPost COMMIT_EDITMSG exe "normal! gg"
+  " Same for `hub pull-request` file name
+  autocmd BufReadPost PULLREQ_EDITMSG exe "normal! gg"
+augroup END
+
 
 " Command-T overrides
 let g:CommandTMatchWindowAtTop = 1 " want the best command-t matches at the top so they never move
@@ -366,12 +380,6 @@ let g:CommandTMaxHeight = 8 " only show a few lines for the output
 
 " quicker way to flush the queue
 nnoremap <leader>T <Esc>:CommandTFlush<CR>
-
-" on file load, go to the last known cursor position if it is valid
-autocmd BufReadPost *
-  \ if line("'\"") > 0 && line("'\"") <= line("$") |
-  \ exe "normal g`\"" |
-  \ endif
 
 function! PromoteToLet()
   :normal! dd
@@ -625,16 +633,12 @@ function! TwiddleCase(str)
 endfunction
 vnoremap ~ y:call setreg('', TwiddleCase(@"), getregtype(''))<CR>gv""Pgv
 
-" When editing git commit message, go to top of the file (forgetting any saved
-" positions)
-autocmd BufReadPost COMMIT_EDITMSG exe "normal! gg"
-" Same for `hub pull-request` file name
-autocmd BufReadPost PULLREQ_EDITMSG exe "normal! gg"
-
 " Convert Ruby 1.8 hash rockets to 1.9 JSON style hashes.
 " Based on https://github.com/hashrocket/dotmatrix/commit/6c77175adc19e94594e8f2d6ec29371f5539ceeb
 " from https://github.com/henrik/dotfiles/commit/aaa45c1cc0f9a6195a9155223a7e904aa10b256f
 command! -bar -range=% NotRocket execute '<line1>,<line2>s/:\(\w\+\)\s*=>/\1:/e' . (&gdefault ? '' : 'g')
+
+
 
 nnoremap <leader>9 :NotRocket<CR>
 
