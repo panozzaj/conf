@@ -151,9 +151,6 @@
 [submodule "common/.vim/bundle/vim-angular"]
 	path = common/.vim/bundle/vim-angular
 	url = https://github.com/burnettk/vim-angular.git
-[submodule "common/.vim/bundle/ultisnips"]
-	path = common/.vim/bundle/ultisnips
-	url = https://github.com/SirVer/ultisnips.git
 [submodule "common/.vim/bundle/vim-snippets"]
 	path = common/.vim/bundle/vim-snippets
 	url = https://github.com/honza/vim-snippets.git
