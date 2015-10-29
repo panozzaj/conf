@@ -241,3 +241,18 @@
 [submodule "common/.vim/bundle-colorschemes/vim-colorscheme-primary"]
 	path = common/.vim/bundle-colorschemes/vim-colorscheme-primary
 	url = https://github.com/google/vim-colorscheme-primary.git
+[submodule "common/.vim/bundle/vim-ags"]
+	path = common/.vim/bundle/vim-ags
+	url = https://github.com/gabesoft/vim-ags.git
+[submodule "common/.vim/bundle/swift.vim"]
+	path = common/.vim/bundle/swift.vim
+	url = https://github.com/keith/swift.vim.git
+[submodule "common/.vim/bundle/vim-quicklink"]
+	path = common/.vim/bundle/vim-quicklink
+	url = https://github.com/christoomey/vim-quicklink.git
+[submodule "common/.vim/bundle/webapi-vim"]
+	path = common/.vim/bundle/webapi-vim
+	url = https://github.com/mattn/webapi-vim.git
+[submodule "common/.vim/bundle/vim-jsx"]
+	path = common/.vim/bundle/vim-jsx
+	url = https://github.com/mxw/vim-jsx.git

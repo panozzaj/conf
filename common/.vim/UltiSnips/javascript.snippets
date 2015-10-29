@@ -2,22 +2,6 @@
 # GENERAL #
 ###########
 
-snippet (ƒ "fast function" i
-(function($1) {
-    $2
-})
-endsnippet
-
-snippet ƒ "fast function 2"
-function($1) {
-    $2
-}
-endsnippet
-
-snippet use
-'use strict';
-endsnippet
-
 snippet ife
 if ($1) {
     $2
@@ -27,70 +11,24 @@ if ($1) {
 endsnippet
 
 snippet clvi
-var util = require('util');
-console.log('$1: ', util.inspect(${1}, false, null));
+var util = require('util')
+console.log('$1: ', util.inspect(${1}, false, null))
 endsnippet
 
 snippet clv
-console.log('$1: ', ${1});
+console.log('$1: ', ${1})
 endsnippet
 
 snippet cl
-console.log('${1}');
+console.log('${1}')
 endsnippet
 
 snippet cev
-console.error('$1: ', ${1:err});
+console.error('$1: ', ${1:err})
 endsnippet
 
 snippet ce
-console.error('${1}');
-endsnippet
-
-
-####################
-# REQURE SHORTCUTS #
-####################
-
-snippet "req"
-$1 = require('${1}')
-endsnippet
-
-snippet reqbb "_"
-BBPromise = require('bluebird')
-endsnippet
-
-snippet reqfac "_"
-Factory = require('factory-lady')
-endsnippet
-
-snippet reqmon "_"
-mongoose = BBPromise.promisifyAll(require('mongoose'))
-endsnippet
-
-snippet reqmonbb
-BBPromise = require('bluebird'),
-mongoose = BBPromise.promisifyAll(require('mongoose'))
-endsnippet
-
-snippet reqas
-actionSink = require('../util/appActionSink')
-endsnippet
-
-snippet req_
-_ = require('lodash')
-endsnippet
-
-snippet reqlo
-_ = require('lodash')
-endsnippet
-
-snippet reqsup
-request = BBPromise.promisifyAll(require('superagent'))
-endsnippet
-
-snippet cec
-$1 = CustomErrors.create('${1}');
+console.error('${1}')
 endsnippet
 
 
@@ -98,98 +36,58 @@ endsnippet
 # PROMISES #
 ############
 
-snippet newbb
-new BBPromise(function(resolve, reject) {
-    ${1}
-});
-endsnippet
-
-snippet "(?i)bbnew" "New Bluebird promise" r
-new BBPromise(function(resolve, reject) {
-    ${1}
-});
-endsnippet
-
-snippet "(?i)bbres" "Bluebird promise resolve" r
-BBPromise.resolve(${1});
-endsnippet
-
-snippet "(?i)bbrej" "Bluebird promise reject" r
-BBPromise.reject(${1});
-endsnippet
-
-snippet "(?i)bbmap" "Bluebird map" r
-BBPromise.map(${1}s, function($1) {
-    return ${3};
-});
-endsnippet
-
-snippet "(?i)bball" "Bluebird all" r
-BBPromise.all([
-    ${1}
-]).spread(function(${2}) {
-});
-endsnippet
-
-snippet "(?i)bbjoin" "Bluebird join" r
-BBPromise.join(
-    ${1},
-    function(${2}) {
-});
-endsnippet
-
 snippet then "then" i
 then(function($1) {
-    $2
-});
+  $2
+})
 endsnippet
 
 snippet then( "then" i
 then(function($1) {
-    $2
-});
+  $2
+})
 endsnippet
 
 snippet then(f "then" i
 then(function($1) {
-    $2
-});
+  $2
+})
 endsnippet
 
 snippet }).t "then" i
 }).then(function($1) {
-    $2
-});
+  $2
+})
 endsnippet
 
 snippet })t "then" i
 }).then(function($1) {
-    $2
-});
+  $2
+})
 endsnippet
 
 snippet catch "catch" i
 catch(function(err) {
-    $1
-});
+  $1
+})
 endsnippet
 
 snippet catch( "catch" i
 catch(function(err) {
-    $1
-});
+  $1
+})
 endsnippet
 
 snippet }).c "catch" i
 }).catch(function(err) {
-    $1
-});
+  $1
+})
 endsnippet
 
 snippet })c "then" i
 }).catch(function(err) {
-    $1
-});
+  $1
+})
 endsnippet
 
 
@@ -197,94 +95,17 @@ endsnippet
 # LODASH #
 ##########
 
+snippet _
+_.$1($2, function() {
+})
+endsnippet
+
 snippet _map
 _.map($1s, function(${1}) {
-    return ${2};
-});
+  return ${2}
+})
 endsnippet
 
-
-
-################
-# FACTORY LADY #
-################
-
-# AP: these might be better moved to a spec-specific file
-snippet fc
-Factory.create('${1/.*/\u$0/}').then(function(_${1}) {
-    $1 = _$1;
-});
-endsnippet
-
-snippet fb
-Factory.build('${1/.*/\u$0/}').then(function(_${1}) {
-    $1 = _$1;
-});
-endsnippet
-
-snippet fcl
-Factory.createListPromise('${1}', ${2:2}, {
-    ${3}
-}).then(function(${4:list}) {
-    ${1/.*/\l$0/}s = $4;
-});
-endsnippet
-
-
-###############
-# ACTION SINK #
-###############
-
-snippet asle
-actionSink.logError('${1}', ${2:req}, ${3:err});
-endsnippet
-
-snippet asla
-actionSink.logAction('${1}', ${2:req});
-endsnippet
-
-snippet aslf
-actionSink.logFailure('${1}', ${2:req});
-endsnippet
-
-snippet aslas
-actionSink.logAssert('${1}', ${2:req});
-endsnippet
-
-
-############
-# MONGOOSE #
-############
-
-snippet mm
-$1 = mongoose.model('${1}')
-endsnippet
-
-snippet .fa "" i
-.findAsync({${1}}).then(function(${2}) {
-    ${3}
-});
-endsnippet
-
-###########
-# ANGULAR #
-###########
-
-snippet acont
-'use strict';
-
-(function() {
-    angular
-    .module('${1}')
-    .controller('${2}', $2);
-
-    $2.inject = [];
-
-    function $2() {
-        var vm = this;
-    }
-})();
-endsnippet
 
 
 ###########
@@ -292,44 +113,31 @@ endsnippet
 ###########
 
 snippet xit
-xit('${1:description}', function() {
-    $2
-    done();
-});
+xit('${1:description}', () => {
+  $2
+})
 endsnippet
 
 snippet xdes
-xdescribe('${1:description}', function() {
-    $2
-});
+xdescribe('${1:description}', () => {
+  $2
+})
 endsnippet
 
-snippet request
-request.${1:get}(config.baseUrl + '${2}')
-.set('Authorization', 'Bearer ' + user.createLoginToken())
-.endAsync().then(function(response) {
-    response.status.should.equal(200);
-});
+snippet "des(c?)" "describe (test)" r
+describe('${1:description}', () => {
+  $2
+})
 endsnippet
 
-snippet controllertest
-'use strict';
-
-require('should');
-
-var Factory = require('factory-lady');
-var BBPromise = require('bluebird');
-var request = BBPromise.promisifyAll(require('superagent'));
-var mongoose = BBPromise.promisifyAll(require('mongoose'));
-var config = require('../../../config/config');
+snippet it
+it('${1:description}', () => {
+  $2
+})
 endsnippet
 
-snippet modeltest
-'use strict';
-
-require('should');
-
-var Factory = require('factory-lady');
-var BBPromise = require('bluebird');
-var mongoose = BBPromise.promisifyAll(require('mongoose'));
+snippet bef
+beforeEach(() => {
+  $2
+})
 endsnippet

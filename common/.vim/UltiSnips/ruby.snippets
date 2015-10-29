@@ -1,0 +1,84 @@
+snippet clv
+puts "$1: #{${1}}"
+endsnippet
+
+snippet putsv
+puts "$1: #{${1}}"
+endsnippet
+
+snippet pv
+puts "$1: #{${1}}"
+endsnippet
+
+snippet logv
+logger.debug "$1: #{${1}}"
+endsnippet
+
+# https://github.com/metaskills/minitest-spec-rails#test-styles
+
+# Model Test (or anything else not listed below)
+snippet gentest
+require 'test_helper'
+
+class ${1}Test < ActiveSupport::TestCase
+end
+endsnippet
+
+## Controller Test
+snippet gentestcont
+require 'test_helper'
+
+class ${1}ControllerTest < ActionController::TestCase
+end
+endsnippet
+
+
+# Integration Tests - Must use subclass style!
+snippet gentestint
+require 'test_helper'
+
+class ${1}Test < ActionDispatch::IntegrationTest
+end
+endsnippet
+
+# Mailer Test
+snippet gentestmail
+require 'test_helper'
+
+class ${1}MailerTest < ActionMailer::TestCase
+end
+endsnippet
+
+# View Helper Test
+snippet gentestview
+require 'test_helper'
+
+class ${1}HelperTest < ActionView::TestCase
+end
+endsnippet
+
+# Job Helper Test
+snippet gentestjob
+require 'test_helper'
+
+class ${1}JobTest < ActiveJob::TestCase
+end
+endsnippet
+
+snippet bef
+before do
+  ${1}
+end
+endsnippet
+
+snippet "des(c)?" "describe (test)" r
+describe '${1}' do
+  ${2}
+end
+endsnippet
+
+snippet it "it (test)"
+it '${1:does something}' do
+  ${2}
+end
+endsnippet

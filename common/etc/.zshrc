@@ -150,6 +150,9 @@ alias bul="bundle update --local"
 alias prs="parallel_rspec spec"
 alias pcf="parallel_cucumber features"
 
+alias rubycop="rubocop"
+alias rubocopy="rubocop"
+
 # TODO: explain rake commands with echoes when they are running
 #function verbose_alias() {
 #  a=$(shift $1)
@@ -292,12 +295,15 @@ alias gba="git branch --all"
 alias gbb="git bisect bad"
 alias gbg="git bisect good"
 alias gbr="git branch --remote"
-alias gc="git commit --verbose"
+alias gc="git commit"
 alias gcle="git cleanup"
-alias gco-="git checkout -"
 alias gco="git checkout"
+alias gco-="git checkout -"
+alias gcob="git checkout -b"
 alias gcop="git checkout --patch"
+alias gcom="git checkout master"
 alias gcomm="git commit --message"
+alias gcw="git commit -m 'Whitespace'"
 alias gcm="git commit --message"
 alias gcp="git cherry-pick"
 alias gcpc="git cherry-pick --continue"
@@ -331,6 +337,7 @@ alias grr="git reset --hard \`git reflog | fzf | cut -d ' ' -f 1\`"
 alias grs="git rebase --skip"
 alias grsh="git reset --soft 'HEAD^' && git reset"
 alias gs="git status"
+alias gshow="git show"
 alias gski="git stash --keep-index"
 alias gss="git show --stat"
 alias gssp="git stash show --patch"
@@ -343,18 +350,32 @@ alias squash="git commit -nm 'SQUASH ME'"
 alias fixup="git commit -nm 'FIXUP ME'"
 
 function hpr {
+    # by default, makes pull request from feature branch to master
+    # example: hpr -> PR feature-branch onto master
     if [[ $@ == "" ]]; then
       echo "hub pull-request"
-      `GIT_EDITOR='mvim --nofork' hub pull-request`
+      export GIT_EDITOR='mvim --nofork'
+      url=$(hub pull-request)
+      if [[ "$url" != "" ]]; then
+        open "$url"
+        echo "Pull request created at $url"
+      fi
     else
-      echo "hub pull-request -b joinhaven:$1 -h joinhaven:`git symbolic-ref --short HEAD`"
-      `GIT_EDITOR='mvim --nofork' hub pull-request -b joinhaven:$1 -h joinhaven:\`git symbolic-ref --short HEAD\``
+      # TODO: update to match above function more closely to open PR, etc.
+      # otherwise, makes pull request from feature branch to branch
+      # example: hpr foo -> PR feature-branch onto foo
+      # repo is hardcoded, would be nice to generalize
+      repo=joinhaven
+      echo "hub pull-request -b $repo:$1 -h $repo:`git symbolic-ref --short HEAD`"
+      `GIT_EDITOR='mvim --nofork' hub pull-request -b $repo:$1 -h $repo:\`git symbolic-ref --short HEAD\``
     fi
 }
 
 # grunt
 alias gr="grunt"
-alias grj="grunt newer:jshint"
+alias grj="grunt jshint"
+alias grja="grunt jshint"
+alias grjn="grunt newer:jshint"
 alias grjw="grunt watch:jshintNewer"
 alias grmo="grunt mobileapp"
 alias grmoa="grunt mobileapp --backend=localhost:3000"
@@ -384,6 +405,11 @@ alias ccruna="grunt mobileapp --backend=localhost:3000 && cruna"
 
 # npm
 alias ni="npm install"
+alias nis="npm install --save"
+alias nisd="npm install --save-dev"
+alias nr="npm run"
+alias nrs="npm start" # npm run start
+alias nrt="npm run test"
 
 # javascript
 #alias jsl="jslint -process"
@@ -406,6 +432,8 @@ alias pre="pretty"
 
 alias ant='color-ant'
 alias mvn='color-mvn'
+
+alias week='date "+%V"'
 
 alias -g pxargs="xargs -n 1"
 
@@ -450,6 +478,9 @@ export GOPATH=$PATH:$HOME/go
 export PATH=$PATH:$GOPATH/bin
 
 alias news="newsbeuter -C ~/Dropbox/newsbeuter/config -u ~/Dropbox/newsbeuter/urls"
+function add_feed {
+    echo "$1" >> ~/Dropbox/newsbeuter/urls
+}
 
 function install_jsctags {
   npm install jsctags

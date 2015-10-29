@@ -59,6 +59,7 @@ set nofoldenable      " disable folding
 
 
 " ctrl-p plugin
+
 let g:ctrlp_match_window_bottom=0 " put at top
 let g:ctrlp_match_window_reversed=0 " reverse order of items
 let g:ctrlp_custom_ignore = '\v[\/](node_modules|target|dist|tmp|log|.bower-cache|.bower-registry|.bower-tmp|bower_components)|(\.(swp|ico|png|jpg|git|svn))$'
@@ -76,8 +77,10 @@ let g:NERDShutUp=1
 " sass/haml checking is slow by default, so only check when we explicitly ask
 let g:syntastic_mode_map = { 'passive_filetypes': ['sass', 'scss', 'haml'] }
 
+" https://github.com/othree/javascript-libraries-syntax.vim
+let g:used_javascript_libs = 'underscore,angularjs,jasmine,chai'
+
 let g:syntastic_javascript_checkers = ['jshint']
-let g:syntastic_check_on_open = 1
 
 " Better :sign interface symbols
 let g:syntastic_error_symbol = '✗'
@@ -112,7 +115,7 @@ let g:syntastic_html_tidy_ignore_errors += [
 " specifically g:syntastic_html_tidy_empty_tags
 let g:syntastic_html_tidy_ignore_errors += ["trimming empty "]
 
-" Angualar ignores
+" Angular ignores
 let g:syntastic_html_tidy_blocklevel_tags += [
       \ 'ng-include',
       \ 'ng-form'
@@ -130,7 +133,8 @@ let g:syntastic_html_tidy_ignore_errors += [
 " Try to use HTML5 Tidy for better checking?
 let g:syntastic_html_tidy_exec = '/usr/local/bin/tidy5'
 
-" Custom syntastic settings:
+" Find the closest .jshintrc
+" See https://gist.github.com/ethagnawl/ed4bd3eba6389ffe9430
 function! s:find_jshintrc(dir)
   let l:found = globpath(a:dir, '.jshintrc')
   if filereadable(l:found)
@@ -152,6 +156,7 @@ function! UpdateJsHintConf()
   "let g:syntastic_javascript_jshint_conf = l:jshintrc
 endfunction
 
+
 " see https://github.com/scrooloose/syntastic
 let g:syntastic_always_populate_loc_list = 1
 let g:syntastic_check_on_open = 1
@@ -160,6 +165,8 @@ let g:syntastic_check_on_wq = 0
 " on HTML files or other bad syntax files
 "let g:syntastic_auto_loc_list = 1
 
+" https://github.com/jaxbot/syntastic-react
+let g:syntastic_javascript_checkers = ['eslint']
 
 fun! Wp()
   set nonumber              " remove line numbering when writing
@@ -177,6 +184,7 @@ fun! Wp()
   nnoremap j gj
   nnoremap k gk
   nnoremap 0 g0
+  nnoremap ^ g0
   nnoremap $ g$
 
   " set up a more readable font when writing mode invoked
@@ -218,6 +226,9 @@ fun! BasicAbbreviations()
   iabbrev ServiceORder ServiceOrder
   iabbrev done(): done();
   iabbrev }): });
+  iabbrev lenght length
+  iabbrev hae have
+  iabbrev tht that
 
   " some spelling mistakes not (yet) caught by autocorrect.vim
   iabbrev testamonial testimonial
@@ -269,6 +280,8 @@ fun! Autocommit()
   au BufWritePost * silent !git add <afile>
   au BufWritePost * silent !git commit <afile> -m 'Generated commit'
 endfu
+
+let mapleader = "\<Space>"
 
 " does not work? trying to remove surround parens and add a space
 nnoremap <leader>p ds(i
@@ -328,13 +341,22 @@ command! Vimrc vsp ~/.vimrc
 command! Vvimrc vsp ~/.vimrc
 command! Svimrc sp ~/.vimrc
 
+
 " Jekyll shortcuts
 nnoremap <leader>jp :! ./scripts/preview %<CR> " preview jekyll post in browser
 nnoremap <leader>jt :! jsctags -o tags server test admin<CR>
 
+" Markdown links (visual mode)
+" link (url is in clipboard)
+vnoremap <leader>lu <Esc>`>a](<C-r>*)<C-o>`<[<Esc>f)
+" link (disregard clipboard)
+vnoremap <leader>ll <Esc>`>a]()<C-o>`<[<Esc>f)
+
 nnoremap <leader>e :Errors<CR><C-W><C-W>
 nnoremap <leader>q :q<CR>
 nnoremap <leader>w :w<CR>
+
+" HTML tag closing and reindenting
 iabbrev </ </<C-X><C-O><ESC>==A
 
 " latex-suite
@@ -447,7 +469,7 @@ set list
 set wildignore=*.o,*.class,*.png,*.pdf,*.ps,*.gif,*.jpg,*.aux,*.toc,*.cod,*.bak,*.mp3,*.m4a,*.wmv,*.mpg,*.mov,*.doc,*.bc
 set wildignore+=vendor/rails/**
 set wildignore+=build/android    " Titanium
-set wildignore+=node_modules/**  " npm
+set wildignore+=client/node_modules/**,node_modules/**  " npm
 set wildignore+=bower_components/**,.bower-cache/**,.bower-registry/**,.bower-tmp/** " bower
 set wildignore+=.git/**          " vcs
 
@@ -789,3 +811,25 @@ if has("gui_running")
   " for some reason this wasn't working by default for me?
   source ~/.gvimrc
 endif
+
+
+" TODO: extract to plugin
+" from http://vimcasts.org/episodes/working-with-tabs/
+" and http://vim.wikia.com/wiki/Using_tab_pages
+" " For mac users (using the 'apple' key)
+nnoremap <D-S-]> gt
+nnoremap <D-S-[> gT
+nnoremap <D-1> 1gt
+nnoremap <D-2> 2gt
+nnoremap <D-3> 3gt
+nnoremap <D-4> 4gt
+nnoremap <D-5> 5gt
+nnoremap <D-6> 6gt
+nnoremap <D-7> 7gt
+nnoremap <D-8> 8gt
+nnoremap <D-9> 9gt
+nnoremap <D-0> :tablast<CR>
+nnoremap <D-LEFT> :tabprevious<CR>
+nnoremap <D-RIGHT> :tabnext<CR>
+" also has 'for linux and windows users (using the control key)'
+" but punting for now
