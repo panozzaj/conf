@@ -253,3 +253,6 @@
 [submodule "common/.vim/bundle/vim-jsx"]
 	path = common/.vim/bundle/vim-jsx
 	url = https://github.com/mxw/vim-jsx.git
+[submodule "common/.vim/bundle/ultisnips"]
+	path = common/.vim/bundle/ultisnips
+	url = https://github.com/sirver/ultisnips.git
