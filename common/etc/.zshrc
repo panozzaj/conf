@@ -446,8 +446,13 @@ alias xe="xargs mvim"
 # print STDERR in red
 alias -g errred='2> >(while read line; do echo -e "\e[01;31m$line\e[0m" >&2; done)'
 
-PATH+=":"$CONF/common/bin
-PATH+=":/usr/local/sbin"
+if [[ ! "$PATH" =~ "$CONF/common/bin" ]]; then
+  PATH+=":"$CONF/common/bin
+fi
+
+if [[ ! "$PATH" =~ "/usr/local/sbin" ]]; then
+  PATH+=":/usr/local/sbin"
+fi
 
 # load up rvm
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"  # This loads RVM into a shell session.
@@ -473,9 +478,17 @@ alias unhitch='hitch -u'
 export NVM_DIR="/Users/anthony/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
 
-export PATH=$PATH:/usr/local/opt/go/libexec/bin
-export GOPATH=$PATH:$HOME/go
-export PATH=$PATH:$GOPATH/bin
+if [[ ! "$PATH" =~ "/usr/local/opt/go/libexec/bin" ]]; then
+  export PATH=$PATH:/usr/local/opt/go/libexec/bin
+fi
+
+if [[ ! "$GOPATH" =~ "$HOME/go" ]]; then
+  export GOPATH=$PATH:$HOME/go
+fi
+
+if [[ ! "$PATH" =~ "$GOPATH/bin" ]]; then
+  export PATH=$PATH:$GOPATH/bin
+fi
 
 alias news="newsbeuter -C ~/Dropbox/newsbeuter/config -u ~/Dropbox/newsbeuter/urls"
 function add_feed {
