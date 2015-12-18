@@ -30,4 +30,4 @@ set formatoptions+=j " 'Where it makes sense, remove a comment leader when joini
 
 " default new window size should be decent
 set lines=40
-set columns=80
+set columns=88 " Roughly 80, but take into account gutters and line numbers
