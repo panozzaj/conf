@@ -23,7 +23,7 @@ else
   fi
 fi
 
-patterns=(
+all_patterns=(
   # basic smart quotes
   ‘  # smart forward single quote
   ’  # smart backward single quote
@@ -31,14 +31,14 @@ patterns=(
   ”  # smart backward double quote
 
   # see http://stackoverflow.com/questions/5158377
-  '-P \xE3\x80\x98'  # LEFT SINGLE QUOTATION MARK             U+2018
-  '-P \xE2\x80\x99'  # RIGHT SINGLE QUOTATION MARK            U+2019
-  '-P \xE2\x80\x9A'  # SINGLE LOW-9 QUOTATION MARK            U+201A
-  '-P \xE2\x80\x9B'  # SINGLE HIGH-REVERSED-9 QUOTATION MARK  U+201B
-  '-P \xE2\x80\x9C'  # LEFT DOUBLE QUOTATION MARK             U+201C
-  '-P \xE2\x80\x9D'  # RIGHT DOUBLE QUOTATION MARK            U+201D
-  '-P \xE2\x80\x9E'  # DOUBLE LOW-9 QUOTATION MARK            U+201E
-  '-P \xE2\x80\x9F'  # DOUBLE HIGH-REVERSED-9 QUOTATION MARK  U+201F
+  \xE3\x80\x98  # LEFT SINGLE QUOTATION MARK             U+2018
+  \xE2\x80\x99  # RIGHT SINGLE QUOTATION MARK            U+2019
+  \xE2\x80\x9A  # SINGLE LOW-9 QUOTATION MARK            U+201A
+  \xE2\x80\x9B  # SINGLE HIGH-REVERSED-9 QUOTATION MARK  U+201B
+  \xE2\x80\x9C  # LEFT DOUBLE QUOTATION MARK             U+201C
+  \xE2\x80\x9D  # RIGHT DOUBLE QUOTATION MARK            U+201D
+  \xE2\x80\x9E  # DOUBLE LOW-9 QUOTATION MARK            U+201E
+  \xE2\x80\x9F  # DOUBLE HIGH-REVERSED-9 QUOTATION MARK  U+201F
 )
 
 directories_to_exclude=(
@@ -49,6 +49,17 @@ for directory_to_exclude in "${directories_to_exclude[@]}"; do
   exclude_patterns="--exclude-dir=$directory_to_exclude $exclude_patterns"
 done
 
-for pattern in "${patterns[@]}"; do
-  $grep --color --line-number --recursive $exclude_patterns $pattern $input
-done
+# see http://stackoverflow.com/questions/1527049
+pattern_string=$(IFS=, ; echo "${patterns[*]}")
+separator="|"
+regex="$( printf "${separator}%s" "${all_patterns[@]}" )"
+patterns="${regex:${#separator}}" # remove leading separator
+
+$grep \
+  --color \
+  --line-number \
+  --recursive \
+  $exclude_patterns \
+  --perl-regexp \
+  $patterns \
+  $input
