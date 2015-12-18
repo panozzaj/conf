@@ -1,5 +1,1 @@
-*.swp
 .DS_Store
-*.swo
-_site
-.sass-cache
