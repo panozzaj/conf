@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require 'securerandom'
+characters = ARGV[0].to_i
+characters = 32 if characters == 0
+puts SecureRandom.hex(characters / 2)
