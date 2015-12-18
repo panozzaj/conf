@@ -63,3 +63,6 @@ $grep \
   --perl-regexp \
   $patterns \
   $input
+
+# exit 1 if grep found any matches, otherwise exit 0
+test $? -eq 1
