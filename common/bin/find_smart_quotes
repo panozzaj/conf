@@ -10,7 +10,7 @@ unset GREP_OPTIONS
 
 # Use ggrep if it is installed since that is likely more correct.
 # Otherwise, try to use the built-in system grep
-if [[ $(type ggrep >/dev/null 2>&1) -eq "is" ]]; then
+if [[ $(type ggrep 2>&1 | cut -d ' ' -f 2) == "is" ]]; then
   grep='ggrep'
 else
   grep='grep'
