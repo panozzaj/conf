@@ -274,10 +274,6 @@ alias zshrch="$EDITOR ~/conf/hosts/$HOST/etc/.zshrc"
 alias zshrcl="$EDITOR ~/conf/hosts/$HOST/etc/.zshrc" # local
 alias zshrci="$EDITOR ~/conf/init/etc/.zshrc"
 
-# git shortcuts
-function ggrep() {
-  git grep $1 $(git rev-list --all)
-}
 alias g="git"
 alias ga="git add --all"
 alias gaa="git add --all"
@@ -295,7 +291,7 @@ alias gba="git branch --all"
 alias gbb="git bisect bad"
 alias gbg="git bisect good"
 alias gbr="git branch --remote"
-alias gc="git commit"
+alias gc="git commit --verbose"
 alias gcle="git cleanup"
 alias gco="git checkout"
 alias gco-="git checkout -"
@@ -303,6 +299,7 @@ alias gcob="git checkout -b"
 alias gcop="git checkout --patch"
 alias gcom="git checkout master"
 alias gcomm="git commit --message"
+alias gcn="git commit -n"
 alias gcw="git commit -m 'Whitespace'"
 alias gcm="git commit --message"
 alias gcp="git cherry-pick"
@@ -326,8 +323,8 @@ alias gmom="echo 'git merge origin/master --ff-only'; git merge origin/master --
 alias gmt="git mergetool"
 alias gp="git push"
 alias gpop="git pop"
-alias gpup="git pup"
 alias gpr="git pull --rebase"
+alias gpup="git pup"
 alias grc="git rebase --continue"
 alias gri="git rebase --interactive"
 alias griom="git rebase --interactive origin/master"
@@ -346,8 +343,9 @@ alias gsup="git sup"
 alias gwip="git add -A . ; git commit -nm 'WIP'"
 alias gwtf="git wtf -A"
 alias gwtff="git fetch && git wtf -A"
-alias squash="git commit -nm 'SQUASH ME'"
+
 alias fixup="git commit -nm 'FIXUP ME'"
+alias squash="git commit -nm 'SQUASH ME'"
 
 function hpr {
     # by default, makes pull request from feature branch to master
@@ -356,6 +354,7 @@ function hpr {
       echo "hub pull-request"
       export GIT_EDITOR='mvim --nofork'
       url=$(hub pull-request)
+      # TODO: hub pull-request actually takes -o argument to open in browser
       if [[ "$url" != "" ]]; then
         open "$url"
         echo "Pull request created at $url"
@@ -410,6 +409,7 @@ alias nisd="npm install --save-dev"
 alias nr="npm run"
 alias nrs="npm start" # npm run start
 alias nrt="npm run test"
+alias ns="npm start"
 
 # javascript
 #alias jsl="jslint -process"
@@ -439,6 +439,8 @@ alias -g pxargs="xargs -n 1"
 
 # silver searcher - use less with color support for j/k support
 alias ag='ag -i --pager "less -R" --color-match="1;31"'
+alias agl='ag -l'
+alias ags='ag -A5 -B5'
 
 # might be better platform independent, but YAGNI right now
 alias xe="xargs mvim"
@@ -490,6 +492,14 @@ if [[ ! "$PATH" =~ "$GOPATH/bin" ]]; then
   export PATH=$PATH:$GOPATH/bin
 fi
 
+if [[ ! "$PATH" =~ "./client/node_modules/.bin" ]]; then
+  export PATH=$PATH:./client/node_modules/.bin
+fi
+
+if [[ ! "$PATH" =~ "./node_modules/.bin" ]]; then
+  export PATH=$PATH:./node_modules/.bin
+fi
+
 alias news="newsbeuter -C ~/Dropbox/newsbeuter/config -u ~/Dropbox/newsbeuter/urls"
 function add_feed {
     echo "$1" >> ~/Dropbox/newsbeuter/urls
@@ -500,3 +510,4 @@ function install_jsctags {
   # https://github.com/mozilla/doctorjs/issues/52
   gsed -i '51i tags: [],' ./node_modules/jsctags/jsctags/ctags/index.js
 }
+
