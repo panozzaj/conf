@@ -57,6 +57,10 @@ set foldmethod=syntax
 set foldlevelstart=0
 set nofoldenable      " disable folding
 
+" Use project-specific .vimrc files
+" https://robots.thoughtbot.com/opt-in-project-specific-vim-spell-checking-and-word-completion
+set exrc
+set secure
 
 " ctrl-p plugin
 
