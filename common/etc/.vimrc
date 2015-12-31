@@ -467,7 +467,6 @@ nnoremap du :diffupdate<CR>
 
 " Toggle trailing whitespace highlighting with leader + s  (default on)
 set listchars=tab:>-,trail:· ",eol:$
-"nnoremap <silent> <leader>s :set nolist!<CR>
 nnoremap <leader>s :sp<CR>
 nnoremap <leader>v :vsp<CR>
 set list

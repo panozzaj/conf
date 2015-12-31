@@ -14,7 +14,7 @@ set guioptions-=m " hide the menu bar
 " Experimental
 "  toggle trailing whitespace highlighting with leader + s
 set listchars=tab:>-,trail:· ",eol:$
-nmap <silent> <leader>s ;set nolist!<CR>
+"nmap <silent> <leader>s ;set nolist!<CR> " superseded by split
 set list
 
 if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome")
