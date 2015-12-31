@@ -442,8 +442,8 @@ alias -g pxargs="xargs -n 1"
 
 # silver searcher - use less with color support for j/k support
 alias ag='ag -i --pager "less -R" --color-match="1;31"'
+alias agc='ag -C5'
 alias agl='ag -l'
-alias ags='ag -A5 -B5'
 
 # might be better platform independent, but YAGNI right now
 alias xe="xargs mvim"
