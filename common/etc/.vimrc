@@ -571,12 +571,6 @@ let g:gitgutter_eager = 0 " prevent reload of all buffers on window focus (which
 
 nnoremap <leader>co <Esc>:call RandomColorscheme()<CR>
 
-" Turns an word into a regex to match that word
-function! English(word)
-  " Case-insensitive, and properly bounded.
-  return '\c\<' . a:word . '\>'
-endfunction
-
 " enter command mode without using shift key
 noremap ; :
 noremap : ;
