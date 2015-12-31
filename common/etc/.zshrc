@@ -12,7 +12,10 @@ setopt APPEND_HISTORY
 # see http://stackoverflow.com/questions/6091827
 setopt NO_EXTENDED_GLOB
 
-fpath=($conf/common/etc/.zsh/ $fpath)
+if [[ ! "$fpath" =~ "$conf/common/etc/.zsh" ]]; then
+  fpath=($conf/common/etc/.zsh $fpath)
+fi
+
 zstyle ':completion:*:*:git:*' script $conf/common/bin/git-completion.bash
 
 # from `brew info zsh` install instructions

@@ -1,10 +1,3 @@
-# setup for Mac Ports
-PATH+=:$CONF/platforms/$PLATFORM/bin
-PATH+=:/opt/local/bin
-PATH+=:/usr/local/share/npm/bin
-MANPATH+=:/opt/local/share/man
-INFOPATH+=:/opt/local/share/info
-
 alias -g SAY='; say -v Zarvox -r400 "your command-line job has finished"'
 
 alias spi="sudo port install"
@@ -48,4 +41,6 @@ export RUBYOPT="-ropenssl"
 ulimit -u 512
 
 # load zsh completions for various tools (see `brew info zsh-completions`)
-fpath=(/usr/local/share/zsh-completions $fpath)
+if [[ ! "$fpath" =~ "/usr/local/share/zsh-completions" ]]; then
+  fpath=(/usr/local/share/zsh-completions $fpath)
+fi
