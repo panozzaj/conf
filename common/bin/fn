@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+
+# ignore any patterns in a .gitignore file
+# see http://stackoverflow.com/a/16595367/532524 for example
+def excluded
+  if File.exist? '.gitignore'
+    patterns = File.read('.gitignore').split("\n")
+    patterns.map do |pattern|
+      "-not \\( -path \"*#{pattern}*\" -prune \\)"
+    end.join(' ')
+  else
+    ''
+  end
+end
+
+if ARGV.length == 0
+  echo 'Usage: fn search_string [within_directory]'
+  exit 1
+elsif ARGV.length == 1 then
+  search_term = ARGV[0]
+  directory = '.'
+  command = "find #{directory} #{excluded} | grep -i #{search_term}"
+else
+  search_term, directory = ARGV
+  command = "find #{directory} #{excluded} | grep -i #{search_term}"
+end
+
+puts `#{command}`

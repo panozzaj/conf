@@ -75,16 +75,6 @@ bindkey "\e[3~" delete-char
 # otherwise I may delete files unintentionally, etc.
 alias r='echo "Neutered r command"'
 
-### Some general shortcuts
-fn () {
-    if [ $# -eq 0 ]; then
-        echo 'Usage: fn search_string [within_directory]'
-    elif [ $# -eq 1 ]; then
-        find . | grep -i $1
-    elif [ $# -ge 2 ]; then
-        find ${@[@]:2} | grep -i $@[1]
-    fi
-}
 alias ll='ls -l'
 
 # Quick change directories
