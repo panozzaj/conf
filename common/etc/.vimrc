@@ -372,6 +372,9 @@ set grepprg=grep\ -nH\ $*
 let g:tex_flavor='latex'
 let g:Tex_DefaultTargetFormat="pdf"
 
+" highlight the search match
+let g:ag_highlight=1
+let g:ag_prg="ag -i --vimgrep"
 
 " see http://learnvimscriptthehardway.stevelosh.com/chapters/14.html
 augroup panozzaj_group
@@ -651,6 +654,10 @@ nnoremap <leader>9 :NotRocket<CR>
 
 " kill manual key.
 nnoremap K <nop>
+" TODO: would be nice to Ag search for item under cursor and in selection
+" but I don't have time to figure this out right now.
+"nnoremap K :LAg! "\b<C-R><C-W>\b"<CR>:cw<CR>
+"vnoremap K :LAg! "\b<C-R><C-W>\b"<CR>:cw<CR>
 
 " create buffer on `gf` if the file does not currently exist (slight
 " modification from help file to accommodate colon remapping)
