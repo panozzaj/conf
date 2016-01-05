@@ -16,13 +16,19 @@ end
 if ARGV.length == 0
   echo 'Usage: fn search_string [within_directory]'
   exit 1
-elsif ARGV.length == 1 then
+elsif ARGV.length == 1
   search_term = ARGV[0]
   directory = '.'
-  command = "find #{directory} #{excluded} | grep -i #{search_term}"
 else
   search_term, directory = ARGV
-  command = "find #{directory} #{excluded} | grep -i #{search_term}"
 end
 
-puts `#{command}`
+command = "find #{directory} #{excluded} | grep -i #{search_term}"
+result = `#{command}`
+
+# the unless here prevents a blank line when there are no matches
+puts result unless result == ''
+
+# exit with 0 if some matches found, otherwise exit with non-zero (probably 1)
+# not really needed but might be used for some scripting
+exit $?.exitstatus
