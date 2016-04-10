@@ -1,20 +1,25 @@
 #!/usr/bin/env ruby
 
+# Quickly find files that have X in their name.
+# (possibly scoped to be within a directory)
+
 # ignore any patterns in a .gitignore file
 # see http://stackoverflow.com/a/16595367/532524 for example
 def excluded
   if File.exist? '.gitignore'
     patterns = File.read('.gitignore').split("\n")
     patterns.map do |pattern|
+      next if pattern =~ /^#/
+      next if pattern =~ /^\s*$/
       "-not \\( -path \"*#{pattern}*\" -prune \\)"
-    end.join(' ')
+    end.compact.join(' ')
   else
     ''
   end
 end
 
 if ARGV.length == 0
-  echo 'Usage: fn search_string [within_directory]'
+  puts 'Usage: fn search_string [within_directory]'
   exit 1
 elsif ARGV.length == 1
   search_term = ARGV[0]
