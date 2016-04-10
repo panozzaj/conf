@@ -185,6 +185,15 @@ function! UpdateJsHintConf()
   "let g:syntastic_javascript_jshint_conf = l:jshintrc
 endfunction
 
+" tags-related commands and configuration
+
+" mostly obsoleted by better ctags configuration?
+nnoremap <leader>jt :! jsctags -o tags server test admin<CR>
+
+" not sure if this is the best tag solution, but seems to work halfway
+" decently
+let g:tagman_ctags_binary = 'smarter_ctags'
+let g:tagman_library_tag_paths = '$GEM_HOME/gems node_modules vendor client/node_modules'
 
 " see https://github.com/scrooloose/syntastic
 let g:syntastic_always_populate_loc_list = 1
@@ -373,7 +382,6 @@ command! Svimrc sp ~/.vimrc
 
 " Jekyll shortcuts
 nnoremap <leader>jp :! ./scripts/preview %<CR> " preview jekyll post in browser
-nnoremap <leader>jt :! jsctags -o tags server test admin<CR>
 
 " Markdown links (visual mode)
 " link (url is in clipboard)
