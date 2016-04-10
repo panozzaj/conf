@@ -68,6 +68,27 @@ let g:ctrlp_match_window_bottom=0 " put at top
 let g:ctrlp_match_window_reversed=0 " reverse order of items
 let g:ctrlp_custom_ignore = '\v[\/](node_modules|target|dist|tmp|log|.bower-cache|.bower-registry|.bower-tmp|bower_components)|(\.(swp|ico|png|jpg|git|svn))$'
 
+let mapleader = "\<Space>"
+
+" Not sure I really like CtrlP that much
+"nnoremap <leader>t :CtrlP<CR>
+
+" Unite configuration, see http://www.codeography.com/2013/06/17/replacing-all-the-things-with-unite-vim.html
+let g:unite_source_history_yank_enable = 1
+call unite#filters#matcher_default#use(['matcher_fuzzy'])
+" Not sure I really like Unite for file finding that much
+"nnoremap <leader>t :<C-u>Unite -no-split -buffer-name=files   -start-insert file_rec<cr>
+"nnoremap <leader>y :<C-u>Unite -no-split -buffer-name=yank    history/yank<cr>
+
+" Custom mappings for the unite buffer
+autocmd FileType unite call s:unite_settings()
+function! s:unite_settings()
+  " Play nice with supertab
+  let b:SuperTabDisabled=1
+  " Enable navigation with control-j and control-k in insert mode
+  imap <buffer> <C-j>   <Plug>(unite_select_next_line)
+  imap <buffer> <C-k>   <Plug>(unite_select_previous_line)
+endfunction
 
 let g:closetag_html_style=1
 "source ~/.vim/closetag.vim
