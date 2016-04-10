@@ -460,17 +460,20 @@ alias tflt="tail -f log/test.log"
 
 alias pre="pretty"
 
-alias ant='color-ant'
+#alias ant='color-ant'
 alias mvn='color-mvn'
 
 alias week='date "+%V"'
 
+alias wcl='wc -l'
+
 alias -g pxargs="xargs -n 1"
 
 # silver searcher - use less with color support for j/k support
-alias ag='ag -i --pager "less -R" --color-match="1;31"'
+alias ag="ag -i --pager 'less -R' --color-match='1;31'"
 alias agc='ag -C5'
 alias agl='ag -l'
+alias lag='ag -l'
 
 # might be better platform independent, but YAGNI right now
 alias xe="xargs mvim"
@@ -507,9 +510,6 @@ hitch() {
 }
 alias unhitch='hitch -u'
 
-export NVM_DIR="/Users/anthony/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
-
 if [[ ! "$PATH" =~ "/usr/local/opt/go/libexec/bin" ]]; then
   export PATH=$PATH:/usr/local/opt/go/libexec/bin
 fi
@@ -522,11 +522,11 @@ if [[ ! "$PATH" =~ "$GOPATH/bin" ]]; then
   export PATH=$PATH:$GOPATH/bin
 fi
 
-if [[ ! "$PATH" =~ "./client/node_modules/.bin" ]]; then
+if [[ ! "$PATH" =~ "\\./client/node_modules/\\.bin" ]]; then
   export PATH=$PATH:./client/node_modules/.bin
 fi
 
-if [[ ! "$PATH" =~ "./node_modules/.bin" ]]; then
+if [[ ! "$PATH" =~ "\\./node_modules/\\.bin" ]]; then
   export PATH=$PATH:./node_modules/.bin
 fi
 
@@ -541,3 +541,5 @@ function install_jsctags {
   gsed -i '51i tags: [],' ./node_modules/jsctags/jsctags/ctags/index.js
 }
 
+export NVM_DIR="/Users/anthony/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
