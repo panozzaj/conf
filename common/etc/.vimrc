@@ -329,8 +329,6 @@ fun! Autocommit()
   au BufWritePost * silent !git commit <afile> -m 'Generated commit'
 endfu
 
-let mapleader = "\<Space>"
-
 " does not work? trying to remove surround parens and add a space
 nnoremap <leader>p ds(i
 
