@@ -240,10 +240,47 @@ alias gu="gem uninstall"
 
 alias cuc="cucumber"
 alias -g PIPE="|"
+
+# roughly: run any cucumber files that we have changed since the last commit
 function gcuc() {
+  # helpful: https://git-scm.com/docs/git-status#_output
   # needs to handle
   # R  features/1.feature -> features/2.feature
-  git status --porcelain | grep -v -e '^ D' | grep -v -e '^D' | awk 'match($1, ""){print $2}' | grep features/ | xargs cucumber
+  git status --porcelain  | \
+    grep -v -e '^ D' | \
+    grep -v -e '^D' | \
+    awk 'match($1, ""){print $2}' | \
+    grep features/ | \
+    grep -v features/support/ | \
+    sort | \
+    uniq | \
+    xargs cucumber
+}
+
+# roughly: run any specs that we have changed since the last commit
+function gspec() {
+  # helpful: https://git-scm.com/docs/git-status#_output
+  # needs to handle
+  # R  spec/1_spec.rb -> features/2_spec.rb
+  git status --porcelain | \
+    grep -v -e '^[ ]?D' | \
+    awk 'match($1, ""){print $2}' | \
+    grep spec/ | \
+    grep -v spec/spec_helper.rb | \
+    grep -v spec/factories | \
+    grep -v spec/fixtures/ | \
+    grep -v spec/support/ | \
+    sort | \
+    uniq | \
+    xargs rspec
+}
+
+function respec() {
+  pbpaste | \
+    cut -d ' ' -f 2 | \
+    cut -d ':' -f 1 | \
+    uniq | \
+    xargs rspec
 }
 
 # Pow
