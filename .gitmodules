@@ -256,3 +256,9 @@
 [submodule "common/.vim/bundle/ultisnips"]
 	path = common/.vim/bundle/ultisnips
 	url = https://github.com/sirver/ultisnips.git
+[submodule "common/.vim/bundle/tagman.vim"]
+	path = common/.vim/bundle/tagman.vim
+	url = https://github.com/grassdog/tagman.vim.git
+[submodule "common/.vim/bundle/command-t"]
+	path = common/.vim/bundle/command-t
+	url = https://github.com/wincent/command-t.git
