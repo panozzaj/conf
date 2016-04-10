@@ -36,6 +36,6 @@ bundle_directory = ARGV[1] || 'bundle'
 
 destination = File.join('common', '.vim', bundle_directory , project_name)
 puts "Installing #{ARGV[0]} -> #{destination}"
-command = "git submodule add #{repo} #{destination}"
+command = "git submodule add --force #{repo} #{destination}"
 puts command
 print `#{command}`
