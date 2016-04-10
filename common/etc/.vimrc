@@ -215,6 +215,15 @@ fun! Wp()
   set display=lastline      " show the last line on the screen even if it doesn't fit,
                             " which is common for long lines when writing
 
+  " Don't count acronyms as spelling errors (all upper-case letters, at least
+  " three characters)
+  " Also will not count acronym with 's' at the end a spelling error
+  " Also will not count numbers that are part of this
+  syn match AcronymNoSpell '\<\(\u\|\d\)\{3,}s\?\>' contains=@NoSpell
+
+  " Don't count url-ish things as spelling errors
+  syn match UrlNoSpell '\w\+:\/\/[^[:space:]]\+' contains=@NoSpell
+
   " get autocorrections
   call AutoCorrect()
 
