@@ -276,6 +276,7 @@ fun! BasicAbbreviations()
   iabbrev lenght length
   iabbrev hae have
   iabbrev tht that
+  iabbrev slef self
 
   " some spelling mistakes not (yet) caught by autocorrect.vim
   iabbrev testamonial testimonial
