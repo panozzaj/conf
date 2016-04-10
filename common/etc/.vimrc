@@ -778,10 +778,12 @@ comma! -nargs=1 Silent
 "endfunction
 
 "" some emacs-like bindings. might be obviated by https://github.com/tpope/vim-rsi
+nnoremap <M-b> b
+nnoremap <M-f> w
 "inoremap <C-b> <Left>
 "inoremap <C-f> <Right>
-"inoremap <M-b> <C-o>b
-"inoremap <M-f> <C-o>e<Right>
+inoremap <M-b> <C-o>b
+inoremap <M-f> <C-o>e<Right>
 "inoremap <C-d> <Del>
 "inoremap <M-d> <C-o>de
 "inoremap <M-h> <C-w>
