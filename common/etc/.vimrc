@@ -431,8 +431,6 @@ augroup panozzaj_group
   autocmd FileType less set omnifunc=csscomplete#CompleteCSS
   autocmd FileType make set noexpandtab " Don't expand tab in Makefiles
 
-  autocmd User Rails Rnavcommand fabricator spec/fabricators -suffix=_fabricator.rb -default=model()  " fabricator file shortcut
-
   " on file load, go to the last known cursor position if it is valid
   autocmd BufReadPost *
     \ if line("'\"") > 0 && line("'\"") <= line("$") |
