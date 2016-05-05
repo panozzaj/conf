@@ -275,16 +275,26 @@ function gspec() {
     xargs rspec
 }
 
+# copy the rspec failures, and this will rerun them as one command
 function respec() {
   pbpaste | \
     cut -d ' ' -f 2 | \
-    cut -d ':' -f 1 | \
-    uniq | \
+    sort | \
     xargs rspec
 }
 
+# copy the rspec failures, and this will edit the files that had failures
+function espec() {
+  pbpaste | \
+    cut -d ' ' -f 2 | \
+    cut -d ':' -f 1 | \
+    sort | \
+    uniq | \
+    xargs $EDITOR
+}
+
 # Pow
-alias psr="powify server restart"
+alias psr="powify server stop; powify server start"
 
 # Heroku
 alias hrdm="heroku run rake db:migrate"
