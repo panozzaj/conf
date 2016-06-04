@@ -170,6 +170,31 @@ snippet rpts
 $1: React.PropTypes.string
 endsnippet
 
+snippet component
+class $1 extends React.Component {
+  static propTypes = {
+  }
+
+  render() {
+    return (
+      <div></div>
+    )
+  }
+}
+endsnippet
+
+snippet edcomp
+export default class $1 extends React.Component {
+  static propTypes = {
+  }
+
+  render() {
+    return (
+      <div></div>
+    )
+  }
+}
+endsnippet
 
 ###########
 # IMPORTS #
@@ -177,4 +202,9 @@ endsnippet
 
 snippet implo
 import _ from 'lodash'
+endsnippet
+
+snippet impreact
+import React from 'react'
+
 endsnippet
