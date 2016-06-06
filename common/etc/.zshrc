@@ -35,7 +35,9 @@ SAVEHIST=50000
 bindkey -e
 # End of lines configured by zsh-newuser-install
 
+# usually overridden in host-specific .zshrc
 PROMPT="%F{red}%S[%T] %c%f%s ◊ "
+
 LS_COLORS='di=01;33'
 
 setopt prompt_subst
@@ -54,6 +56,8 @@ zstyle ':vcs_info:*' enable git
   fi
 }
 precmd () { vcs_info }
+
+# single quotes to evaluate each time the prompt is refreshed
 RPROMPT='${vcs_info_msg_0_}'
 
 setopt HIST_IGNORE_SPACE # don't add to ZSH history file any lines that start with a space
@@ -553,3 +557,14 @@ function install_jsctags {
 
 export NVM_DIR="/Users/anthony/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
+
+
+# http://stackoverflow.com/questions/2187829/constantly-updated-clock-in-zsh-prompt
+TMOUT=5 # every five seconds, reset the prompt so the clock is refreshed
+
+TRAPALRM() {
+    zle reset-prompt
+}
+
+export NVM_DIR="$HOME/.nvm"
+. "$(brew --prefix nvm)/nvm.sh"

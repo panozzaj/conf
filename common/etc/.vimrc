@@ -450,7 +450,11 @@ augroup END
 
 
 " Command-T overrides
-let g:CommandTMatchWindowAtTop = 1 " want the best command-t matches at the top so they never move
+"let g:CommandTMatchWindowAtTop = 1 " want the best command-t matches at the top so they never move
+
+" would like the matches top to bottom since we are at the top of the screen
+"let g:CommandTMatchWindowReverse = 0
+
 let g:CommandTMaxHeight = 8 " only show a few lines for the output
 
 " quicker way to flush the queue
@@ -587,7 +591,8 @@ function! RandomColorscheme()
   "endif
   call ResetPopupMenu()
   " need to reset the css colors after calling random colorscheme
-  source ~/conf/common/.vim/bundle/vim-css-color/after/syntax/css.vim
+  " AP 2016-05-10 doesn't seem to work after upgrading vim-css-color
+  "source ~/conf/common/.vim/bundle/vim-css-color/after/syntax/css.vim
 endfunction
 
 let g:niji_matching_filetypes = ['javascript']

@@ -262,3 +262,6 @@
 [submodule "common/.vim/bundle/command-t"]
 	path = common/.vim/bundle/command-t
 	url = https://github.com/wincent/command-t.git
+[submodule "common/.vim/bundle/vim-gutentags"]
+	path = common/.vim/bundle/vim-gutentags
+	url = https://github.com/ludovicchabant/vim-gutentags.git

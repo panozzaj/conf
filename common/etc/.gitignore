@@ -1,1 +1,6 @@
 .DS_Store
+
+# Vim tagfiles
+tags
+tags.lock
+tags.temp
