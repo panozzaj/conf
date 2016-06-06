@@ -310,6 +310,8 @@ fun! BasicAbbreviations()
   iabbrev kidn kind
   iabbrev Kidn Kind
 
+  iabbrev flaneur flâneur
+
   " Some helpful shortcuts
   iabbrev dtt <C-R>=strftime("%F")<CR>
   iabbrev dts <C-R>=strftime("%F %H%M")<CR>
