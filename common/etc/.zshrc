@@ -554,10 +554,6 @@ function install_jsctags {
   gsed -i '51i tags: [],' ./node_modules/jsctags/jsctags/ctags/index.js
 }
 
-export NVM_DIR="/Users/anthony/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
-
-
 # http://stackoverflow.com/questions/2187829/constantly-updated-clock-in-zsh-prompt
 TMOUT=5 # every five seconds, reset the prompt so the clock is refreshed
 
@@ -565,5 +561,7 @@ TRAPALRM() {
     zle reset-prompt
 }
 
+# load nvm
 export NVM_DIR="$HOME/.nvm"
 . "$(brew --prefix nvm)/nvm.sh"
+nvm use 5 > /dev/null
