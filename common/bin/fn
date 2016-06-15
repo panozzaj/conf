@@ -5,17 +5,26 @@
 
 # ignore any patterns in a .gitignore file
 # see http://stackoverflow.com/a/16595367/532524 for example
-def excluded
-  if File.exist? '.gitignore'
-    patterns = File.read('.gitignore').split("\n")
-    patterns.map do |pattern|
-      next if pattern =~ /^#/
-      next if pattern =~ /^\s*$/
-      "-not \\( -path \"*#{pattern}*\" -prune \\)"
-    end.compact.join(' ')
-  else
-    ''
-  end
+def ignored
+  files_with_ignore_patterns = [
+    '.agignore',
+    '.cvsignore',
+    '.gitignore',
+    '.hgignore',
+  ].map do |file_with_ignore_patterns|
+    if File.exist? file_with_ignore_patterns
+      patterns = File.read(file_with_ignore_patterns).split("\n")
+      patterns.map do |pattern|
+        next if pattern =~ /^#/
+        next if pattern =~ /^\s*$/
+        "-not \\( -path \"*#{pattern}*\" -prune \\)"
+      end.compact.join(' ')
+    else
+      ''
+    end
+  end.join(' ') + [
+    "-not \\( -path \"*\\.git*\" -prune \\)"
+  ].join(' ')
 end
 
 if ARGV.length == 0
@@ -28,7 +37,7 @@ else
   search_term, directory = ARGV
 end
 
-command = "find #{directory} #{excluded} | grep -i #{search_term}"
+command = "find #{directory} #{ignored} | grep -i #{search_term}"
 result = `#{command}`
 
 # the unless here prevents a blank line when there are no matches
