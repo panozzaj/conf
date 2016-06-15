@@ -251,8 +251,7 @@ function gcuc() {
   # needs to handle
   # R  features/1.feature -> features/2.feature
   git status --porcelain  | \
-    grep -v -e '^ D' | \
-    grep -v -e '^D' | \
+    grep -v -e '^[ ]*D' | \
     awk 'match($1, ""){print $2}' | \
     grep features/ | \
     grep -v features/support/ | \
@@ -267,7 +266,7 @@ function gspec() {
   # needs to handle
   # R  spec/1_spec.rb -> features/2_spec.rb
   git status --porcelain | \
-    grep -v -e '^[ ]?D' | \
+    grep -v -e '^[ ]*D' | \
     awk 'match($1, ""){print $2}' | \
     grep spec/ | \
     grep -v spec/spec_helper.rb | \
