@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # regenerate tmp/routes if it is not already generated or it is older than the routes config file
-mkdir tmp
+mkdir -p tmp > /dev/null
 
 if [ ! -f tmp/routes ] || [ tmp/routes -ot config/routes.rb ]; then
   if [ ! -f tmp/routes ]; then
@@ -10,15 +10,20 @@ if [ ! -f tmp/routes ] || [ tmp/routes -ot config/routes.rb ]; then
     generating='Regenerating'
   fi
 
-  [ -S .zeus.sock ] && z="zeus"
+  echo "$generating routes"
 
-  if [ -n "$z" ]; then
-    echo "$generating routes - Running under zeus."
+  if [ -f bin/rake ]; then
+    command="./bin/rake"
+    echo 'Using Spring to speed up generation'
+  elif [ -S .zeus.sock ]; then
+    command="zeus rake"
+    echo 'Using Zeus to speed up generation'
   else
-    echo "$generating routes - No Zeus enviroment detected."
+    command="rake"
+    echo 'Using naked rake to generate (consider using Zeus or Spring)'
   fi
 
-  $z rake routes > tmp/routes
+  $command routes > tmp/routes
 fi
 
 echo "Using generated routes file."
