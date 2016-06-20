@@ -6,7 +6,7 @@ cd ~/conf/common/.vim/bundle/tern_for_vim
 
 # load nvm
 . "$(brew --prefix nvm)/nvm.sh"
-nvm use 5
+nvm use stable
 npm install
 
 echo "tern_for_vim setup complete"
