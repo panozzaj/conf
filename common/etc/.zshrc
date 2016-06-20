@@ -76,8 +76,24 @@ bindkey "\e[3~" delete-char
 # General utility and correction
 #####
 
-# otherwise I may delete files unintentionally, etc.
-alias r='echo "Neutered r command"'
+# NOTE: `r` by default is a command to redo the last command.  If I change the
+# rspec functionality here, uncomment the other alias. Otherwise I may delete
+# files unintentionally, etc.
+#alias r='echo "Neutered r command"'
+alias r='best_rspec'
+function best_rspec {
+  # use spring rspec if it is around, otherwise fall back to normal rspec
+  if [ -f ./bin/rspec ]; then
+    ./bin/rspec $@
+  elif [ -f .zeus.sock ]; then
+    echo "Running tests with Zeus"
+    zeus test $@
+  else
+    echo 'Running with naked `rspec`'
+    rspec $@
+  fi
+}
+
 
 alias ll='ls -l'
 
