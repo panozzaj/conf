@@ -424,6 +424,7 @@ augroup panozzaj_group
   autocmd BufNewFile,BufRead *.txt set filetype=conf
   autocmd BufNewFile,BufRead *.less set filetype=less
   autocmd BufNewFile,BufRead {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc,irb_tempfile*,Vagrantfile} set filetype=ruby
+  autocmd BufNewFile,BufRead *_spec.rb set filetype=rspec.ruby
   autocmd BufNewFile,BufRead *.json set filetype=javascript
   autocmd BufNewFile,BufRead *.plist set filetype=xml
   autocmd BufNewFile,BufRead *.erb set filetype=eruby.html

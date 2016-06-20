@@ -64,21 +64,3 @@ require 'test_helper'
 class ${1}JobTest < ActiveJob::TestCase
 end
 endsnippet
-
-snippet bef
-before do
-  ${1}
-end
-endsnippet
-
-snippet "des(c)?" "describe (test)" r
-describe '${1}' do
-  ${2}
-end
-endsnippet
-
-snippet it "it (test)"
-it '${1:does something}' do
-  ${2}
-end
-endsnippet

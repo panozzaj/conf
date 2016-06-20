@@ -1,0 +1,48 @@
+global !p
+import re
+import os
+
+def described_class_from_filename(filename):
+	return camelize(re.sub('_spec', '', filename))
+
+def camelize(str):
+	return os.path.splitext(''.join([part.capitalize() for part in str.lower().split('_')]))[0]
+endglobal
+
+snippet fgc
+FactoryGirl.create
+endsnippet
+
+snippet fgb
+FactoryGirl.build
+endsnippet
+
+snippet saop
+save_and_open_page
+endsnippet
+
+snippet rspec "RSpec spec"
+require 'spec_helper'
+
+describe ${1:`!p snip.rv = described_class_from_filename(fn) or 'SomeClass'`} do
+  $0
+end
+endsnippet
+
+snippet bef
+before do
+  ${1}
+end
+endsnippet
+
+snippet "des(c)?" "describe (test)" r
+describe '${1}' do
+  ${2}
+end
+endsnippet
+
+snippet it "it (test)"
+it '${1:does something}' do
+  ${2}
+end
+endsnippet
