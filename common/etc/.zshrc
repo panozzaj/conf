@@ -83,9 +83,9 @@ bindkey "\e[3~" delete-char
 alias r='best_rspec'
 function best_rspec {
   # use spring rspec if it is around, otherwise fall back to normal rspec
-  if [ -f ./bin/rspec ]; then
+  if [ -f bin/rspec ]; then
     ./bin/rspec $@
-  elif [ -f .zeus.sock ]; then
+  elif [ -S .zeus.sock ]; then
     echo "Running tests with Zeus"
     zeus test $@
   else
