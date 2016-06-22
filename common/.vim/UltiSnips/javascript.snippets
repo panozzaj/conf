@@ -184,16 +184,42 @@ class $1 extends React.Component {
 endsnippet
 
 snippet edcomp
+import React from 'react'
+
 export default class $1 extends React.Component {
   static propTypes = {
   }
 
   render() {
     return (
-      <div></div>
+      <div>$1</div>
     )
   }
 }
+endsnippet
+
+snippet edview
+import React from 'react'
+import { connect } from 'react-redux'
+
+class $1 extends React.Component {
+  static propTypes = {
+  }
+
+  render() {
+    return (
+      <div>$1</div>
+    )
+  }
+}
+
+const mapStateToProps = state => ({
+})
+
+const mapDispatchToProps = {
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)($1)
 endsnippet
 
 ###########
