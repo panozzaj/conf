@@ -567,13 +567,8 @@ function install_jsctags {
 }
 
 # http://stackoverflow.com/questions/2187829/constantly-updated-clock-in-zsh-prompt
-TMOUT=5 # every five seconds, reset the prompt so the clock is refreshed
-
-TRAPALRM() {
-    zle reset-prompt
-}
-
-# load nvm
-export NVM_DIR="$HOME/.nvm"
-. "$(brew --prefix nvm)/nvm.sh"
-nvm use 5 > /dev/null
+#TMOUT=5 # every five seconds, reset the prompt so the clock is refreshed
+#
+#TRAPALRM() {
+#    zle reset-prompt
+#}
