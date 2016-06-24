@@ -517,10 +517,10 @@ fi
 # some Ruby compiler optimizations
 # see http://stackoverflow.com/questions/4461346/slow-rails-stack
 # TODO: pretty old.. not sure if this is actually useful nowadays
-export RUBY_HEAP_FREE_MIN=100000
-export RUBY_HEAP_SLOTS_INCREMENT=300000
-export RUBY_HEAP_SLOTS_GROWTH_FACTOR=1
-export RUBY_GC_MALLOC_LIMIT=90000000
+#export RUBY_HEAP_FREE_MIN=100000
+#export RUBY_HEAP_SLOTS_INCREMENT=300000
+#export RUBY_HEAP_SLOTS_GROWTH_FACTOR=1
+#export RUBY_GC_MALLOC_LIMIT=90000000
 
 # Add the following to your ~/.bashrc or ~/.zshrc
 #
