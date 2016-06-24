@@ -514,9 +514,6 @@ if [[ ! "$PATH" =~ "/usr/local/sbin" ]]; then
   PATH+=":/usr/local/sbin"
 fi
 
-# load up rvm
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"  # This loads RVM into a shell session.
-
 # some Ruby compiler optimizations
 # see http://stackoverflow.com/questions/4461346/slow-rails-stack
 # TODO: pretty old.. not sure if this is actually useful nowadays
