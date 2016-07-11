@@ -245,51 +245,63 @@ alias gu="gem uninstall"
 alias cuc="cucumber"
 alias -g PIPE="|"
 
-# roughly: run any cucumber files that we have changed since the last commit
-function gcuc() {
-  # helpful: https://git-scm.com/docs/git-status#_output
-  # needs to handle
-  # R  features/1.feature -> features/2.feature
-  git status --porcelain  | \
+# helpful: https://git-scm.com/docs/git-status#_output
+# needs to handle
+# R  spec/1_spec.rb -> features/2_spec.rb
+function modified_files() {
+  git status --porcelain | \
     grep -v -e '^[ ]*D' | \
     awk 'match($1, ""){print $2}' | \
+    sort | \
+    uniq
+}
+
+function ged() {
+  modified_files | xargs $EDITOR
+}
+
+function grubocop() {
+  modified_files | grep -e '\.rb$' | xargs rubocop
+}
+alias grubo=grubocop
+
+# get the files that are in the paste buffer from a normal git output
+function gpaste() {
+  pbpaste | sed -e 's/[[:space:]]*//g' | cut -d ':' -f 2
+}
+
+# roughly: run any cucumber files that we have changed since the last commit
+function gcuc() {
+  modified_files | \
     grep features/ | \
     grep -v features/support/ | \
-    sort | \
-    uniq | \
     xargs cucumber
 }
 
 # roughly: run any specs that we have changed since the last commit
 function gspec() {
-  # helpful: https://git-scm.com/docs/git-status#_output
-  # needs to handle
-  # R  spec/1_spec.rb -> features/2_spec.rb
-  git status --porcelain | \
-    grep -v -e '^[ ]*D' | \
-    awk 'match($1, ""){print $2}' | \
+  modified_files | \
     grep spec/ | \
     grep -v spec/spec_helper.rb | \
     grep -v spec/factories | \
     grep -v spec/fixtures/ | \
     grep -v spec/support/ | \
-    sort | \
-    uniq | \
-    xargs rspec
+    xargs best_rspec
+}
+
+# returns the list of filenames from rspec output format
+function rspec_paste() {
+  pbpaste | cut -d ' ' -f 2 | sort
 }
 
 # copy the rspec failures, and this will rerun them as one command
 function respec() {
-  pbpaste | \
-    cut -d ' ' -f 2 | \
-    sort | \
-    xargs rspec
+  rspec_paste | xargs best_rspec
 }
 
 # copy the rspec failures, and this will edit the files that had failures
 function espec() {
-  pbpaste | \
-    cut -d ' ' -f 2 | \
+  rspec_paste | \
     cut -d ':' -f 1 | \
     sort | \
     uniq | \
