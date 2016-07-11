@@ -1,0 +1,12 @@
+#!/bin/sh
+
+if [ -f bin/rspec ]; then
+  # use spring rspec if it is around
+  ./bin/rspec $@
+elif [ -S .zeus.sock ]; then
+  echo "Running tests with Zeus"
+  zeus test $@
+else
+  echo 'Running with naked `rspec`'
+  rspec $@
+fi
