@@ -105,7 +105,7 @@ let g:syntastic_mode_map = { 'passive_filetypes': ['sass', 'scss', 'haml'] }
 " https://github.com/othree/javascript-libraries-syntax.vim
 let g:used_javascript_libs = 'underscore,angularjs,jasmine,chai'
 
-let g:syntastic_javascript_checkers = ['jshint']
+let g:syntastic_javascript_checkers = ['eslint']
 
 " Better :sign interface symbols
 let g:syntastic_error_symbol = '✗'
