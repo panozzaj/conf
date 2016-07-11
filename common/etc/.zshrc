@@ -177,9 +177,6 @@ alias rdv="rake db:version"
 alias rjw="rake jobs:work"
 alias rpp="rake parallel:prepare"
 
-# Spring
-alias br="bin/rspec"
-
 # Zeus (https://github.com/burke/zeus)
 alias z="zeus"
 alias zc="time zeus cucumber"
