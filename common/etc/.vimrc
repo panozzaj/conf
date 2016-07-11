@@ -889,3 +889,9 @@ nnoremap <D-LEFT> :tabprevious<CR>
 nnoremap <D-RIGHT> :tabnext<CR>
 " also has 'for linux and windows users (using the control key)'
 " but punting for now
+
+" Otherwise if I accidentally click with the mouse when I am insert
+" mode, it moves it there and messes up my editing. I can't think of
+" a time when I actually want to navigate in insert mode, I always just
+" escape out and navigate using normal mode.
+set mouse-=i
