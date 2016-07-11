@@ -265,3 +265,9 @@
 [submodule "common/.vim/bundle/vim-gutentags"]
 	path = common/.vim/bundle/vim-gutentags
 	url = https://github.com/ludovicchabant/vim-gutentags.git
+[submodule "common/.vim/bundle/vim-rspec"]
+	path = common/.vim/bundle/vim-rspec
+	url = https://github.com/thoughtbot/vim-rspec.git
+[submodule "common/.vim/bundle/syntastic-local-eslint.vim"]
+	path = common/.vim/bundle/syntastic-local-eslint.vim
+	url = https://github.com/mtscout6/syntastic-local-eslint.vim.git
