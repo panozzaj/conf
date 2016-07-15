@@ -303,7 +303,6 @@ function respec() {
 function espec() {
   rspec_paste | \
     cut -d ':' -f 1 | \
-    sort | \
     uniq | \
     xargs $EDITOR
 }
