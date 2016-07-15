@@ -203,13 +203,16 @@ alias zrpp="zr parallel:prepare"
 alias rials="rails"
 alias rg="rails g"
 alias rgm="rails g migration"
+
 function rs() { # so this works for Rails 2 through 4
+  # `-b 0.0.0.0` helps with subdomains in pow
   if [[ -d script && -f script/server ]]; then
-    ./script/server $@
+    ./script/server -b 0.0.0.0 $@
   else
-    rails s $@
+    rails s -b 0.0.0.0 $@
   fi
 }
+
 function rc() { # so this works for Rails 2 through 4
   if [[ -d script && -f script/console ]]; then
     ./script/console $@
@@ -217,7 +220,9 @@ function rc() { # so this works for Rails 2 through 4
     rails c $@
   fi
 }
+
 alias rsp="rs -p"
+
 function reload_database() {
   echo "Reloading development and test databases from scratch!"
   echo ''
