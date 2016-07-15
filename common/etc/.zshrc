@@ -237,6 +237,19 @@ function reload_database() {
   powify server start
   echo "Finished reloading development and test databases from scratch!"
 }
+
+function parallel_failures() {
+  cat tmp/spec_summary.log | \
+    # remove colors from output
+    # see http://www.commandlinefu.com/commands/view/3584
+    gsed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | \
+    grep -e '^rspec'
+}
+
+function respec_parallel_failures() {
+  parallel_failures | cut -d ' ' -f 2 | sort | xargs best_rspec
+}
+
 function reset_database() {
   reload_database
 }
