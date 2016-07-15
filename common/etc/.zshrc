@@ -488,7 +488,7 @@ alias ns="npm start"
 
 # vagrant
 alias va="vagrant"
-alias vag="vagrant"
+alias vap="vagrant provision"
 
 # vim shortcuts
 alias vimrc="$EDITOR ~/conf/common/etc/.vimrc"
