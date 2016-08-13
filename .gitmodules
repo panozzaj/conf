@@ -271,3 +271,9 @@
 [submodule "common/.vim/bundle/syntastic-local-eslint.vim"]
 	path = common/.vim/bundle/syntastic-local-eslint.vim
 	url = https://github.com/mtscout6/syntastic-local-eslint.vim.git
+[submodule "common/.vim/bundle/vim-textobj-user"]
+	path = common/.vim/bundle/vim-textobj-user
+	url = https://github.com/kana/vim-textobj-user.git
+[submodule "common/.vim/bundle/vim-textobj-comment"]
+	path = common/.vim/bundle/vim-textobj-comment
+	url = https://github.com/glts/vim-textobj-comment.git
