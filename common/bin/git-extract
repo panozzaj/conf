@@ -1,0 +1,92 @@
+#!/bin/sh
+
+# WARNING: this script is highly experimental. It definitely needs some
+# testing, documentation, and error-handling to be ready for use since
+# if it fails at any point, you probably get into a bad state.
+
+# The point of this script is to be able to take a feature branch and
+# "extract" a number of commits from the branch you are currently on. Let's
+# call the branch you are on "A". It will remove the commits from that
+# branch. Then it creates a new branch (branch B) that has those commits
+# and pushes it up and creates a new pull request.
+
+feature_branch=$(git rev-parse --abbrev-ref HEAD)
+
+while getopts ":b:" opt; do
+  case $opt in
+    b)
+      new_branch_name=$OPTARG
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
+
+function usage() {
+  echo "Usage: $0 [-b branch-name] <first commit in history> [<other commits>...]"
+}
+
+# shift over the options we parsed to get revision(s) at end
+shift $(expr $OPTIND - 1 )
+revisions=("$@")
+
+# If we have just one revision in the extraction and we haven't specified a
+# branch name via the command-line, get the text of the commit and form it into
+# a valid/well-formed git branch name. Saves typing / thinking.
+if [[ ${#revisions[@]} -eq 1 && ! $new_branch_name ]]; then
+  new_branch_name=$(
+    git log \
+      --pretty=oneline \
+      --abbrev-commit \
+      ${revisions[0]} | \
+      head -1 | \
+      cut -d ' ' -f 2- | \
+      tr '[:upper:]' '[:lower:]' | \
+      sed 's/[/ ]/-/g' | \
+      sed 's/[^a-z0-9-]//g'
+  )
+fi
+
+if [[ ! $new_branch_name ]]; then
+  echo "Please specify a new branch name with -b <new branch name>" >&2
+  usage
+  exit 1
+fi
+
+# Might be nice to check that the revisions we have here are all actually
+# present in the git repo. Also, it seems like order matters, so maybe we can
+# order them in a certain order if necessary
+
+for revision in "${revisions[@]}"; do
+  git rebase --onto $revision^ $revision $feature_branch || \
+    (git rebase --abort && echo "Had trouble removing commit $revision" >&2 && exit 1)
+done
+
+echo "Creating branch $new_branch_name"
+git checkout -b $new_branch_name
+git reset --hard origin/master
+
+for revision in "${revisions[@]}"; do
+  git cherry-pick $revision || \
+    (git cherry-pick --abort && echo "Had trouble cherry-picking commit $revision" >&2 && exit 1)
+done
+
+if git branch -r | grep "$new_branch_name" > /dev/null; then
+  # branch already exists in origin, force-push it
+  git push -f
+else
+  # push up the branch to origin for the first time
+  git push -u origin `git symbolic-ref --short HEAD`
+fi
+
+echo 'hub pull-request'
+export GIT_EDITOR='mvim --nofork'
+hub pull-request -o
+
+git checkout $feature_branch
