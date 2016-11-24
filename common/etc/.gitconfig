@@ -10,14 +10,15 @@
         cam = commit -am
         cleanup = ! git remove-merged && git remove-merged-remote
         cleanup-local = ! git remove-merged
-        cp = cherry-pick
         co = checkout
         com = commit
         comm = commit -m
+        cp = cherry-pick
         edit-unmerged = !git-edit-unmerged
         exclude = !([ ! -e .git/info/exclude ] && mkdir -p .git/info && touch .git/info/exclude) | echo $2 >> .git/info/exclude
-        ignore-local = !([ ! -e .git/info/exclude ] && mkdir -p .git/info && touch .git/info/exclude) | echo $2 >> .git/info/exclude
+        g = grep --break --heading --line-number
         ignore = !git-custom-ignore $2
+        ignore-local = !([ ! -e .git/info/exclude ] && mkdir -p .git/info && touch .git/info/exclude) | echo $2 >> .git/info/exclude
         local-ignore = !([ ! -e .git/info/exclude ] && mkdir -p .git/info && touch .git/info/exclude) | echo $2 >> .git/info/exclude
         ls-ignored = ls-files --exclude-standard --ignored --others
         man = help
@@ -25,15 +26,14 @@
         modified-but-not-deleted = ! git status --porcelain | egrep -v ' D' | cut -d ' ' -f 3
         pick = cherry-pick
         pop = stash pop
-        pup = !git push -u ${1-origin} `git symbolic-ref --short HEAD`
         praise = blame
-        reset-whitespace = !(git diff -b --numstat | egrep $'^0\t0\t' | cut -d$'\t' -f3- | xargs git checkout HEAD --)
+        pup = !git push -u ${1-origin} `git symbolic-ref --short HEAD`
         remove-merged = !(git checkout master && git branch --merged | grep -v ' master$' | egrep -v " production$" | egrep -v " staging$" | egrep -v " qa$" | egrep -v " ci$" | egrep -v " qa-new$" | egrep -v " ci-new$" | xargs git branch -d)
         remove-merged-remote = !(git checkout master && git remote prune origin && git branch -r --merged | grep origin | egrep -v "/master$" | egrep -v "/production$" | egrep -v "/staging$" | egrep -v "/qa$" | egrep -v "/ci$" | egrep -v "/qa-new$" | egrep -v "/ci-new$" | sed 's/origin\\///' | xargs -n 1 git push --no-verify --delete origin)
+        reset-whitespace = !(git diff -b --numstat | egrep $'^0\t0\t' | cut -d$'\t' -f3- | xargs git checkout HEAD --)
         rest = reset
         sub = submodule
         sup = !git branch --set-upstream-to=${1-origin}/`git symbolic-ref --short HEAD`
-        g = grep --break --heading --line-number
 [branch]
         autosetupmerge = true
 [color]
@@ -50,6 +50,8 @@
         cmd = opendiff \"$LOCAL\" \"$REMOTE\"
 [github]
         user = panozzaj
+[grep]
+        lineNumber = true
 [init]
         templatedir = ~/conf/common/git_templates
 [merge]
@@ -66,5 +68,3 @@
 [user]
         name = Anthony Panozzo
         email = panozzaj@gmail.com
-[grep]
-        lineNumber = true
