@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# Remove a submodule with one command.
+# For some reason, cleanly deleting submodules is a real pain.
+# See http://stackoverflow.com/a/1260982/532524
+
+submodule_path=$1
+
+# To remove a submodule you need to:
+
+git submodule deinit $submodule_path
+git rm --cached $submodule_path
+rm -rf .git/modules/$submodule_path
+rm -rf $submodule_path
+
+echo 'Now you just need to commit the deletion of the submodule directory!'

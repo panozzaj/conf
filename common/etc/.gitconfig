@@ -30,6 +30,7 @@
         pup = !git push -u ${1-origin} `git symbolic-ref --short HEAD`
         remove-merged = !(git checkout master && git branch --merged | grep -v ' master$' | egrep -v " production$" | egrep -v " staging$" | egrep -v " qa$" | egrep -v " ci$" | egrep -v " qa-new$" | egrep -v " ci-new$" | xargs git branch -d)
         remove-merged-remote = !(git checkout master && git remote prune origin && git branch -r --merged | grep origin | egrep -v "/master$" | egrep -v "/production$" | egrep -v "/staging$" | egrep -v "/qa$" | egrep -v "/ci$" | egrep -v "/qa-new$" | egrep -v "/ci-new$" | sed 's/origin\\///' | xargs -n 1 git push --no-verify --delete origin)
+        remove-submodule = ! git-remove-submodule
         reset-whitespace = !(git diff -b --numstat | egrep $'^0\t0\t' | cut -d$'\t' -f3- | xargs git checkout HEAD --)
         rest = reset
         sub = submodule
