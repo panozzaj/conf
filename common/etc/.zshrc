@@ -533,6 +533,29 @@ if [[ ! "$PATH" =~ "/usr/local/sbin" ]]; then
   PATH+=":/usr/local/sbin"
 fi
 
+# Calculate writing word diff between revisions. Cribbed / modified from:
+# http://stackoverflow.com/questions/2874318/quantifying-the-amount-of-change-in-a-git-diff
+function git_words_added {
+  revision=${1:-origin/master}
+  git diff --word-diff=porcelain $revision | \
+    grep -e "^+[^+]" | \
+    wc -w | \
+    xargs
+}
+
+function git_words_removed {
+  revision=${1:-origin/master}
+  git diff --word-diff=porcelain $revision | \
+    grep -e "^-[^-]" | \
+    wc -w | \
+    xargs
+}
+
+function git_words_diff {
+  revision=${1:-origin/master}
+  echo $(($(git_words_added $1) - $(git_words_removed $1)))
+}
+
 # some Ruby compiler optimizations
 # see http://stackoverflow.com/questions/4461346/slow-rails-stack
 # TODO: pretty old.. not sure if this is actually useful nowadays
