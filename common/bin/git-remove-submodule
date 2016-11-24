@@ -6,6 +6,12 @@
 
 submodule_path=$1
 
+if [ -z "$1" ]; then
+  echo 'Please provide the path to the submodule you want to remove'
+  echo '(see `git submodule` for a complete list)'
+  exit 1
+fi
+
 # To remove a submodule you need to:
 
 git submodule deinit $submodule_path
