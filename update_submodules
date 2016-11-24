@@ -1,5 +1,6 @@
 #!/bin/sh
 
+git submodule init
 git submodule foreach git pull origin master
 ./setup_command_t
 ./setup_tern_for_vim
