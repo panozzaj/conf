@@ -757,13 +757,6 @@ else
   let g:randomizedColorsOnStart=1
 endif
 
-" see https://coderwall.com/p/ozhuxg
-function! PasteAsCoffee()
-  read !pbpaste | js2coffee
-endfunction
-command! PasteAsCoffee :call PasteAsCoffee()
-nnoremap <leader>pc :PasteAsCoffee<CR>
-
 comma! -nargs=1 Silent
       \ | execute ':silent !'.<q-args>
       \ | execute ':redraw!'
