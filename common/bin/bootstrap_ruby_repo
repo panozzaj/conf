@@ -1,0 +1,73 @@
+#!/bin/sh
+
+set -e
+
+basename `pwd` > .ruby-gemset
+rvm-prompt > .ruby-version
+
+cat << EOF > Gemfile
+source 'https://rubygems.org'
+
+group :development do
+  gem 'pry'
+end
+
+group :test do
+  gem 'rspec'
+end
+EOF
+
+gem install bundler
+bundle
+
+mkdir -p src
+mkdir -p spec
+
+cat << EOM > .rspec
+--color
+--format documentation
+EOM
+
+rspec --init
+
+cat << EOM > spec/solution_spec.rb
+require 'spec_helper'
+
+describe 'solution' do
+  it 'runs rspec just fine' do
+    expect(true).to be true
+  end
+end
+EOM
+
+rspec
+
+cat << EOM > .projections.json
+{
+  "src/*.rb": {
+    "alternate": "spec/{}_spec.rb"
+  },
+  "spec/*_spec.rb": {
+    "alternate": "src/{}.rb"
+  },
+}
+EOM
+
+echo 'Enable `:focus` in specs'
+cat << EOM >> spec/spec_helper.rb
+
+RSpec.configure do |config|
+  config.pattern = 'spec/**/*_spec.rb'
+  config.filter_run focus: true
+  config.run_all_when_everything_filtered = true
+
+  config.expect_with :rspec do |c|
+    c.syntax = :expect
+  end
+end
+EOM
+
+git init
+git add .
+
+git commit -m "Bootstrap project"
