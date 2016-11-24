@@ -206,23 +206,23 @@ let g:syntastic_check_on_wq = 0
 " https://github.com/jaxbot/syntastic-react
 let g:syntastic_javascript_checkers = ['eslint']
 
-fun! Wp()
-  set nonumber              " remove line numbering when writing
-  set spell spelllang=en_us " enable spell checking
-  set linebreak             " break soft-wrapped lines at word boundaries
-  set nojoinspaces          " when joining paragraphs, separate by one space
-  set nolist                " linebreak command relies on list being off :(
-  set display=lastline      " show the last line on the screen even if it doesn't fit,
+function! Wp()
+  setlocal nonumber              " remove line numbering when writing
+  setlocal spell spelllang=en_us " enable spell checking
+  setlocal linebreak             " break soft-wrapped lines at word boundaries
+  setlocal nojoinspaces          " when joining paragraphs, separate by one space
+  setlocal nolist                " linebreak command relies on list being off :(
+  setlocal display=lastline      " show the last line on the screen even if it doesn't fit,
                             " which is common for long lines when writing
 
   " Don't count acronyms as spelling errors (all upper-case letters, at least
   " three characters)
   " Also will not count acronym with 's' at the end a spelling error
   " Also will not count numbers that are part of this
-  syn match AcronymNoSpell '\<\(\u\|\d\)\{3,}s\?\>' contains=@NoSpell
+  syntax match AcronymNoSpell '\<\(\u\|\d\)\{3,}s\?\>' contains=@NoSpell
 
   " Don't count url-ish things as spelling errors
-  syn match UrlNoSpell '\w\+:\/\/[^[:space:]]\+' contains=@NoSpell
+  syntax match UrlNoSpell '\w\+:\/\/[^[:space:]]\+' contains=@NoSpell
 
   " get autocorrections
   call AutoCorrect()
@@ -248,7 +248,7 @@ fun! Wp()
   hi def link doubleWord Error
 endfu
 
-fun! BasicAbbreviations()
+function! BasicAbbreviations()
   iabbrev wrt with respect to
   iabbrev otoh on the other hand
   iabbrev btw by the way
@@ -279,6 +279,7 @@ fun! BasicAbbreviations()
   iabbrev slef self
 
   " some spelling mistakes not (yet) caught by autocorrect.vim
+  " or custom corrections that I wouldn't want to put in there
   iabbrev testamonial testimonial
   iabbrev testamonials testimonials
   iabbrev Testamonial Testimonial
@@ -311,6 +312,9 @@ fun! BasicAbbreviations()
   iabbrev Kidn Kind
 
   iabbrev flaneur flâneur
+
+  iabbrev differnet different
+  iabbrev Differnet Different
 
   " Some helpful shortcuts
   iabbrev dtt <C-R>=strftime("%F")<CR>
