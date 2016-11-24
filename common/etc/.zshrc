@@ -608,6 +608,16 @@ function install_jsctags {
   gsed -i '51i tags: [],' ./node_modules/jsctags/jsctags/ctags/index.js
 }
 
+function add_newsbeuter_url {
+  if result=$(grep --fixed "$1" ~/Dropbox/newsbeuter/urls); then
+    echo "Matched: $result"
+    echo 'That URL appears to be present already in the URL file. Not adding.'
+  else
+    echo "$1" >> ~/Dropbox/newsbeuter/urls
+    echo "Added URL to ~/Dropbox/newsbeuter/urls"
+  fi
+}
+
 # http://stackoverflow.com/questions/2187829/constantly-updated-clock-in-zsh-prompt
 #TMOUT=5 # every five seconds, reset the prompt so the clock is refreshed
 #
