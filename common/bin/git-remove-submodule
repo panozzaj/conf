@@ -4,19 +4,38 @@
 # For some reason, cleanly deleting submodules is a real pain.
 # See http://stackoverflow.com/a/1260982/532524
 
-submodule_path=$1
+submodule_to_find=$1
 
-if [ -z "$1" ]; then
+if [ -z "$submodule_to_find" ]; then
   echo 'Please provide the path to the submodule you want to remove'
   echo '(see `git submodule` for a complete list)'
   exit 1
 fi
 
-# To remove a submodule you need to:
+submodule_path=$(
+  git config \
+    --file .gitmodules \
+    --name-only \
+    --get-regexp $submodule_to_find | \
+    grep -e '\.path$'
+)
 
-git submodule deinit $submodule_path
-git rm --cached $submodule_path
-rm -rf .git/modules/$submodule_path
-rm -rf $submodule_path
+number_of_submodules=$(echo "$submodule_path" | wc -l)
 
-echo 'Now you just need to commit the deletion of the submodule directory!'
+if [[ -z "$submodule_path" ]]; then
+  echo "No submodules matched: $submodule_to_find"
+  exit 1
+elif [[ "$number_of_submodules" -gt 1 ]]; then
+  echo "Found too many submodules for: $submodule_to_find"
+  echo "Submodules found:"
+  echo "$submodule_path"
+  exit 1
+else
+  submodule_path=$(echo $submodule_path | sed 's/submodule.\(.*\).path/\1/')
+  echo "Removing submodule: $submodule_path"
+
+  git submodule deinit $submodule_path
+  git rm --cached $submodule_path
+  rm -rf .git/modules/$submodule_path
+  rm -rf $submodule_path
+fi
