@@ -270,7 +270,7 @@ alias cuc="cucumber"
 alias -g PIPE="|"
 
 # helpful: https://git-scm.com/docs/git-status#_output
-# needs to handle
+# $NF: take last matching field. Handles renames:
 # R  spec/1_spec.rb -> features/2_spec.rb
 function modified_files() {
   git status --porcelain | \
@@ -370,6 +370,11 @@ alias gbb="git bisect bad"
 alias gbg="git bisect good"
 alias gbr="git branch --remote"
 alias gc="git commit --verbose"
+# committerdate sorts by the last commit, so the ones that we have most
+# recently been working with will appear closer to the bottom of the list
+# http://stackoverflow.com/questions/5188320
+# mnemonic: git change branch
+alias gcb="git checkout \`git branch --sort=-committerdate | fzf\`"
 alias gcle="git cleanup"
 alias gco="git checkout"
 alias gco-="git checkout -"
@@ -383,12 +388,14 @@ alias gcm="git commit --message"
 alias gcp="git cherry-pick"
 alias gcpc="git cherry-pick --continue"
 alias gcpi="git cherry-pick \`git reflog | fzf | cut -d ' ' -f 1\`"
+alias gcv="git cherry -v"
 alias gd="git diff"
 alias gdc="git diff --cached"
 alias gdcw="git diff --cached --ignore-all-space"
 alias gdom="git diff origin/master"
+alias gdoms="git diff origin/master --stat" # all files that changed since origin/master
 alias gds="git diff --stat" # all files that changed since revision
-alias gdsom="git diff --stat origin/master"
+alias gdsom="git diff --stat origin/master" # all files that changed since origin/master
 alias gdw="git diff --ignore-all-space"
 alias geu="git edit-unmerged"
 alias gf="git fetch"
@@ -397,8 +404,9 @@ alias gfrom="echo 'git fetch' && git fetch && echo 'git rebase origin/master' &&
 alias gfwtf="git fetch && git wtf -A"
 alias gl="git log --oneline --graph --decorate"
 alias glh="gl -10"
-alias glp="git log --patch"
-alias glpw="git log --patch --ignore-all-space"
+alias glp="git log --patch --decorate"
+alias glpw="glp --ignore-all-space"
+alias gls="git log --stat --decorate"
 alias gmom="echo 'git merge origin/master --ff-only'; git merge origin/master --ff-only"
 alias gmt="git mergetool"
 alias gp="git push"
@@ -409,6 +417,7 @@ alias grc="git rebase --continue"
 alias gri="git rebase --interactive"
 alias griom="git rebase --interactive origin/master"
 alias grlh="git reflog | head"
+alias grhom="git reset --hard origin/master"
 alias grom="git rebase origin/master"
 alias grr="git reset --hard \`git reflog | fzf | cut -d ' ' -f 1\`"
 alias grs="git rebase --skip"
@@ -423,6 +432,7 @@ alias gsup="git sup"
 alias gwip="git add -A . ; git commit -nm 'WIP'"
 alias gwtf="git wtf -A"
 alias gwtff="git fetch && git wtf -A"
+alias ngc="git commit -n"
 
 alias fixup="git commit -nm 'FIXUP ME'"
 alias squash="git commit -nm 'SQUASH ME'"
