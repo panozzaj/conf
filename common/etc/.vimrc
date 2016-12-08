@@ -53,7 +53,6 @@ set synmaxcol=200 " vim is often slow with long lines that are syntax highlighte
 set guioptions-=r " remove sidebars
 set guioptions-=L " remove sidebars
 
-set foldmethod=syntax
 set foldlevelstart=0
 set nofoldenable      " disable folding
 
@@ -83,7 +82,7 @@ let g:languagetool_disable_rules = 'WHITESPACE_RULE,EN_QUOTES'
 let g:NERDShutUp=1
 
 " sass/haml checking is slow by default, so only check when we explicitly ask
-let g:syntastic_mode_map = { 'passive_filetypes': ['sass', 'scss', 'haml'] }
+let g:syntastic_mode_map = { 'passive_filetypes': ['haml', 'sass', 'scss', 'ruby'] }
 
 " https://github.com/othree/javascript-libraries-syntax.vim
 let g:used_javascript_libs = 'underscore,angularjs,jasmine,chai'
@@ -141,7 +140,7 @@ let g:syntastic_html_tidy_ignore_errors += [
 " Try to use HTML5 Tidy for better checking?
 let g:syntastic_html_tidy_exec = '/usr/local/bin/tidy5'
 
-let g:syntastic_ruby_checkers=['rubocop', 'mri']
+let g:syntastic_ruby_checkers=['mri']
 let g:syntastic_javascript_checkers=['eslint']
 let g:syntastic_javascript_eslint_exec='eslint_d'
 
