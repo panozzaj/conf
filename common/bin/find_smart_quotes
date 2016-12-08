@@ -56,12 +56,13 @@ regex="$( printf "${separator}%s" "${all_patterns[@]}" )"
 patterns="${regex:${#separator}}" # remove leading separator
 
 $grep \
+  --binary-file=without-match \
   --color \
   --line-number \
   --recursive \
   $exclude_patterns \
   --perl-regexp \
-  $patterns \
+  "$patterns" \
   $input
 
 # exit 1 if grep found any matches, otherwise exit 0
