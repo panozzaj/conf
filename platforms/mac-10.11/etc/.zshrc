@@ -11,3 +11,6 @@ function load_nvm {
   # consider something like autoenv
   nvm use default > /dev/null
 }
+alias nvm_load="load_nvm"
+alias npm_load="load_nvm"
+alias load_npm="load_nvm"
