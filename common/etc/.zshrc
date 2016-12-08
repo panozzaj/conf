@@ -130,6 +130,12 @@ alias grpe='grep'
 # magic power for mkdir (and less typing)
 alias mp="mkdir -p"
 
+# Idea: chmod changes the mod, but what is the mod?
+# To query in human-readable terms, use this command.
+# I believe this only works for OS X due to difference in stat command.
+# http://askubuntu.com/questions/152001
+alias mod="stat -f '%A %N'"
+
 alias -g NE="2> /dev/null"
 
 export GREP_OPTIONS='--color=auto'
