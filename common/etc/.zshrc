@@ -82,7 +82,7 @@ bindkey "\e[3~" delete-char
 #alias r='echo "Neutered r command"'
 alias r='best_rspec'
 
-alias ll='ls -l'
+alias ll='ls -la'
 
 # Quick change directories
 # typing a directory name or variable that expands to one is sufficient to change directories
