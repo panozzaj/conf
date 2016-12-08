@@ -73,27 +73,6 @@ let mapleader = "\<Space>"
 " Not sure I really like CtrlP that much
 "nnoremap <leader>t :CtrlP<CR>
 
-" Unite configuration, see http://www.codeography.com/2013/06/17/replacing-all-the-things-with-unite-vim.html
-let g:unite_source_history_yank_enable = 1
-call unite#filters#matcher_default#use(['matcher_fuzzy'])
-" Not sure I really like Unite for file finding that much
-"nnoremap <leader>t :<C-u>Unite -no-split -buffer-name=files   -start-insert file_rec<cr>
-"nnoremap <leader>y :<C-u>Unite -no-split -buffer-name=yank    history/yank<cr>
-
-" Custom mappings for the unite buffer
-augroup panozzaj_unite
-  autocmd!
-  autocmd FileType unite call s:unite_settings()
-augroup END
-
-function! s:unite_settings()
-  " Play nice with supertab
-  let b:SuperTabDisabled=1
-  " Enable navigation with control-j and control-k in insert mode
-  imap <buffer> <C-j>   <Plug>(unite_select_next_line)
-  imap <buffer> <C-k>   <Plug>(unite_select_previous_line)
-endfunction
-
 let g:closetag_html_style=1
 "source ~/.vim/closetag.vim
 
@@ -831,29 +810,6 @@ set noshowmode
 " tern for vim
 "let g:tern_show_argument_hints = 'on_hold'
 "let g:tern_show_signature_in_pum = 1
-
-
-" Unite.vim settings
-" see https://github.com/Shougo/unite.vim/blob/master/doc/unite.txt
-" for more detailed explanations
-" seems slow and matches not that great right now
-
-"call unite#filters#matcher_default#use(['matcher_fuzzy'])
-nnoremap <leader>f :Unite file_rec/async<CR>
-call unite#custom#source('file_rec/async', 'sorters', ['sorter_selecta', 'sorter_rank'])
-
-" Search through yank history.
-let g:unite_source_history_yank_enable = 1
-nnoremap <leader>y :<C-u>Unite history/yank<CR>
-
-" ignore things in wildignore
-call unite#custom#source('file_rec/async', 'ignore_globs', split(&wildignore, ','))
-
-" Like ctrlp.vim settings.
-call unite#custom#profile('default', 'context', {
-\   'start_insert': 1,
-\   'winheight': 10,
-\ })
 
 
 
