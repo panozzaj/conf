@@ -81,7 +81,11 @@ call unite#filters#matcher_default#use(['matcher_fuzzy'])
 "nnoremap <leader>y :<C-u>Unite -no-split -buffer-name=yank    history/yank<cr>
 
 " Custom mappings for the unite buffer
-autocmd FileType unite call s:unite_settings()
+augroup panozzaj_unite
+  autocmd!
+  autocmd FileType unite call s:unite_settings()
+augroup END
+
 function! s:unite_settings()
   " Play nice with supertab
   let b:SuperTabDisabled=1
@@ -422,6 +426,7 @@ let g:ag_prg="ag -i --vimgrep"
 
 " see http://learnvimscriptthehardway.stevelosh.com/chapters/14.html
 augroup panozzaj_group
+  autocmd!
   autocmd BufEnter *.js call UpdateJsHintConf()
 
   autocmd BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please stop reading unless you are Anthony." | call Wp() | call gitgutter#disable() | endif
@@ -447,6 +452,7 @@ augroup panozzaj_group
 augroup END
 
 augroup commit_message_overrides
+   autocmd!
   " When editing git commit message, go to top of the file
   " (forget any saved positions)
   autocmd BufReadPost COMMIT_EDITMSG exe "normal! gg"
