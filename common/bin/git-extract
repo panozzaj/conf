@@ -10,6 +10,12 @@
 # branch. Then it creates a new branch (branch B) that has those commits
 # and pushes it up and creates a new pull request.
 
+# The commits to extract should be provided in order from least recently added
+# to the branch to most recently added to the branch. They do not need to be
+# sequential.
+
+# Would be nice to parse ranges (ABC123...BCD234)
+
 feature_branch=$(git rev-parse --abbrev-ref HEAD)
 
 while getopts ":b:" opt; do
@@ -33,7 +39,7 @@ function usage() {
 }
 
 # shift over the options we parsed to get revision(s) at end
-shift $(expr $OPTIND - 1 )
+shift $(expr $OPTIND - 1)
 revisions=("$@")
 
 # If we have just one revision in the extraction and we haven't specified a
