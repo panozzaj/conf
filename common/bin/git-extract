@@ -60,10 +60,11 @@ if [[ ! $new_branch_name ]]; then
 fi
 
 # Might be nice to check that the revisions we have here are all actually
-# present in the git repo. Also, it seems like order matters, so maybe we can
-# order them in a certain order if necessary
+# present in the git repo. Reverse the order on the command-line since we
+# want to get the most recent first.
 
-for revision in "${revisions[@]}"; do
+for ((idx=${#revisions[@]}-1; idx >= 0; idx--)); do
+  revision=${revisions[idx]}
   git rebase --onto $revision^ $revision $feature_branch || \
     (git rebase --abort && echo "Had trouble removing commit $revision" >&2 && exit 1)
 done
