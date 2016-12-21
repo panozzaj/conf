@@ -4,9 +4,6 @@ require 'bundler'
 require 'net/http'
 require 'ap'
 require 'json'
-require 'active_model'
-
-include ActiveModel::Serializers::Xml
 
 # desirable: support something like:
 #   > curl 'http://example.com' | pretty
@@ -18,17 +15,16 @@ filename = ARGV[0]
 abort "Filename must be provided as the first argument." unless filename
 abort "File does not exist." unless File.exists?(filename)
 
-puts "Printing #{filename}\n\n"
-
 case filename
-  when /\.xml$/, /\.rss$/
-    ap Hash.from_xml(File.read(filename))
-  when /\.html$/
-    result = `tidy -indent -bare -quiet #{filename}`
-    puts "\n\n#{result}"
-  when /\.json$/
-    ap JSON.parse(File.read(filename))
-  else
-    puts File.read(filename)
-    puts "\nFile format did not match any of the special pretty printers `pretty` knows about!"
+when /\.xml$/, /\.rss$/
+  # tidy prints some metadata to stderr, which we should not need
+  puts `tidy -xml -indent -wrap 200 #{filename} 2> /dev/null`
+when /\.html$/
+  result = `tidy -indent -bare -quiet #{filename}`
+  puts "\n\n#{result}"
+when /\.json$/
+  ap JSON.parse(File.read(filename))
+else
+  puts File.read(filename)
+  puts "\nFile format did not match any of the special pretty printers `pretty` knows about!"
 end
