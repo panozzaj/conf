@@ -5,20 +5,33 @@ def print_usage_and_exit
 end
 
 def print_table schema, table_name
-  print_until_end = false
-  schema.split("\n").each do |line|
-    if line =~ /^\s+create_table "#{table_name}"/ || # schema
-       line =~ /^CREATE TABLE #{table_name} /        # structure
-      print_until_end = true
-    end
+  in_table_body = false
 
-    if print_until_end
+  body_lines = []
+
+  schema.split("\n").each do |line|
+    if in_table_body &&
+        (line =~ /^\s+end\s*$/ || # schema
+         line =~ /^\);$/)         # structure
+      in_table_body = false
+
+      # print out the table, sorted by column name, and then print the end
+      body_lines.sort do |a, b|
+        a.split('"')[1] <=> b.split('"')[1]
+      end.each { |l| puts l }
+      body_lines = []
+
       puts line
     end
 
-    if line =~ /^\s+end\s*$/ || # schema
-       line =~ /^\);$/          # structure
-      print_until_end = false
+    if in_table_body
+      body_lines << line
+    end
+
+    if line =~ /^\s+create_table "#{table_name}"/ || # schema
+       line =~ /^CREATE TABLE #{table_name} /        # structure
+      puts line
+      in_table_body = true
     end
 
     if line =~ /^\s+add_index "#{table_name}"/ ||
