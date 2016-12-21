@@ -72,3 +72,5 @@
 [user]
         name = Anthony Panozzo
         email = panozzaj@gmail.com
+[diff "ansible-vault"]
+	textconv = ansible-vault view
