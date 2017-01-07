@@ -30,7 +30,7 @@
 	url = https://github.com/tpope/vim-fugitive.git
 [submodule "common/.vim/bundle/vim-markdown"]
 	path = common/.vim/bundle/vim-markdown
-	url = https://github.com/tpope/vim-markdown.git
+	url = https://github.com/plasticboy/vim-markdown.git
 [submodule "common/.vim/bundle/vim-rails"]
 	path = common/.vim/bundle/vim-rails
 	url = https://github.com/tpope/vim-rails.git
@@ -295,3 +295,6 @@
 [submodule "common/.vim/bundle/vim-textobj-quote"]
 	path = common/.vim/bundle/vim-textobj-quote
 	url = https://github.com/reedes/vim-textobj-quote.git
+[submodule "common/.vim/bundle-colorschemes/oceanic-next"]
+	path = common/.vim/bundle-colorschemes/oceanic-next
+	url = https://github.com/mhartington/oceanic-next.git
