@@ -148,10 +148,8 @@ export GREP_COLOR='1;29'
 # Ruby
 alias be="bundle exec"
 alias beg="bundle exec guard"
-alias bi="bundle install"
-alias bil="bundle install --local"
+alias bi="bundle install -j8"
 alias bu="bundle update"
-alias bul="bundle update --local"
 
 alias prs="parallel_rspec spec"
 alias pcf="parallel_cucumber features"
