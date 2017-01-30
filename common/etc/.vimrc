@@ -376,6 +376,18 @@ command! Vimrc vsp ~/.vimrc
 command! Vvimrc vsp ~/.vimrc
 command! Svimrc sp ~/.vimrc
 
+" Word transposition. Lifted from:
+" http://superuser.com/questions/290360/how-to-switch-words-in-an-easy-manner-in-vim/290449#290449
+
+" exchange word under cursor with the next word without moving the cursor
+nnoremap gw "_yiw:s/\(\%#\w\+\)\(\_W\+\)\(\w\+\)/\3\2\1/<CR><C-o><C-l>
+
+" move the current word to the right and keep the cursor on it
+nnoremap ]w "_yiw:s/\(\%#\w\+\)\(\_W\+\)\(\w\+\)/\3\2\1/<CR><C-o>/\w\+\_W\+<CR><C-l>
+
+" move the current word to the left and keep the cursor on it
+nnoremap [w "_yiw?\w\+\_W\+\%#<CR>:s/\(\%#\w\+\)\(\_W\+\)\(\w\+\)/\3\2\1/<CR><C-o><C-l>
+
 
 " Jekyll shortcuts
 nnoremap <leader>jp :! ./scripts/preview %<CR> " preview jekyll post in browser
