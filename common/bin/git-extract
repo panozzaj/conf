@@ -69,6 +69,14 @@ fi
 # present in the git repo. Reverse the order on the command-line since we
 # want to get the most recent first.
 
+# TODO: rebase gives the following message when environment is dirty:
+#
+#   Cannot rebase: You have unstaged changes.
+#   Please commit or stash them.
+#
+# We should probably stash or otherwise store these changes first, otherwise
+# they are basically permanently lost!
+
 for ((idx=${#revisions[@]}-1; idx >= 0; idx--)); do
   revision=${revisions[idx]}
   git rebase --onto $revision^ $revision $feature_branch || \
