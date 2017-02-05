@@ -61,6 +61,10 @@ set nofoldenable      " disable folding
 set exrc
 set secure
 
+" Allow netrw to remove non-empty local directories
+" https://gist.github.com/KevinSjoberg/5068370
+let g:netrw_localrmdir='rm -r'
+
 " ctrl-p plugin
 
 let g:ctrlp_match_window_bottom=0 " put at top
