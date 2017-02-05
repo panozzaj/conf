@@ -35,6 +35,7 @@
         rm-submodule = ! git-remove-submodule
         rmsub = ! git-remove-submodule
         reset-whitespace = !(git diff -b --numstat | egrep $'^0\t0\t' | cut -d$'\t' -f3- | xargs git checkout HEAD --)
+        reste = reset
         rest = reset
         sub = submodule
         sup = !git branch --set-upstream-to=${1-origin}/`git symbolic-ref --short HEAD`
