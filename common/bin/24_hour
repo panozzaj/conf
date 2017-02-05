@@ -1,0 +1,37 @@
+successes=0
+failures=0
+
+# TODO: this is Ubuntu-specific
+function change_time() {
+	sudo date +%T -s "$1:00:00"
+}
+
+failure_hours=()
+
+for ((hour=23; hour >= 0; hour--)); do
+  change_time $hour
+  date
+
+  sleep 1
+
+  # run all arguments as new command
+  "${@:1}"
+
+  if [[ $? == 0 ]]; then
+    # no need to say success, that should be more common
+    successes=$[successes + 1]
+  else
+    failure_hours+=("$hour")
+    failures=$[failures + 1]
+  fi
+
+  echo -e "\nSuccesses: $successes"
+  echo -e "Failures: $failures\n"
+done
+
+if [[ 0 -eq $failures ]]; then
+  echo "Success!"
+else
+  echo "At least some failed..."
+  echo $failure_hours
+fi
