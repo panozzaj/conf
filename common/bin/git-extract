@@ -54,7 +54,7 @@ if [[ ${#revisions[@]} -eq 1 && ! $new_branch_name ]]; then
       head -1 | \
       cut -d ' ' -f 2- | \
       tr '[:upper:]' '[:lower:]' | \
-      sed 's/[/ ]/-/g' | \
+      sed 's/[/ _]/-/g' | \
       sed 's/[^a-z0-9-]//g'
   )
 fi
