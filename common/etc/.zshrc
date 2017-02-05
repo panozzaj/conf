@@ -243,7 +243,7 @@ function reload_database() {
 }
 
 function parallel_failures() {
-  cat tmp/spec_summary.log | \
+  cat tmp/parallel_tests/spec_summary.log | \
     # remove colors from output
     # see http://www.commandlinefu.com/commands/view/3584
     gsed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | \
@@ -253,6 +253,7 @@ function parallel_failures() {
 function respec_parallel_failures() {
   parallel_failures | cut -d ' ' -f 2 | sort | xargs best_rspec
 }
+alias rpf='respec_parallel_failures'
 
 function reset_database() {
   reload_database
@@ -342,7 +343,9 @@ alias fs="foreman start"
 alias reload="source ~/.zshrc"
 alias reload!="source ~/.zshrc"
 
-# zshrc editing shortcuts
+# file editing shortcuts
+alias gitconfig="$EDITOR ~/.gitconfig"
+alias vimrc="$EDITOR ~/conf/common/etc/.vimrc"
 alias zshrc="$EDITOR ~/conf/common/etc/.zshrc"
 alias zsrhc="$EDITOR ~/conf/common/etc/.zshrc"
 alias zshrcp="$EDITOR ~/conf/platform/$PLATFORM/etc/.zshrc"
@@ -491,13 +494,16 @@ alias ccruni="grunt mobileapp --backend=http://anthony-panozzo.local:3000 && cru
 alias ccruna="grunt mobileapp --backend=localhost:3000 && cruna"
 
 # npm
-alias ni="npm install"
-alias nis="npm install --save"
-alias nisd="npm install --save-dev"
-alias nr="npm run"
-alias nrs="npm start" # npm run start
-alias nrt="npm run test"
-alias ns="npm start"
+alias ni='npm install'
+alias nis='npm install --save'
+alias nisd='npm install --save-dev'
+alias nr='npm run'
+alias nrs='npm start' # npm run start
+alias nrt='npm run test'
+alias ns='npm start'
+
+# yarn
+alias yi='yarn install'
 
 # javascript
 #alias jsl="jslint -process"
@@ -505,10 +511,6 @@ alias ns="npm start"
 # vagrant
 alias va="vagrant"
 alias vap="vagrant provision"
-
-# vim shortcuts
-alias vimrc="$EDITOR ~/conf/common/etc/.vimrc"
-vim="$conf/common/.vim"
 
 alias py="python"
 
