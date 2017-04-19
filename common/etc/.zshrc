@@ -312,9 +312,26 @@ function gspec() {
     xargs best_rspec
 }
 
+# roughly: run any specs that we have changed on our feature branch
+function gdomspec() {
+  gdoms | \
+    cut -f 2 -d ' ' | \
+    grep spec/ | \
+    grep -v spec/spec_helper.rb | \
+    grep -v spec/factories | \
+    grep -v spec/fixtures/ | \
+    grep -v spec/support/ | \
+    xargs best_rspec
+}
+
 # returns the list of filenames from rspec output format
 function rspec_paste() {
   pbpaste | cut -d ' ' -f 2 | sort
+}
+
+# returns the unique list of filenames from rspec output format
+function rspec_unique_paste() {
+  rspec_paste | cut -d ':' -f 1 | sort -u
 }
 
 # copy the rspec failures, and this will rerun them as one command
