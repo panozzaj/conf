@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# http://stackoverflow.com/questions/9658110/git-diff-on-date
+
+if [ $# -eq 0 ] || [ "$1" = "--help" ]; then
+  cat <<EOF
+Usage: $0 DATE [FILE...]
+git diff on FILE... since the specified DATE on the current branch.
+
+git-diff-since yesterday
+git-diff-since '4 Dec 2012' some/file/path/file.ext
+EOF
+  exit
+fi
+
+branch1=$(git rev-parse --abbrev-ref HEAD)
+revision1=$(git rev-list -1 --before="$1" "$branch1")
+shift
+
+revision2=HEAD
+
+git diff "$revision1" "$revision2" -- "$@"
