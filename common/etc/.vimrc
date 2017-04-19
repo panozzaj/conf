@@ -175,6 +175,7 @@ endfunction
 
 " mostly obsoleted by better ctags configuration?
 nnoremap <leader>jt :! jsctags -o tags server test admin<CR>
+vnoremap <leader>s :sort<CR>
 
 " not sure if this is the best tag solution, but seems to work halfway
 " decently
