@@ -411,7 +411,7 @@ alias gd="git diff"
 alias gdc="git diff --cached"
 alias gdcw="git diff --cached --ignore-all-space"
 alias gdom="git diff origin/master"
-alias gdoms="git diff origin/master --stat" # all files that changed since origin/master
+alias gdoms="git diff origin/master --stat=200" # all files that changed since origin/master
 alias gds="git diff --stat" # all files that changed since revision
 alias gdsom="git diff --stat origin/master" # all files that changed since origin/master
 alias gdw="git diff --ignore-all-space"
@@ -521,6 +521,9 @@ alias ns='npm start'
 
 # yarn
 alias yi='yarn install'
+alias ya='yarn add'
+alias yr='yarn run'
+alias yrm='yarn remove'
 
 # javascript
 #alias jsl="jslint -process"
