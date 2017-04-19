@@ -30,6 +30,10 @@ echo "Using generated routes file."
 
 query=$1
 if [ $query ]; then
+  # strips trailing _url and _path (inbox_conversations_url)
+  # so that these are searched for more easily
+  query=$(echo $query | sed 's/_path$//' | sed 's/_url$//')
+
   grep $query tmp/routes
 else
   cat tmp/routes
