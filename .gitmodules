@@ -298,3 +298,18 @@
 [submodule "common/.vim/bundle-colorschemes/oceanic-next"]
 	path = common/.vim/bundle-colorschemes/oceanic-next
 	url = https://github.com/mhartington/oceanic-next.git
+[submodule "common/.vim/bundle-colorschemes/Apprentice"]
+	path = common/.vim/bundle-colorschemes/Apprentice
+	url = https://github.com/romainl/Apprentice.git
+[submodule "common/.vim/bundle-colorschemes/ayu-vim"]
+	path = common/.vim/bundle-colorschemes/ayu-vim
+	url = https://github.com/ayu-theme/ayu-vim.git
+[submodule "common/.vim/bundle-colorschemes/vim-color-raggi"]
+	path = common/.vim/bundle-colorschemes/vim-color-raggi
+	url = https://github.com/raggi/vim-color-raggi.git
+[submodule "common/.vim/bundle-colorschemes/vim-color-spring-night"]
+	path = common/.vim/bundle-colorschemes/vim-color-spring-night
+	url = https://github.com/rhysd/vim-color-spring-night.git
+[submodule "common/.vim/bundle-colorschemes/spacemacs-theme.vim"]
+	path = common/.vim/bundle-colorschemes/spacemacs-theme.vim
+	url = https://github.com/colepeters/spacemacs-theme.vim.git
