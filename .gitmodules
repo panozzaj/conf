@@ -313,3 +313,6 @@
 [submodule "common/.vim/bundle-colorschemes/spacemacs-theme.vim"]
 	path = common/.vim/bundle-colorschemes/spacemacs-theme.vim
 	url = https://github.com/colepeters/spacemacs-theme.vim.git
+[submodule "common/.vim/bundle-colorschemes/print_wb"]
+	path = common/.vim/bundle-colorschemes/print_wb
+	url = https://github.com/panozzaj/print_wb.git
