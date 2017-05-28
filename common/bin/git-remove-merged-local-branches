@@ -4,21 +4,19 @@ set -e
 
 git fetch > /dev/null
 git checkout master > /dev/null 2>&1
-git remote prune origin
 
 branches_to_remove=$(
-  git branch -r --merged | \
-    grep origin | \
-    egrep -v "/(master|production|staging|qa|ci)$" | \
-    sed 's/origin\///'
+  git branch --merged master | \
+    egrep -v ' (master|production|staging|qa|ci)$' | \
+    sed 's/^[* ]*//'
 )
 
 if [[ -z "$branches_to_remove" ]]; then
-  echo "No remote branches to remove"
+  echo "No local branches to remove"
   exit 0
 fi
 
-echo "Will remove remote branches:"
+echo "Will remove local branches:"
 for branch_to_remove in "${branches_to_remove[@]}"
 do
   echo "$branch_to_remove"
@@ -32,4 +30,4 @@ while true; do
     esac
 done
 
-echo $branches_to_remove | xargs -n 1 git push --no-verify --delete origin
+git branch -d $branches_to_remove

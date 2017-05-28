@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# Adds a pattern to the list of things to have git ignore, but will be local to
+# this repository (not shared with others.)
+# See https://git-scm.com/docs/gitignore
+
+if [[ $# -eq 0 ]] ; then
+  echo 'Please provide the pattern that you want to locally ignore as a parameter'
+  exit 1
+fi
+
+git_repo_root=$(git rev-parse --show-toplevel)
+exclude_file="$git_repo_root/.git/info/exclude"
+
+if [[ ! -e "$exclude_file" ]]; then
+  mkdir -p `dirname "$exclude_file"`
+  touch "$exclude_file"
+fi
+
+echo "$1" >> "$exclude_file"
