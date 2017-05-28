@@ -315,7 +315,6 @@ call BasicAbbreviations()
 
 cabbr cdhere cd %:p:h
 cabbr mkdirhere !mkdir -p %:h
-cabbr mp !mkdir -p %:h
 
 cabbr autocommit call Autocommit()
 fun! Autocommit()
