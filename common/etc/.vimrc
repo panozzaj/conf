@@ -85,8 +85,8 @@ let g:languagetool_disable_rules = 'WHITESPACE_RULE,EN_QUOTES'
 
 let g:NERDShutUp=1
 
-" sass/haml checking is slow by default, so only check when we explicitly ask
-let g:syntastic_mode_map = { 'passive_filetypes': ['haml', 'sass', 'scss', 'ruby'] }
+" checking is slow by default, so only check when we explicitly ask
+let g:syntastic_mode_map = { 'passive_filetypes': ['haml', 'sass', 'scss', 'ruby', 'javascript'] }
 
 " https://github.com/othree/javascript-libraries-syntax.vim
 let g:used_javascript_libs = 'underscore,angularjs,jasmine,chai'
