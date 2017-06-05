@@ -1,0 +1,12 @@
+#!/bin/sh
+
+if [ -f bin/rake ]; then
+  # use spring rake if it is around
+  ./bin/rake $@
+elif [ -S .zeus.sock ]; then
+  echo "Running rake with Zeus"
+  zeus rake $@
+else
+  echo 'Running with naked `rake`'
+  rake $@
+fi

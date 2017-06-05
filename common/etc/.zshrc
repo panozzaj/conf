@@ -165,21 +165,21 @@ alias rubocopy="rubocop"
 #verbose_alias "fooey" "echo 'test'" ; fooey
 
 # Rake
-alias ®="rake "
-alias rkae="rake"
-alias rdc="rake db:create"
-alias rdd="rake db:drop"
-alias rdm="[ -e ./bin/rake ] && ./bin/rake db:migrate || rake db:migrate"
+alias ®="best_rake "
+alias rkae="best_rake"
+alias rdc="best_rake db:create"
+alias rdd="best_rake db:drop"
+alias rdm="best_rake db:migrate || best_rake db:migrate"
 alias rdmall="rdm && rdtp && rpp"
 alias rdmtp="rdm && rdtp"
-alias rdpt="rake db:test:prepare"
-alias rdr="rake db:rollback"
-alias rds="rake db:seed"
-alias rdsl="rake db:schema:load"
-alias rdtp="rake db:test:prepare"
-alias rdv="rake db:version"
-alias rjw="rake jobs:work"
-alias rpp="rake parallel:prepare"
+alias rdpt="best_rake db:test:prepare"
+alias rdr="best_rake db:rollback"
+alias rds="best_rake db:seed"
+alias rdsl="best_rake db:schema:load"
+alias rdtp="best_rake db:test:prepare"
+alias rdv="best_rake db:version"
+alias rjw="best_rake jobs:work"
+alias rpp="best_rake parallel:prepare"
 
 # Zeus (https://github.com/burke/zeus)
 alias z="zeus"
@@ -232,11 +232,11 @@ function reload_database() {
   echo ''
   powify server stop 2> /dev/null
   echo "\nExecuting rake db:drop db:create db:migrate..."
-  rake --trace db:drop db:create db:migrate
+  best_rake --trace db:drop db:create db:migrate
   echo '\nExecuting rake db:seed...'
-  rake --trace db:seed
+  best_rake --trace db:seed
   echo '\nExecuting rake db:test:prepare...'
-  rake --trace db:test:prepare
+  best_rake --trace db:test:prepare
   echo ''
   powify server start
   echo "Finished reloading development and test databases from scratch!"
@@ -401,6 +401,7 @@ alias gcop="git checkout --patch"
 alias gcom="git checkout master"
 alias gcomm="git commit --message"
 alias gcn="git commit -n"
+alias gca="git commit -m 'Alphabetize'"
 alias gcw="git commit -m 'Whitespace'"
 alias gcm="git commit --message"
 alias gcp="git cherry-pick"
@@ -422,6 +423,7 @@ alias gfrom="echo 'git fetch' && git fetch && echo 'git rebase origin/master' &&
 alias gfwtf="git fetch && git wtf -A"
 alias gl="git log --oneline --graph --decorate"
 alias glh="gl -10"
+alias glh1="gl -1"
 alias glp="git log --patch --decorate"
 alias glpw="glp --ignore-all-space"
 alias gls="git log --stat --decorate"
