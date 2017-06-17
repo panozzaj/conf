@@ -154,9 +154,6 @@
 [submodule "common/.vim/bundle/vim-snippets"]
 	path = common/.vim/bundle/vim-snippets
 	url = https://github.com/honza/vim-snippets.git
-[submodule "common/.vim/bundle/syntastic"]
-	path = common/.vim/bundle/syntastic
-	url = https://github.com/scrooloose/syntastic.git
 [submodule "common/.vim/bundle/vim-commentary"]
 	path = common/.vim/bundle/vim-commentary
 	url = https://github.com/tpope/vim-commentary.git
