@@ -148,6 +148,9 @@ let g:syntastic_ruby_checkers=['mri']
 let g:syntastic_javascript_checkers=['eslint']
 let g:syntastic_javascript_eslint_exec='eslint_d'
 
+" Don't continually check for lint errors, just when we save the buffer
+let g:ale_lint_on_text_changed = 'never'
+
 " Find the closest .jshintrc
 " See https://gist.github.com/ethagnawl/ed4bd3eba6389ffe9430
 function! s:find_jshintrc(dir)
