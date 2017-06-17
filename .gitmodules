@@ -316,3 +316,6 @@
 [submodule "common/.vim/bundle-colorschemes/print_wb"]
 	path = common/.vim/bundle-colorschemes/print_wb
 	url = https://github.com/panozzaj/print_wb.git
+[submodule "common/.vim/bundle/ale"]
+	path = common/.vim/bundle/ale
+	url = https://github.com/w0rp/ale.git
