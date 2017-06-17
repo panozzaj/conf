@@ -86,7 +86,15 @@ let g:languagetool_disable_rules = 'WHITESPACE_RULE,EN_QUOTES'
 let g:NERDShutUp=1
 
 " Don't continually check for lint errors, just when we save the buffer
+" (minimizes random things popping up, CPU usage)
 let g:ale_lint_on_text_changed = 'never'
+
+" Don't run linters when opening a file (minimize startup time)
+let g:ale_lint_on_enter = 0
+
+" Better lint message symbols
+let g:ale_sign_error = '✗'
+let g:ale_sign_warning = '!'
 
 " tags-related commands and configuration
 
