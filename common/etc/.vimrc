@@ -151,29 +151,6 @@ let g:syntastic_javascript_eslint_exec='eslint_d'
 " Don't continually check for lint errors, just when we save the buffer
 let g:ale_lint_on_text_changed = 'never'
 
-" Find the closest .jshintrc
-" See https://gist.github.com/ethagnawl/ed4bd3eba6389ffe9430
-function! s:find_jshintrc(dir)
-  let l:found = globpath(a:dir, '.jshintrc')
-  if filereadable(l:found)
-    return l:found
-  endif
-
-  let l:parent = fnamemodify(a:dir, ':h')
-  if l:parent != a:dir
-    return s:find_jshintrc(l:parent)
-  endif
-
-  return "~/.jshintrc"
-endfunction
-
-function! UpdateJsHintConf()
-  let l:dir = expand('%:p:h')
-  let l:jshintrc = s:find_jshintrc(l:dir)
-  let g:syntastic_javascript_jshint_args = '--config ' + l:jshintrc
-  "let g:syntastic_javascript_jshint_conf = l:jshintrc
-endfunction
-
 " tags-related commands and configuration
 
 " mostly obsoleted by better ctags configuration?
@@ -424,7 +401,6 @@ let g:ag_prg="ag -i --vimgrep"
 " see http://learnvimscriptthehardway.stevelosh.com/chapters/14.html
 augroup panozzaj_group
   autocmd!
-  autocmd BufEnter *.js call UpdateJsHintConf()
 
   autocmd BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please stop reading unless you are Anthony." | call Wp() | call gitgutter#disable() | endif
 
