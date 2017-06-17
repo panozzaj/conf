@@ -85,69 +85,6 @@ let g:languagetool_disable_rules = 'WHITESPACE_RULE,EN_QUOTES'
 
 let g:NERDShutUp=1
 
-" checking is slow by default, so only check when we explicitly ask
-let g:syntastic_mode_map = { 'passive_filetypes': ['haml', 'sass', 'scss', 'ruby', 'javascript'] }
-
-" https://github.com/othree/javascript-libraries-syntax.vim
-let g:used_javascript_libs = 'underscore,angularjs,jasmine,chai'
-
-let g:syntastic_javascript_checkers = ['eslint']
-
-" Better :sign interface symbols
-let g:syntastic_error_symbol = '✗'
-let g:syntastic_warning_symbol = '!'
-
-if !exists('g:syntastic_html_tidy_ignore_errors')
-    let g:syntastic_html_tidy_ignore_errors = []
-endif
-
-if !exists('g:syntastic_html_tidy_blocklevel_tags')
-    let g:syntastic_html_tidy_blocklevel_tags = []
-endif
-
-" Ignore ionic tags in HTML syntax checking
-" See http://stackoverflow.com/questions/30366621
-" ignore errors about Ionic tags
-let g:syntastic_html_tidy_ignore_errors += [
-      \ "<ion-",
-      \ "discarding unexpected </ion-"]
-
-" Angular's attributes confuse HTML Tidy
-let g:syntastic_html_tidy_ignore_errors += [
-      \ " proprietary attribute \"ng-"]
-
-" Angular UI-Router attributes confuse HTML Tidy
-let g:syntastic_html_tidy_ignore_errors += [
-      \ " proprietary attribute \"ui-sref"]
-
-" Angular in particular often makes 'empty' blocks, so ignore
-" this error. We might improve how we do this though.
-" See also https://github.com/scrooloose/syntastic/wiki/HTML:---tidy
-" specifically g:syntastic_html_tidy_empty_tags
-let g:syntastic_html_tidy_ignore_errors += ["trimming empty "]
-
-" Angular ignores
-let g:syntastic_html_tidy_blocklevel_tags += [
-      \ 'ng-include',
-      \ 'ng-form'
-      \ ]
-
-" Angular UI-router ignores
-let g:syntastic_html_tidy_ignore_errors += [
-      \ " proprietary attribute \"ui-sref"]
-
-" Project-level ignores
-let g:syntastic_html_tidy_blocklevel_tags += ['hvn-control']
-let g:syntastic_html_tidy_ignore_errors += [
-      \ " proprietary attribute \"debounce\""]
-
-" Try to use HTML5 Tidy for better checking?
-let g:syntastic_html_tidy_exec = '/usr/local/bin/tidy5'
-
-let g:syntastic_ruby_checkers=['mri']
-let g:syntastic_javascript_checkers=['eslint']
-let g:syntastic_javascript_eslint_exec='eslint_d'
-
 " Don't continually check for lint errors, just when we save the buffer
 let g:ale_lint_on_text_changed = 'never'
 
@@ -161,17 +98,6 @@ vnoremap <leader>s :sort<CR>
 " decently
 let g:tagman_ctags_binary = 'smarter_ctags'
 let g:tagman_library_tag_paths = '$GEM_HOME/gems node_modules vendor client/node_modules'
-
-" see https://github.com/scrooloose/syntastic
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
-" syntastic_auto_loc_list is cool, but can be intrusive
-" on HTML files or other bad syntax files
-"let g:syntastic_auto_loc_list = 1
-
-" https://github.com/jaxbot/syntastic-react
-let g:syntastic_javascript_checkers = ['eslint']
 
 function! Wp()
   setlocal nonumber              " remove line numbering when writing
