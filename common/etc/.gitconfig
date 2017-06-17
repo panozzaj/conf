@@ -18,7 +18,6 @@
         pop = stash pop
         praise = blame
         pup = !git push -u ${1-origin} `git symbolic-ref --short HEAD`
-        remove-submodule = remove-submodule
         rm-sub = remove-submodule
         rm-submodule = remove-submodule
         rmsub = remove-submodule
