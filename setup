@@ -54,6 +54,12 @@ end
 # based on my .emacs custom configuration
 `mkdir -p ~/conf/tmp/emacs`
 
+# karabiner-elements setup
+`mkdir -p ~/.config/karabiner/karabiner.json`
+symlink_if_not_present_or_existing_symlink \
+  'conf/common/etc/karabiner.json',
+  '~/.config/karabiner/karabiner.json'
+
 platform = ARGV[0]
 host = ARGV[1]
 
