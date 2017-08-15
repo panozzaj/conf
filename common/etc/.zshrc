@@ -314,7 +314,7 @@ function gspec() {
 
 # roughly: run any specs that we have changed on our feature branch
 function gdomspec() {
-  gdoms | \
+  git diff origin/master --stat=200 | \
     cut -f 2 -d ' ' | \
     grep spec/ | \
     grep -v spec/spec_helper.rb | \
