@@ -1,0 +1,7 @@
+#!/bin/sh
+
+set -e
+
+FIND=$(which gfind > /dev/null && echo 'gfind' || echo 'find')
+
+$FIND . -printf '%s %p\n'| sort -nr | head -10
