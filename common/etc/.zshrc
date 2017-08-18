@@ -413,6 +413,7 @@ alias gdc="git diff --cached"
 alias gdcw="git diff --cached --ignore-all-space"
 alias gdom="git diff origin/master"
 alias gdoms="git diff origin/master --stat=200" # all files that changed since origin/master
+alias gdomw="git diff origin/master --ignore-all-space"
 alias gds="git diff --stat" # all files that changed since revision
 alias gdsom="git diff --stat origin/master" # all files that changed since origin/master
 alias gdw="git diff --ignore-all-space"
