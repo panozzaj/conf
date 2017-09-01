@@ -17,7 +17,11 @@ def print_table schema, table_name
 
       # print out the table, sorted by column name, and then print the end
       body_lines.sort do |a, b|
-        a.split('"')[1] <=> b.split('"')[1]
+        if a.split('"').count > 1 && b.split('"').count
+          a.split('"')[1] <=> b.split('"')[1]
+        else
+          a <=> b
+        end
       end.each { |l| puts l }
       body_lines = []
 
