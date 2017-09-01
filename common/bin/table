@@ -18,8 +18,14 @@ def print_table schema, table_name
       # print out the table, sorted by column name, and then print the end
       body_lines.sort do |a, b|
         if a.split('"').count > 1 && b.split('"').count
+          # config/schema.rb files are like:
+          # t.string "zip_code", limit: 255
+          # so we need to find the quoted part
           a.split('"')[1] <=> b.split('"')[1]
         else
+          # config/structure.sql files are like:
+          # zip_code character varying(255),
+          # so we can just compare the lines alphabetically
           a <=> b
         end
       end.each { |l| puts l }
