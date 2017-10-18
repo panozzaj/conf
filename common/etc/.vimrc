@@ -367,18 +367,6 @@ augroup commit_message_overrides
   autocmd BufReadPost PULLREQ_EDITMSG exe "normal! gg"
 augroup END
 
-
-" Command-T overrides
-"let g:CommandTMatchWindowAtTop = 1 " want the best command-t matches at the top so they never move
-
-" would like the matches top to bottom since we are at the top of the screen
-"let g:CommandTMatchWindowReverse = 0
-
-let g:CommandTMaxHeight = 8 " only show a few lines for the output
-
-" quicker way to flush the queue
-nnoremap <leader>T <Esc>:CommandTFlush<CR>
-
 function! PromoteToLet()
   :normal! dd
   " :exec '?^\s*it\>'
@@ -434,21 +422,26 @@ nnoremap <leader>s :sp<CR>
 nnoremap <leader>v :vsp<CR>
 set list
 
-" Control-T also looks at these, so remove anything that I wouldn't typically
-" want to open
+" Command-T also uses these
+" Should not ignore files I might want to normally open
 set wildignore=*.o,*.class,*.png,*.pdf,*.ps,*.gif,*.jpg,*.aux,*.toc,*.cod,*.bak,*.mp3,*.m4a,*.wmv,*.mpg,*.mov,*.doc,*.bc
-set wildignore+=vendor/rails/**
-set wildignore+=build/android    " Titanium
-set wildignore+=client/node_modules/**,node_modules/**  " npm
-set wildignore+=bower_components/**,.bower-cache/**,.bower-registry/**,.bower-tmp/** " bower
-set wildignore+=.git/**          " vcs
+set wildignore+=*/vendor/rails
+set wildignore+=*/node_modules  " npm
+set wildignore+=*/.git          " vcs
+
+" Command-T
+" Make sure this is after wildignore setup since we reference that
+
+" Search through command history (similar to fzf ctrl+r)
+nmap <silent> <Leader>r <Plug>(CommandTHistory)
+
+" Default is to use Ruby, which is likely slower since find is written in C
+let g:CommandTFileScanner='find'
+let g:CommandTMaxHeight = 8 " only show a few lines for the output
 
 
-" Haven-specific ignores, might regret this later but speeds up for now
-set wildignore+=public/lib/ionic/**
-set wildignore+=cordova/**
-set wildignore+=test/coverage/**
-
+" quicker way to flush the queue
+nnoremap <leader>T <Esc>:CommandTFlush<CR>
 
 " Enable automatic spell checking for txt and tex files
 let spell_auto_type="tex,txt"
