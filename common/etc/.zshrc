@@ -205,8 +205,10 @@ alias zrpp="zr parallel:prepare"
 
 # Rails
 alias rials="rails"
-alias rg="rails g"
-alias rgm="rails g migration"
+alias rg="rails generate"
+alias rgm="rails generate migration"
+alias rgmo="rails generate model"
+alias rgc="rails generate controller"
 
 function rs() { # so this works for Rails 2 through 4
   # `-b 0.0.0.0` helps with subdomains in pow
@@ -534,13 +536,11 @@ alias yrm='yarn remove'
 
 # vagrant
 alias va="vagrant"
+alias vaup="vagrant up"
 alias vap="vagrant provision"
+alias varedo="vagrant destroy -f; vagrant up"
 
 alias py="python"
-
-alias tf="tail -f"
-alias tfld="tail -f log/development.log"
-alias tflt="tail -f log/test.log"
 
 alias pre="pretty"
 
