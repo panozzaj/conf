@@ -336,8 +336,6 @@ let g:ag_prg="ag -i --vimgrep"
 augroup panozzaj_group
   autocmd!
 
-  autocmd BufReadPost * if getline(2) =~ "This is the personal log of Anthony.  Please stop reading unless you are Anthony." | call Wp() | call gitgutter#disable() | endif
-
   autocmd BufNewFile,BufRead *.txt set filetype=conf
   autocmd BufNewFile,BufRead *.less set filetype=less
   autocmd BufNewFile,BufRead {Capfile,Gemfile,Rakefile,Thorfile,config.ru,.caprc,.irbrc,irb_tempfile*,Vagrantfile} set filetype=ruby
