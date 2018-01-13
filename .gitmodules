@@ -319,3 +319,9 @@
 [submodule "common/.vim/bundle/vim-ragtag"]
 	path = common/.vim/bundle/vim-ragtag
 	url = https://github.com/tpope/vim-ragtag.git
+[submodule "common/.vim/bundle/fzf.vim"]
+	path = common/.vim/bundle/fzf.vim
+	url = https://github.com/junegunn/fzf.vim.git
+[submodule "common/.vim/bundle/vim-rhubarb"]
+	path = common/.vim/bundle/vim-rhubarb
+	url = https://github.com/tpope/vim-rhubarb.git
