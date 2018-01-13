@@ -418,9 +418,9 @@ nnoremap du :diffupdate<CR>
 " Toggle trailing whitespace highlighting with leader + s  (default on)
 set listchars=tab:>-,trail:· ",eol:$
 nnoremap <leader>s :sp<CR>
-nnoremap <leader>S :sp .<CR>
+nnoremap <leader>S :sp %:h<CR>
 nnoremap <leader>v :vsp<CR>
-nnoremap <leader>V :vsp .<CR>
+nnoremap <leader>V :vsp %:h<CR>
 set list
 
 " Command-T also uses these
