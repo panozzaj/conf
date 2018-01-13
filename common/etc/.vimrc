@@ -332,6 +332,9 @@ let g:Tex_DefaultTargetFormat="pdf"
 let g:ag_highlight=1
 let g:ag_prg="ag -i --vimgrep"
 
+" for fzf.vim
+set rtp+=/usr/local/opt/fzf
+
 " see http://learnvimscriptthehardway.stevelosh.com/chapters/14.html
 augroup panozzaj_group
   autocmd!
