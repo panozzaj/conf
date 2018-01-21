@@ -32,76 +32,58 @@ endsnippet
 ############
 
 snippet then "then" i
-then(function($1) {
+then(($1) => {
   $2
 })
 endsnippet
 
 snippet then( "then" i
-then(function($1) {
-  $2
-})
-endsnippet
-
-snippet then(f "then" i
-then(function($1) {
+then(($1) => {
   $2
 })
 endsnippet
 
 snippet }).t "then" i
-}).then(function($1) {
+}).then(($1) => {
   $2
 })
 endsnippet
 
 snippet })t "then" i
-}).then(function($1) {
+}).then(($1) => {
   $2
 })
 endsnippet
 
 snippet catch "catch" i
-catch(function(err) {
+catch(err => {
   $1
 })
 endsnippet
 
 snippet catch( "catch" i
-catch(function(err) {
+catch(err => {
   $1
 })
 endsnippet
 
 snippet }).c "catch" i
-}).catch(function(err) {
+}).catch(err => {
   $1
 })
 endsnippet
 
-snippet })c "then" i
-}).catch(function(err) {
+snippet })c "catch" i
+}).catch(err => {
   $1
 })
 endsnippet
 
-
-##########
-# LODASH #
-##########
-
-snippet _
-_.$1($2, function() {
+snippet })f "finally" i
+}).finally(() => {
+  $1
 })
 endsnippet
-
-snippet _map
-_.map($1s, function(${1}) {
-  return ${2}
-})
-endsnippet
-
-
 
 ###########
 # TESTING #
@@ -165,67 +147,11 @@ snippet rpts
 $1: React.PropTypes.string,
 endsnippet
 
-snippet component
-class $1 extends React.Component {
-  static propTypes = {
-  }
-
-  render() {
-    return (
-      <div></div>
-    )
-  }
-}
-endsnippet
-
-snippet edcomp
-import React from 'react'
-
-export default class $1 extends React.Component {
-  static propTypes = {
-  }
-
-  render() {
-    return (
-      <div>$1</div>
-    )
-  }
-}
-endsnippet
-
-snippet edview
-import React from 'react'
-import { connect } from 'react-redux'
-
-class $1 extends React.Component {
-  static propTypes = {
-  }
-
-  render() {
-    return (
-      <div>$1</div>
-    )
-  }
-}
-
-const mapStateToProps = state => ({
-})
-
-const mapDispatchToProps = {
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)($1)
-endsnippet
 
 ###########
 # IMPORTS #
 ###########
 
-snippet implo
-import _ from 'lodash'
-endsnippet
-
-snippet impreact
-import React from 'react'
-
+snippet require
+const $1 = require('${1}')
 endsnippet
