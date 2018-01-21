@@ -423,6 +423,8 @@ nnoremap <leader>v :vsp<CR>
 nnoremap <leader>V :vsp %:h<CR>
 set list
 
+nnoremap <leader>t :FZF<CR>
+
 " Command-T also uses these
 " Should not ignore files I might want to normally open
 set wildignore=*.o,*.class,*.png,*.pdf,*.ps,*.gif,*.jpg,*.aux,*.toc,*.cod,*.bak,*.mp3,*.m4a,*.wmv,*.mpg,*.mov,*.doc,*.bc
