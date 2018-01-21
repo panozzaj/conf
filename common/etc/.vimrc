@@ -228,7 +228,7 @@ call BasicAbbreviations()
 
 
 cabbr cdhere cd %:p:h
-cabbr mkdirhere !mkdir -p %:h
+cabbr mkdirhere echo 'should use tpope/vim-eunuch :Mkdir! instead (muscle memory!)'
 
 cabbr autocommit call Autocommit()
 fun! Autocommit()
