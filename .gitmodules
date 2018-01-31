@@ -322,3 +322,6 @@
 [submodule "common/.vim/bundle/vim-rhubarb"]
 	path = common/.vim/bundle/vim-rhubarb
 	url = https://github.com/tpope/vim-rhubarb.git
+[submodule "common/.vim/bundle-colorschemes/dracula"]
+	path = common/.vim/bundle-colorschemes/dracula
+	url = https://github.com/dracula/vim.git
