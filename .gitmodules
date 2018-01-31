@@ -235,9 +235,6 @@
 [submodule "common/.vim/bundle-colorschemes/vim-colorscheme-primary"]
 	path = common/.vim/bundle-colorschemes/vim-colorscheme-primary
 	url = https://github.com/google/vim-colorscheme-primary.git
-[submodule "common/.vim/bundle/vim-ags"]
-	path = common/.vim/bundle/vim-ags
-	url = https://github.com/gabesoft/vim-ags.git
 [submodule "common/.vim/bundle/swift.vim"]
 	path = common/.vim/bundle/swift.vim
 	url = https://github.com/keith/swift.vim.git
