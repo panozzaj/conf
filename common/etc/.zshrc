@@ -261,6 +261,12 @@ function reset_database() {
   reload_database
 }
 
+# edit the last Rails database migration
+function emig() {
+  # https://stackoverflow.com/questions/246215 for ls command
+  ls -d1 db/migrate/* | tail -1 | xargs $EDITOR
+}
+
 # gem
 alias sgi="sudo gem install"
 alias sgu="sudo gem update"
@@ -354,6 +360,7 @@ alias psr="powify server stop; powify server start"
 
 # Heroku
 alias hrdm="heroku run rake db:migrate"
+alias hrc="heroku run rails console"
 alias hero="heroku"
 alias her="heroku"
 alias fs="foreman start"
