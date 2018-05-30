@@ -325,3 +325,24 @@
 [submodule "common/.vim/bundle-colorschemes/dracula"]
 	path = common/.vim/bundle-colorschemes/dracula
 	url = https://github.com/dracula/vim.git
+[submodule "common/.vim/bundle-colorschemes/soft-era-vim"]
+	path = common/.vim/bundle-colorschemes/soft-era-vim
+	url = https://github.com/soft-aesthetic/soft-era-vim.git
+[submodule "common/.vim/bundle-colorschemes/vim-colors-plain"]
+	path = common/.vim/bundle-colorschemes/vim-colors-plain
+	url = https://github.com/andreypopp/vim-colors-plain.git
+[submodule "common/.vim/bundle-colorschemes/typewriter"]
+	path = common/.vim/bundle-colorschemes/typewriter
+	url = https://github.com/logico-dev/typewriter.git
+[submodule "common/.vim/bundle-colorschemes/vim-colors-blueprint"]
+	path = common/.vim/bundle-colorschemes/vim-colors-blueprint
+	url = https://github.com/thenewvu/vim-colors-blueprint.git
+[submodule "common/.vim/bundle-colorschemes/vrunchbang"]
+	path = common/.vim/bundle-colorschemes/vrunchbang
+	url = https://github.com/nightsense/vrunchbang.git
+[submodule "common/.vim/bundle-colorschemes/nemo"]
+	path = common/.vim/bundle-colorschemes/nemo
+	url = https://github.com/nightsense/nemo.git
+[submodule "common/.vim/bundle-colorschemes/strawberry"]
+	path = common/.vim/bundle-colorschemes/strawberry
+	url = https://github.com/nightsense/strawberry.git
