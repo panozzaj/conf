@@ -346,3 +346,6 @@
 [submodule "common/.vim/bundle-colorschemes/strawberry"]
 	path = common/.vim/bundle-colorschemes/strawberry
 	url = https://github.com/nightsense/strawberry.git
+[submodule "common/.vim/bundle-colorschemes/palenight.vim"]
+	path = common/.vim/bundle-colorschemes/palenight.vim
+	url = https://github.com/drewtempelmeyer/palenight.vim.git
