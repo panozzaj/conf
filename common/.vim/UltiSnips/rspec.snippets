@@ -7,6 +7,9 @@ def described_class_from_filename(filename):
 
 def camelize(str):
 	return os.path.splitext(''.join([part.capitalize() for part in str.lower().split('_')]))[0]
+
+def described_factory_from_filename(filename):
+	return ':' + re.sub('_factory.rb', '', filename)
 endglobal
 
 snippet fgc
@@ -52,5 +55,12 @@ endsnippet
 snippet it "it (test)"
 it '${1:does something}' do
   ${2}
+end
+endsnippet
+
+snippet factory "factory"
+FactoryBot.define do
+  factory ${1:`!p snip.rv = described_factory_from_filename(fn) or 'faktory'`} do
+  end
 end
 endsnippet
