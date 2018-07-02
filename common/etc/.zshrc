@@ -174,7 +174,8 @@ alias rdmall="rdm && rdtp && rpp"
 alias rdmtp="rdm && rdtp"
 alias rdpt="best_rake db:test:prepare"
 alias rdr="best_rake db:rollback"
-alias rds="best_rake db:seed"
+alias rds="best_rake db:setup"
+alias rdseed="best_rake db:seed"
 alias rdsl="best_rake db:schema:load"
 alias rdtp="best_rake db:test:prepare"
 alias rdv="best_rake db:version"
@@ -402,7 +403,8 @@ alias gc="git commit --verbose"
 # http://stackoverflow.com/questions/5188320
 # mnemonic: git change branch
 alias gcb="git checkout \`git branch --sort=-committerdate | fzf\`"
-alias gcle="git cleanup"
+alias gcl="git clone"
+alias gcdf="git clean -df"
 alias gco="git checkout"
 alias gco-="git checkout -"
 alias gcob="git checkout -b"
@@ -428,6 +430,7 @@ alias gdsom="git diff --stat origin/master" # all files that changed since origi
 alias gdw="git diff --ignore-all-space"
 alias geu="git edit-unmerged"
 alias gf="git fetch"
+alias gfa="git fetch --all"
 alias gfmom="echo 'git fetch' && git fetch && echo 'git merge origin/master --ff-only'; git merge origin/master --ff-only"
 alias gfrom="echo 'git fetch' && git fetch && echo 'git rebase origin/master' && git rebase origin/master"
 alias gfwtf="git fetch && git wtf -A"
@@ -643,7 +646,7 @@ if [[ ! "$PATH" =~ "\\./node_modules/\\.bin" ]]; then
   export PATH=$PATH:./node_modules/.bin
 fi
 
-alias news="newsbeuter -C ~/Dropbox/newsbeuter/config -u ~/Dropbox/newsbeuter/urls"
+alias news="newsboat -C ~/Dropbox/newsbeuter/config -u ~/Dropbox/newsbeuter/urls"
 function add_feed {
     echo "$1" >> ~/Dropbox/newsbeuter/urls
 }
@@ -665,6 +668,10 @@ function add_newsbeuter_url {
     echo "$1" >> ~/Dropbox/newsbeuter/urls
     echo "Added URL to ~/Dropbox/newsbeuter/urls"
   fi
+}
+
+function add_url {
+  echo "$1" >> /Users/anthony/Documents/dev/incremental-reading/to_import/urls.txt
 }
 
 # http://stackoverflow.com/questions/2187829/constantly-updated-clock-in-zsh-prompt
