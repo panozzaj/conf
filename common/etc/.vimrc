@@ -46,6 +46,17 @@ set directory=~/.vim/tmp/swap//
 set mouse=a " mouse support for terminal vim
 set title " terminal title set to buffer name
 
+" see https://github.com/macvim-dev/macvim/issues/562
+if has('python3')
+  command! -nargs=1 Py py3 <args>
+  set pythonthreedll=/usr/local/Frameworks/Python.framework/Versions/3.7/Python
+  set pythonthreehome=/usr/local/Frameworks/Python.framework/Versions/3.7
+else
+  command! -nargs=1 Py py <args>
+  set pythondll=/usr/local/Frameworks/Python.framework/Versions/2.7/Python
+  set pythonhome=/usr/local/Frameworks/Python.framework/Versions/2.7
+endif
+
 set scrolloff=2 " leave a gap between bottom of window and cursor, if possible
 
 set synmaxcol=200 " vim is often slow with long lines that are syntax highlighted, so limit to 200 characters in length
