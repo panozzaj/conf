@@ -18,6 +18,7 @@
         pop = stash pop
         praise = blame
         pup = !git push -u ${1-origin} `git symbolic-ref --short HEAD`
+        rbr = rename-branch-remote
         rm-sub = remove-submodule
         rm-submodule = remove-submodule
         rmsub = remove-submodule
@@ -62,3 +63,8 @@
         email = panozzaj@gmail.com
 [diff "ansible-vault"]
 	textconv = ansible-vault view
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true

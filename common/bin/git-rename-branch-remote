@@ -1,0 +1,35 @@
+#!/bin/sh
+
+# Rename branch locally and remotely
+
+usage() {
+  echo 'git rename-branch-remote <old_branch> <new_branch> [<remote>]'
+}
+
+old_branch=$1
+new_branch=$2
+remote=${2:-origin}
+
+if [ -z "$old_branch" ]; then
+  echo 'Please provide the name of the branch that you want to rename.'
+  usage
+  exit 1
+fi
+
+if ! git show-ref refs/heads/$old_branch > /dev/null ; then
+  echo "The branch '$old_branch' cannot be found locally."
+  exit 1
+fi
+
+if [ -z "$new_branch" ]; then
+  echo 'Please provide the new name of the branch that you want to rename.'
+  usage
+  exit 1
+fi
+
+# See https://gist.github.com/lttlrck/9628955 and associated comments
+echo "Renaming branch '$old_branch' to '$new_branch'..."
+git branch -m $old_branch $new_branch
+git push origin :$old_branch
+git branch --unset-upstream $new_branch
+git push --set-upstream origin $new_branch
