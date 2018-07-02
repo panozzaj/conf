@@ -353,6 +353,7 @@ augroup panozzaj_group
   autocmd BufNewFile,BufRead *.txt set filetype=conf
   autocmd BufNewFile,BufRead *.less set filetype=less
   autocmd BufNewFile,BufRead *_spec.rb set filetype=rspec.ruby
+  autocmd BufNewFile,BufRead *_factory.rb set filetype=rspec.ruby
   autocmd BufNewFile,BufRead *.json set filetype=javascript
   autocmd BufNewFile,BufRead *.plist set filetype=xml
   autocmd BufNewFile,BufRead *.scss set filetype=scss
@@ -434,7 +435,7 @@ nnoremap <leader>v :vsp<CR>
 nnoremap <leader>V :vsp %:h<CR>
 set list
 
-nnoremap <leader>t :FZF<CR>
+nnoremap <leader>t :GFiles<CR>
 
 " Command-T also uses these
 " Should not ignore files I might want to normally open
