@@ -1,5 +1,0 @@
-#!/bin/bash
-source ~/.rvm/scripts/rvm
-cd ~/conf/common/.vim/bundle/Command-T
-rvm use system
-rake make
