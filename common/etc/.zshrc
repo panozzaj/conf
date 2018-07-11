@@ -496,38 +496,6 @@ function hpr {
     fi
 }
 
-# grunt
-alias gr="grunt"
-alias grj="grunt jshint"
-alias grja="grunt jshint"
-alias grjn="grunt newer:jshint"
-alias grjw="grunt watch:jshintNewer"
-alias grmo="grunt mobileapp"
-alias grmoa="grunt mobileapp --backend=localhost:3000"
-alias grmot="grunt mobileapp --backend=http://localhost:9559"
-alias grup="grunt updatedefs"
-
-# grunt testing
-alias grt="grunt test"
-alias grta="grunt test:appium"
-alias grtaf="grunt test:appium:full"
-alias grtk="grunt test:karma"
-alias grtm="grunt test:mocha"
-alias grtmg="grunt test:mocha --grep"
-alias grtml="grunt test:mocha:local"
-alias grtmn="grunt test:mocha --grep @network"
-alias grtp="grunt test:protractor"
-
-# cordova
-alias cemui="pushd cordova ; cordova emulate ios ; popd"
-alias cemua="pushd cordova ; cordova emulate android ; popd"
-alias cruna="pushd cordova ; cordova run android ; popd"
-alias cruni="pushd cordova ; cordova run ios ; popd"
-alias ccemui="grunt mobileapp --backend=localhost:3000 && cemui"
-alias ccemua="grunt mobileapp --backend=10.0.2.2:3000 && cemua"
-alias ccruni="grunt mobileapp --backend=http://anthony-panozzo.local:3000 && cruni"
-alias ccruna="grunt mobileapp --backend=localhost:3000 && cruna"
-
 # npm
 alias ni='npm install'
 alias nis='npm install --save'
