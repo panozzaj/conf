@@ -109,8 +109,6 @@ let g:ale_sign_warning = '!'
 
 " tags-related commands and configuration
 
-" mostly obsoleted by better ctags configuration?
-nnoremap <leader>jt :! jsctags -o tags server test admin<CR>
 vnoremap <leader>s :sort<CR>
 
 " not sure if this is the best tag solution, but seems to work halfway
@@ -247,11 +245,9 @@ fun! Autocommit()
   au BufWritePost * silent !git commit <afile> -m 'Generated commit'
 endfu
 
-" does not work? trying to remove surround parens and add a space
-nnoremap <leader>p ds(i
-
-" show kill ring list
-nnoremap <leader>y :YRShow<CR>
+" delete surrounding braces in function/method declarations
+nmap <leader>dp csbs
+" could also be cs(s, etc.
 
 " show only this fold section
 nnoremap <leader>z zMzv
@@ -327,7 +323,7 @@ vnoremap <leader>lu <Esc>`>a](<C-r>*)<C-o>`<[<Esc>f)
 " link (disregard clipboard)
 vnoremap <leader>ll <Esc>`>a]()<C-o>`<[<Esc>f)
 
-nnoremap <leader>e :Errors<CR><C-W><C-W>
+"nnoremap <leader>e :Errors<CR><C-W><C-W>
 nnoremap <leader>q :q<CR>
 nnoremap <leader>w :w<CR>
 
@@ -429,13 +425,29 @@ nnoremap du :diffupdate<CR>
 
 " Toggle trailing whitespace highlighting with leader + s  (default on)
 set listchars=tab:>-,trail:· ",eol:$
-nnoremap <leader>s :sp<CR>
-nnoremap <leader>S :sp %:h<CR>
-nnoremap <leader>v :vsp<CR>
-nnoremap <leader>V :vsp %:h<CR>
 set list
 
+" Quickly open split in current file's directory
+nnoremap <leader>e :e %:h<CR>
+nnoremap <leader>s :sp %:h<CR>
+nnoremap <leader>v :vsp %:h<CR>
+
+" Quickly open split of current file
+nnoremap <leader>S :sp<CR>
+nnoremap <leader>V :vsp<CR>
+
+
+" Default key bindings, plus ctrl+s to be like other fuzzy finders
+let g:fzf_action = {
+  \ 'ctrl-t': 'tab split',
+  \ 'ctrl-s': 'split',
+  \ 'ctrl-x': 'split',
+  \ 'ctrl-v': 'vsplit' }
+
 nnoremap <leader>t :GFiles<CR>
+
+" recent files
+nnoremap <leader>R :History<CR>
 
 " Command-T also uses these
 " Should not ignore files I might want to normally open
@@ -443,9 +455,6 @@ set wildignore=*.o,*.class,*.png,*.pdf,*.ps,*.gif,*.jpg,*.aux,*.toc,*.cod,*.bak,
 set wildignore+=*/vendor/rails
 set wildignore+=*/node_modules  " npm
 set wildignore+=*/.git          " vcs
-
-" Command-T
-" Make sure this is after wildignore setup since we reference that
 
 " Search through command history (similar to fzf ctrl+r)
 nmap <silent> <Leader>r <Plug>(CommandTHistory)
@@ -623,12 +632,8 @@ inoremap <C-s> <c-g>u<Esc>[s1z=`]A<c-g>u
 
 nnoremap <leader>9 :NotRocket<CR>
 
-" kill manual key.
-nnoremap K <nop>
-" TODO: would be nice to Ag search for item under cursor and in selection
-" but I don't have time to figure this out right now.
-"nnoremap K :LAg! "\b<C-R><C-W>\b"<CR>:cw<CR>
-"vnoremap K :LAg! "\b<C-R><C-W>\b"<CR>:cw<CR>
+" kill manual key and replace with Ag search
+nnoremap K :Ag! <cword><cr>
 
 " create buffer on `gf` if the file does not currently exist (slight
 " modification from help file to accommodate colon remapping)
@@ -644,7 +649,7 @@ nnoremap <leader>j{ {k3J
 " Join this paragraph with the next paragraph
 nnoremap <leader>j} 3J
 
-nnoremap <leader>rt :! grunt --no-color test:e2e --specs=% --no-colors<CR>
+"nnoremap <leader>rt :! grunt --no-color test:e2e --specs=% --no-colors<CR>
 
 nnoremap <leader>= <Cq<CR>
 

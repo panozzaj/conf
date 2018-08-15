@@ -1,0 +1,75 @@
+#########
+# REACT #
+#########
+
+snippet rpta
+$1: React.PropTypes.array,
+endsnippet
+
+snippet rptb
+$1: React.PropTypes.bool,
+endsnippet
+
+snippet rptf
+$1: React.PropTypes.func,
+endsnippet
+
+snippet rptn
+$1: React.PropTypes.number,
+endsnippet
+
+snippet rpto
+$1: React.PropTypes.object,
+endsnippet
+
+snippet rpts
+$1: React.PropTypes.string,
+endsnippet
+
+snippet newcomponent
+import React from 'react'
+
+class $1 extends React.Component {
+  render() {
+    return (
+      <div>
+        $1 component
+      </div>
+    )
+  }
+}
+
+export default ${1}
+endsnippet
+
+snippet cts
+const { $1 } = this.state
+endsnippet
+
+snippet ctsm
+const {
+  $1,
+} = this.state
+endsnippet
+
+snippet ctp
+const { $1 } = this.props
+endsnippet
+
+snippet ctsp
+const {
+  $1,
+} = this.props
+endsnippet
+
+snippet ii
+import $1 from '${1}'
+endsnippet
+
+snippet ii_
+import _ from 'lodash'
+endsnippet
+
+snippet iir
+import React from 'React'
+endsnippet
