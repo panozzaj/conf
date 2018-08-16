@@ -349,3 +349,6 @@
 [submodule "common/.vim/bundle-colorschemes/palenight.vim"]
 	path = common/.vim/bundle-colorschemes/palenight.vim
 	url = https://github.com/drewtempelmeyer/palenight.vim.git
+[submodule "common/.vim/bundle/emmet-vim"]
+	path = common/.vim/bundle/emmet-vim
+	url = https://github.com/mattn/emmet-vim.git
