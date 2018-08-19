@@ -76,16 +76,7 @@ set secure
 " https://gist.github.com/KevinSjoberg/5068370
 let g:netrw_localrmdir='rm -r'
 
-" ctrl-p plugin
-
-let g:ctrlp_match_window_bottom=0 " put at top
-let g:ctrlp_match_window_reversed=0 " reverse order of items
-let g:ctrlp_custom_ignore = '\v[\/](node_modules|target|dist|tmp|log|.bower-cache|.bower-registry|.bower-tmp|bower_components)|(\.(swp|ico|png|jpg|git|svn))$'
-
 let mapleader = "\<Space>"
-
-" Not sure I really like CtrlP that much
-"nnoremap <leader>t :CtrlP<CR>
 
 let g:closetag_html_style=1
 "source ~/.vim/closetag.vim
