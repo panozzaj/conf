@@ -1,6 +1,23 @@
-#########
-# REACT #
-#########
+###########
+# IMPORTS #
+###########
+
+snippet ii
+import $1 from '${1}'
+endsnippet
+
+snippet iir
+import $1 from './${1}'
+endsnippet
+
+snippet ii_
+import _ from 'lodash'
+endsnippet
+
+
+#############
+# PROPTYPES #
+#############
 
 snippet rpta
 $1: React.PropTypes.array,
@@ -26,7 +43,12 @@ snippet rpts
 $1: React.PropTypes.string,
 endsnippet
 
-snippet newcomponent
+
+##############
+# COMPONENTS #
+##############
+
+snippet newcomp
 import React from 'react'
 
 class $1 extends React.Component {
@@ -42,6 +64,21 @@ class $1 extends React.Component {
 export default ${1}
 endsnippet
 
+
+###################
+# STATE AND PROPS #
+###################
+
+snippet tss
+this.setState({
+  $1
+})
+endsnippet
+
+snippet ts
+this.state
+endsnippet
+
 snippet cts
 const { $1 } = this.state
 endsnippet
@@ -50,6 +87,10 @@ snippet ctsm
 const {
   $1,
 } = this.state
+endsnippet
+
+snippet tp
+this.props
 endsnippet
 
 snippet ctp
@@ -62,22 +103,20 @@ const {
 } = this.props
 endsnippet
 
-snippet ii
-import $1 from '${1}'
+
+#########
+# OTHER #
+#########
+
+snippet s=
+style={{ $1 }}
 endsnippet
 
-snippet ii_
-import _ from 'lodash'
+snippet style=
+style={{ $1 }}
 endsnippet
 
-snippet iir
-import React from 'React'
-endsnippet
-
-snippet tp
-this.props
-endsnippet
-
-snippet ts
-this.state
+# might be annoying?
+snippet style
+style={{ $1 }}
 endsnippet
