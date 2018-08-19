@@ -419,7 +419,6 @@ set listchars=tab:>-,trail:· ",eol:$
 set list
 
 " Quickly open split in current file's directory
-nnoremap <leader>e :e %:h<CR>
 nnoremap <leader>s :sp %:h<CR>
 nnoremap <leader>v :vsp %:h<CR>
 
@@ -427,6 +426,25 @@ nnoremap <leader>v :vsp %:h<CR>
 nnoremap <leader>S :sp<CR>
 nnoremap <leader>V :vsp<CR>
 
+" Only enable normal mode functions. Otherwise, since my leader is currently
+" space, we insert random stuff on space or have delays after typing space.
+" Another approach could be using :imap <leader> to list insert mode things
+" and remapping them manually instead. It doesn't seem possible with current
+" emmet.vim code to configure one leader in insert mode and another in normal
+" mode.
+let g:user_emmet_mode='n'
+
+" Mnemonic: emmet
+let g:user_emmet_leader_key='<leader>e'
+" Mnemonic: emmet expand (also easily hittable)
+let g:user_emmet_expandabbr_key = '<leader>ee'
+
+let g:user_emmet_settings = {
+  \  'javascript.jsx' : {
+  \      'extends' : 'jsx',
+  \      'quote_char': "'",
+  \  },
+  \}
 
 " Default key bindings, plus ctrl+s to be like other fuzzy finders
 let g:fzf_action = {
