@@ -417,6 +417,10 @@ nnoremap du :diffupdate<CR>
 set listchars=tab:>-,trail:· ",eol:$
 set list
 
+" Otherwise I get duplicate entries in netrw when combined with vim-vinegar
+" See https://github.com/tpope/vim-vinegar/issues/27
+let g:netrw_fastbrowse=0
+
 " Quickly open split in current file's directory
 nnoremap <leader>s :sp %:h<CR>
 nnoremap <leader>v :vsp %:h<CR>
