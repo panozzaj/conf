@@ -332,9 +332,6 @@ let g:Tex_DefaultTargetFormat="pdf"
 let g:ag_highlight=1
 let g:ag_prg="ag -i --vimgrep"
 
-" for fzf.vim
-set rtp+=/usr/local/opt/fzf
-
 " see http://learnvimscriptthehardway.stevelosh.com/chapters/14.html
 augroup panozzaj_group
   autocmd!
@@ -447,6 +444,9 @@ let g:user_emmet_settings = {
   \      'quote_char': "'",
   \  },
   \}
+
+" for fzf.vim
+set rtp+=/usr/local/opt/fzf
 
 " Default key bindings, plus ctrl+s to be like other fuzzy finders
 let g:fzf_action = {
