@@ -465,17 +465,6 @@ set wildignore+=*/vendor/rails
 set wildignore+=*/node_modules  " npm
 set wildignore+=*/.git          " vcs
 
-" Search through command history (similar to fzf ctrl+r)
-nmap <silent> <Leader>r <Plug>(CommandTHistory)
-
-" Default is to use Ruby, which is likely slower since find is written in C
-let g:CommandTFileScanner='find'
-let g:CommandTMaxHeight = 8 " only show a few lines for the output
-
-
-" quicker way to flush the queue
-nnoremap <leader>T <Esc>:CommandTFlush<CR>
-
 " Enable automatic spell checking for txt and tex files
 let spell_auto_type="tex,txt"
 
