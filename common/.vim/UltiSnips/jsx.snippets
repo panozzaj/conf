@@ -2,15 +2,15 @@
 # IMPORTS #
 ###########
 
-snippet ii
+snippet ii "import" b
 import $1 from '${1}'
 endsnippet
 
-snippet iir
+snippet iir "import relative" b
 import $1 from './${1}'
 endsnippet
 
-snippet ii_
+snippet ii_ "import lodash" b
 import _ from 'lodash'
 endsnippet
 
@@ -48,7 +48,7 @@ endsnippet
 # COMPONENTS #
 ##############
 
-snippet newcomp
+snippet newcomp "new React component" b
 import React from 'react'
 
 class $1 extends React.Component {
@@ -69,35 +69,39 @@ endsnippet
 # STATE AND PROPS #
 ###################
 
-snippet tss
+snippet tss "this.setState" b
+this.setState({ $1 })
+endsnippet
+
+snippet tssm "this.setState multi-line" b
 this.setState({
   $1
 })
 endsnippet
 
-snippet ts
+snippet ts "this.state" w
 this.state
 endsnippet
 
-snippet cts
+snippet cts "const assign this.state" b
 const { $1 } = this.state
 endsnippet
 
-snippet ctsm
+snippet ctsm "const assign this.state multi-line" b
 const {
   $1,
 } = this.state
 endsnippet
 
-snippet tp
+snippet tp "this.props" w
 this.props
 endsnippet
 
-snippet ctp
+snippet ctp "const assign this.props" b
 const { $1 } = this.props
 endsnippet
 
-snippet ctsp
+snippet ctpm "const assign this.props multi-line" b
 const {
   $1,
 } = this.props
@@ -108,15 +112,20 @@ endsnippet
 # OTHER #
 #########
 
+snippet cn
+className='$1'
+endsnippet
+
 snippet s=
 style={{ $1 }}
 endsnippet
 
-snippet style=
-style={{ $1 }}
+snippet s=m
+style={{
+  $1
+}}
 endsnippet
 
-# might be annoying?
-snippet style
+snippet style=
 style={{ $1 }}
 endsnippet

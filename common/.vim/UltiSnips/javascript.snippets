@@ -2,7 +2,7 @@
 # GENERAL #
 ###########
 
-snippet ife
+snippet ife "if...else" b
 if ($1) {
     $2
 } else {
@@ -10,19 +10,19 @@ if ($1) {
 }
 endsnippet
 
-snippet clv
+snippet clv "console.log variable" b
 console.log('$1: ', ${1})
 endsnippet
 
-snippet cl
+snippet cl "console.log" b
 console.log('${1}')
 endsnippet
 
-snippet cev
+snippet cev "console.error variable" b
 console.error('$1: ', ${1:err})
 endsnippet
 
-snippet ce
+snippet ce "console.error" b
 console.error('${1}')
 endsnippet
 
@@ -89,13 +89,13 @@ endsnippet
 # TESTING #
 ###########
 
-snippet xit
+snippet xit "xit" b
 xit('${1:description}', () => {
   $2
 })
 endsnippet
 
-snippet xdes
+snippet xdes "xdescribe" b
 xdescribe('${1:description}', () => {
   $2
 })
