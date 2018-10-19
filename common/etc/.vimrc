@@ -75,6 +75,8 @@ set secure
 " Allow netrw to remove non-empty local directories
 " https://gist.github.com/KevinSjoberg/5068370
 let g:netrw_localrmdir='rm -r'
+" https://gist.github.com/t-mart/610795fcf7998559ea80
+autocmd FileType netrw nnoremap ? :help netrw-quickmap<CR>
 
 let mapleader = "\<Space>"
 
