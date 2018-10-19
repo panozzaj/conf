@@ -556,6 +556,16 @@ nnoremap <leader>co <Esc>:call RandomColorscheme()<CR>
 noremap ; :
 noremap : ;
 
+" Apply macro to current visual mode selection
+" https://github.com/stoeffel/.dotfiles/blob/master/vim/visual-at.vim
+" from https://medium.com/@schtoeffel/you-don-t-need-more-than-one-cursor-in-vim-2c44117d51db
+xnoremap @ :<C-u>call ExecuteMacroOverVisualRange()<CR>
+
+function! ExecuteMacroOverVisualRange()
+  echo "@".getcmdline()
+  execute ":'<,'>normal @".nr2char(getchar())
+endfunction
+
 
 " In visual mode when you press * or # to search for the current selection
 vnoremap <silent> * :call VisualSearch('f')<CR>
