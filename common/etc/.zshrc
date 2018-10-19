@@ -519,6 +519,9 @@ alias ya='yarn add'
 alias yr='yarn run'
 alias yrm='yarn remove'
 
+# use random uuid for uuid generator
+alias uuid='uuid -v4'
+
 # javascript
 #alias jsl="jslint -process"
 
