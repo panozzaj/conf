@@ -73,8 +73,7 @@ set exrc
 set secure
 
 " Allow netrw to remove non-empty local directories
-" https://gist.github.com/KevinSjoberg/5068370
-let g:netrw_localrmdir='rm -r'
+let g:netrw_local_rmdir='rm -r'
 " https://gist.github.com/t-mart/610795fcf7998559ea80
 autocmd FileType netrw nnoremap ? :help netrw-quickmap<CR>
 
@@ -422,12 +421,12 @@ set list
 let g:netrw_fastbrowse=0
 
 " Quickly open split in current file's directory
-nnoremap <leader>s :sp %:h<CR>
-nnoremap <leader>v :vsp %:h<CR>
+"nnoremap <leader>s :sp %:h/.<CR>
+"nnoremap <leader>v :vsp %:h/.<CR>
 
 " Quickly open split of current file
-nnoremap <leader>S :sp<CR>
-nnoremap <leader>V :vsp<CR>
+nnoremap <leader>s :sp<CR>
+nnoremap <leader>v :vsp<CR>
 
 " Only enable normal mode functions. Otherwise, since my leader is currently
 " space, we insert random stuff on space or have delays after typing space.
@@ -466,10 +465,12 @@ nnoremap <leader>R :History<CR>
 
 " Command-T also uses these
 " Should not ignore files I might want to normally open
-set wildignore=*.o,*.class,*.png,*.pdf,*.ps,*.gif,*.jpg,*.aux,*.toc,*.cod,*.bak,*.mp3,*.m4a,*.wmv,*.mpg,*.mov,*.doc,*.bc
-set wildignore+=*/vendor/rails
-set wildignore+=*/node_modules  " npm
-set wildignore+=*/.git          " vcs
+"set wildignore=*.o,*.class,*.png,*.pdf,*.ps,*.gif,*.jpg,*.aux,*.toc,*.cod,*.bak,*.mp3,*.m4a,*.wmv,*.mpg,*.mov,*.doc,*.bc
+"set wildignore+=*/vendor/rails
+"set wildignore+=*/node_modules  " npm
+"set wildignore+=*/.git          " vcs
+"let g:netrw_banner = 1  " https://github.com/tpope/vim-vinegar/issues/97
+"let g:netrw_list_hide = '\(^\|\s\s\)\zs\.\S\+'
 
 " Enable automatic spell checking for txt and tex files
 let spell_auto_type="tex,txt"
