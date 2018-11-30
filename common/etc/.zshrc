@@ -12,6 +12,11 @@ setopt APPEND_HISTORY
 # see http://stackoverflow.com/questions/6091827
 setopt NO_EXTENDED_GLOB
 
+# Allow for brackets without quoting
+# https://robots.thoughtbot.com/how-to-use-arguments-in-a-rake-task
+# Not sure what the downsides are though.
+unsetopt NOMATCH
+
 if [[ ! "$fpath" =~ "$conf/common/etc/.zsh" ]]; then
   fpath=($conf/common/etc/.zsh $fpath)
 fi
@@ -207,9 +212,18 @@ alias zrpp="zr parallel:prepare"
 # Rails
 alias rials="rails"
 alias rg="rails generate"
-alias rgm="rails generate migration"
 alias rgmo="rails generate model"
 alias rgc="rails generate controller"
+
+function rgm() {
+  rails generate migration $@
+  echo ""
+  catdm
+}
+
+function catdm() {
+  find db/migrate | sort -r | head -1 | xargs cat
+}
 
 function rs() { # so this works for Rails 2 through 4
   # `-b 0.0.0.0` helps with subdomains in pow
@@ -462,6 +476,7 @@ alias grlh="git reflog | head"
 alias grhom="git reset --hard origin/master"
 alias grom="git rebase origin/master"
 alias grh="git reset --hard"
+alias grp="git reset --patch"
 alias grr="git reset --hard \`git reflog | fzf | cut -d ' ' -f 1\`"
 alias grs="git rebase --skip"
 alias grsh="git reset --soft 'HEAD^' && git reset"
@@ -502,6 +517,10 @@ function hpr {
       echo "hub pull-request -b $repo:$1 -h $repo:`git symbolic-ref --short HEAD`"
       `GIT_EDITOR='mvim --nofork' hub pull-request -b $repo:$1 -h $repo:\`git symbolic-ref --short HEAD\``
     fi
+}
+
+aliases() {
+  alias | grep ${1:-""}
 }
 
 # npm
