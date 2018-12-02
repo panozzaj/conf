@@ -575,12 +575,16 @@ alias xe="xargs mvim"
 # print STDERR in red
 alias -g errred='2> >(while read line; do echo -e "\e[01;31m$line\e[0m" >&2; done)'
 
+if [[ ! "$PATH" =~ "/usr/local/bin" ]]; then
+  PATH=/usr/local/bin:$PATH
+fi
+
 if [[ ! "$PATH" =~ "$CONF/common/bin" ]]; then
   PATH+=":"$CONF/common/bin
 fi
 
 if [[ ! "$PATH" =~ "/usr/local/sbin" ]]; then
-  PATH+=":/usr/local/sbin"
+  PATH="/usr/local/sbin:$PATH"
 fi
 
 # Calculate writing word diff between revisions. Cribbed / modified from:
@@ -678,3 +682,6 @@ function add_url {
 #TRAPALRM() {
 #    zle reset-prompt
 #}
+
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm"
+
