@@ -70,3 +70,5 @@
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
+[includeIf "gitdir:~/Documents/dev/woven/"]
+  path = .gitconfig-woven

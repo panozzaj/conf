@@ -2,6 +2,7 @@
 
 if [ -f bin/rspec ]; then
   # use spring rspec if it is around
+  echo ./bin/rspec $@
   ./bin/rspec $@
 elif [ -S .zeus.sock ]; then
   echo "Running tests with Zeus"

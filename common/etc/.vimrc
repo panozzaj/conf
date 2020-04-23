@@ -99,6 +99,15 @@ let g:ale_lint_on_enter = 0
 let g:ale_sign_error = '✗'
 let g:ale_sign_warning = '!'
 
+" Configure prettier support
+let g:ale_fixers = {
+\ 'javascript': ['prettier'],
+\ 'css': ['prettier'],
+\}
+
+" Run 'fix' commands after saving files
+let g:ale_fix_on_save = 1
+
 " tags-related commands and configuration
 
 vnoremap <leader>s :sort<CR>
@@ -229,7 +238,6 @@ call BasicAbbreviations()
 
 
 cabbr cdhere cd %:p:h
-cabbr mkdirhere echo 'should use tpope/vim-eunuch :Mkdir! instead (muscle memory!)'
 
 cabbr autocommit call Autocommit()
 fun! Autocommit()
@@ -335,7 +343,7 @@ let g:ag_prg="ag -i --vimgrep"
 augroup panozzaj_group
   autocmd!
 
-  autocmd BufNewFile,BufRead *.txt set filetype=conf
+  autocmd BufNewFile,BufRead *.txt set filetype=text
   autocmd BufNewFile,BufRead *.less set filetype=less
   autocmd BufNewFile,BufRead *_spec.rb set filetype=rspec.ruby
   autocmd BufNewFile,BufRead *_factory.rb set filetype=rspec.ruby
@@ -373,9 +381,6 @@ endfunction
 :command! PromoteToLet :call PromoteToLet()
 nnoremap <leader>l :PromoteToLet<cr>
 
-" shortcut is taken over by write file shortcut
-"nnoremap <leader>w :%s/\s\+$//<cr>
-
 " via: http://whynotwiki.com/Vim
 " Ruby
 " Use v or # to get a variable interpolation (inside of a string)}
@@ -384,6 +389,21 @@ nnoremap <leader>l :PromoteToLet<cr>
 let g:surround_113 = "#{\r}"   " v
 let g:surround_35  = "#{\r}"   " #
 
+
+" these are mostly defaults, except for flipping the open order
+" to match my split opening order (splitbelow, splitright)
+" see https://github.com/mileszs/ack.vim/blob/master/doc/ack.txt
+" TODO: actually make changes
+"let g:ack_mappings = {
+"      \ "t": "<C-W><CR><C-W>T",
+"      \ "T": "<C-W><CR><C-W>TgT<C-W>j",
+"      \ "o": "<CR>",
+"      \ "O": "<CR><C-W><C-W>:ccl<CR>",
+"      \ "go": "<CR><C-W>j",
+"      \ "h": "<C-W><CR><C-W>K",
+"      \ "H": "<C-W><CR><C-W>K<C-W>b",
+"      \ "v": "<C-W><CR><C-W>H<C-W>b<C-W>J<C-W>t",
+"      \ "gv": "<C-W><CR><C-W>H<C-W>b<C-W>J" }
 
 " Pasting blockwise and linewise selections is not possible in Insert and
 " Visual mode without the +virtualedit feature.  They are pasted as if they
@@ -415,6 +435,15 @@ nnoremap du :diffupdate<CR>
 " Toggle trailing whitespace highlighting with leader + s  (default on)
 set listchars=tab:>-,trail:· ",eol:$
 set list
+
+" trim trailing whitespace from file
+" see https://vi.stackexchange.com/a/456
+fun! TrimWhitespace()
+    let l:save = winsaveview()
+    keeppatterns %s/\s\+$//e
+    call winrestview(l:save)
+endfun
+command! TrimWhitespace call TrimWhitespace()
 
 " Otherwise I get duplicate entries in netrw when combined with vim-vinegar
 " See https://github.com/tpope/vim-vinegar/issues/27
@@ -641,6 +670,11 @@ vnoremap ~ y:call setreg('', TwiddleCase(@"), getregtype(''))<CR>gv""Pgv
 " from https://github.com/henrik/dotfiles/commit/aaa45c1cc0f9a6195a9155223a7e904aa10b256f
 command! -bar -range=% NotRocket execute '<line1>,<line2>s/:\(\w\+\)\s*=>/\1:/e' . (&gdefault ? '' : 'g')
 
+function! PrettyJSON()
+  :%!python -m json.tool
+endfunction
+:command! PrettyJSON :call PrettyJSON()
+
 " https://github.com/reedes/vim-litecorrect#correct-previous-misspelling
 nnoremap <C-s> [s1z=<c-o>
 inoremap <C-s> <c-g>u<Esc>[s1z=`]A<c-g>u
@@ -677,9 +711,9 @@ fun! Eighty()
   colo neon
 endfu
 
-if has("mac") || has("gui_macvim") || has("gui_mac")
-  source ~/conf/platforms/mac-10.8.2/etc/.vimrc
-endif
+"if has("mac") || has("gui_macvim") || has("gui_mac")
+"  source ~/conf/platforms/$PLATFORM/etc/.vimrc
+"endif
 
 if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome") || has("unix")
   source ~/conf/platforms/ubuntu-10.04/etc/.vimrc
@@ -798,8 +832,7 @@ nnoremap <D-5> 5gt
 nnoremap <D-6> 6gt
 nnoremap <D-7> 7gt
 nnoremap <D-8> 8gt
-nnoremap <D-9> 9gt
-nnoremap <D-0> :tablast<CR>
+nnoremap <D-9> :tablast<CR>
 nnoremap <D-LEFT> :tabprevious<CR>
 nnoremap <D-RIGHT> :tabnext<CR>
 " also has 'for linux and windows users (using the control key)'

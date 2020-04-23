@@ -12,12 +12,20 @@ def described_factory_from_filename(filename):
 	return ':' + re.sub('_factory.rb', '', filename)
 endglobal
 
+snippet fbc
+FactoryBot.create
+endsnippet
+
 snippet fgc
-FactoryGirl.create
+FactoryBot.create
+endsnippet
+
+snippet fbb
+FactoryBot.build
 endsnippet
 
 snippet fgb
-FactoryGirl.build
+FactoryBot.build
 endsnippet
 
 snippet saop

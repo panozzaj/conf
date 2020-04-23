@@ -1,6 +1,6 @@
 # load ability to do completions
 autoload -Uz compinit && compinit
-zmodload zsh/complist
+zmodload -i zsh/complist
 
 zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
 #zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=** r:|=**' 'l:|=* r:|=*'
@@ -21,7 +21,11 @@ if [[ ! "$fpath" =~ "$conf/common/etc/.zsh" ]]; then
   fpath=($conf/common/etc/.zsh $fpath)
 fi
 
-zstyle ':completion:*:*:git:*' script $conf/common/bin/git-completion.bash
+# See https://github.com/eddiezane/lunchy/issues/57
+autoload bashcompinit
+bashcompinit
+#source $conf/common/bin/git-completion.bash
+source /usr/local/etc/bash_completion.d/git-completion.bash
 
 # from `brew info zsh` install instructions
 [[ -e $(alias run-help) ]] && unalias run-help
@@ -45,26 +49,6 @@ PROMPT="%F{red}%S[%T] %c%f%s ◊ "
 
 LS_COLORS='di=01;33'
 
-setopt prompt_subst
-autoload -Uz vcs_info
-zstyle ':vcs_info:*' stagedstr 'M'
-zstyle ':vcs_info:*' unstagedstr 'M'
-zstyle ':vcs_info:*' check-for-changes true
-zstyle ':vcs_info:*' actionformats '%F{5}[%F{2}%b%F{3}|%F{1}%a%F{5}]%f '
-zstyle ':vcs_info:*' formats '%F{5}[%F{2}%b%F{5}] %F{2}%c%F{3}%u%f'
-zstyle ':vcs_info:git*+set-message:*' hooks git-untracked
-zstyle ':vcs_info:*' enable git
-+vi-git-untracked() {
-  if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]] && \
-    git status --porcelain | grep '??' &> /dev/null ; then
-    hook_com[unstaged]+='%F{1}??%f'
-  fi
-}
-precmd () { vcs_info }
-
-# single quotes to evaluate each time the prompt is refreshed
-RPROMPT='${vcs_info_msg_0_}'
-
 setopt HIST_IGNORE_SPACE # don't add to ZSH history file any lines that start with a space
 setopt interactivecomments # ignore everything after pound signs in interactive prompt (comments)
 
@@ -84,7 +68,7 @@ bindkey "\e[3~" delete-char
 # NOTE: `r` by default is a command to redo the last command.  If I change the
 # rspec functionality here, uncomment the other alias. Otherwise I may delete
 # files unintentionally, etc.
-#alias r='echo "Neutered r command"'
+#alias r='echo "Nerfed r command"'
 alias r='best_rspec'
 
 alias ll='ls -la'
@@ -153,6 +137,7 @@ export GREP_COLOR='1;29'
 # Ruby
 alias be="bundle exec"
 alias beg="bundle exec guard"
+alias begc="bundle exec guard -c"
 alias bi="bundle install -j8"
 alias bu="bundle update"
 
@@ -234,9 +219,12 @@ function rs() { # so this works for Rails 2 through 4
   fi
 }
 
-function rc() { # so this works for Rails 2 through 4
+# so this works for Rails 2 through 4
+function rc() {
   if [[ -d script && -f script/console ]]; then
     ./script/console $@
+  elif [[ -d bin && -f bin/rails ]]; then
+    ./bin/rails console $@
   else
     rails c $@
   fi
@@ -378,7 +366,9 @@ alias hrdm="heroku run rake db:migrate"
 alias hrc="heroku run rails console"
 alias hero="heroku"
 alias her="heroku"
+alias hlt="heroku logs -t"
 alias fs="foreman start"
+alias hcg="heroku config | grep -i"
 
 # zsh shorcuts
 alias reload="source ~/.zshrc"
@@ -400,6 +390,7 @@ alias gaa="git add --all"
 alias gai="git add --interactive"
 alias gaia="git add --intent-to-add"
 alias gagem="git add Gemfile Gemfile.lock"
+alias gagems="git add Gemfile Gemfile.lock"
 alias gajs="git add package.json yarn.lock"
 alias gam="git amend"
 alias gamn="git amend -n"
@@ -424,12 +415,14 @@ alias gcdf="git clean -df"
 alias gco="git checkout"
 alias gco-="git checkout -"
 alias gcob="git checkout -b"
+alias gcobi="git checkout \`git branch --sort=-committerdate | fzf\`"
 alias gcojs="git checkout package.json yarn.lock" # quickly revert JS package changes
 alias gcop="git checkout --patch"
 alias gcom="git checkout master"
 alias gcomm="git commit --message"
 alias gcn="git commit -n"
 alias gca="git commit -m 'Alphabetize'"
+alias gcf="git commit -m 'Formatting'"
 alias gcw="git commit -m 'Whitespace'"
 alias gcm="git commit --message"
 alias gcp="git cherry-pick"
@@ -455,6 +448,7 @@ alias gfwtf="git fetch && git wtf -A"
 alias gl1="gl -1"
 alias gl="git log --oneline --graph --decorate"
 alias glh="gl -10"
+alias glh1="glh -1"
 alias glp="git log --patch --decorate"
 alias glpw="glp --ignore-all-space"
 alias gls="git log --stat --decorate"
@@ -462,7 +456,10 @@ alias gnoff="git merge --no-ff"
 alias gmom="echo 'git merge origin/master --ff-only'; git merge origin/master --ff-only"
 alias gmt="git mergetool"
 alias gp="git push"
-alias gphm="git push heroku master"
+alias gpphm="git push && git push heroku master"
+alias gpfhm="time git push --force heroku master"
+alias gphm="time git push heroku master && osascript -e 'display notification \"Heroku deploy finished\"' || osascript -e 'display notification \"Heroku deploy FAILED\"'"
+alias gphmf="time git push --force heroku master"
 alias gpop="git pop"
 alias gpr="git pull --rebase"
 alias gpup="git pup"
@@ -550,9 +547,13 @@ alias vaup="vagrant up"
 alias vap="vagrant provision"
 alias varedo="vagrant destroy -f; vagrant up"
 
+alias wds="./bin/webpack-dev-server"
+
 alias py="python"
 
 alias pre="pretty"
+
+alias ss="spring stop"
 
 #alias ant='color-ant'
 alias mvn='color-mvn'
@@ -564,8 +565,11 @@ alias wcl='wc -l'
 alias -g pxargs="xargs -n 1"
 
 # silver searcher - use less with color support for j/k support
-alias ag="ag -i --pager 'less -R' --color-match='1;31'"
+# hidden shows files with leading period, except for things in ~/.agignore
+# (see https://github.com/ggreer/the_silver_searcher/issues/24)
+alias ag="ag -i --pager 'less -R' --color-match='1;31' --hidden"
 alias agc='ag -C5'
+alias agc10='ag -C10'
 alias agl='ag -l'
 alias lag='ag -l'
 
@@ -586,6 +590,28 @@ fi
 if [[ ! "$PATH" =~ "/usr/local/sbin" ]]; then
   PATH="/usr/local/sbin:$PATH"
 fi
+
+# set this after /usr/local/bin setting to get latest git
+setopt prompt_subst
+autoload -Uz vcs_info
+zstyle ':vcs_info:*' stagedstr 'M'
+zstyle ':vcs_info:*' unstagedstr 'M'
+zstyle ':vcs_info:*' check-for-changes true
+zstyle ':vcs_info:*' actionformats '%F{5}[%F{2}%b%F{3}|%F{1}%a%F{5}]%f '
+zstyle ':vcs_info:*' formats '%F{5}[%F{2}%b%F{5}] %F{2}%c%F{3}%u%f'
+# 2018-12-02 this seems to be causing a bunch of slowness all of a sudden...
+zstyle ':vcs_info:git*+set-message:*' hooks git-untracked
+zstyle ':vcs_info:*' enable git
++vi-git-untracked() {
+  if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]] && \
+    git status --porcelain | grep '??' &> /dev/null ; then
+    hook_com[unstaged]+='%F{1}??%f'
+  fi
+}
+precmd () { vcs_info }
+
+# single quotes to evaluate each time the prompt is refreshed
+RPROMPT='${vcs_info_msg_0_}'
 
 # Calculate writing word diff between revisions. Cribbed / modified from:
 # http://stackoverflow.com/questions/2874318/quantifying-the-amount-of-change-in-a-git-diff
