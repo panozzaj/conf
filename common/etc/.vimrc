@@ -432,8 +432,7 @@ nnoremap Y y$
 nnoremap D d$
 nnoremap du :diffupdate<CR>
 
-" Toggle trailing whitespace highlighting with leader + s  (default on)
-set listchars=tab:>-,trail:· ",eol:$
+set listchars=tab:>-,trail:·
 set list
 
 " trim trailing whitespace from file

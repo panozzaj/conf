@@ -172,33 +172,12 @@ alias rdv="best_rake db:version"
 alias rjw="best_rake jobs:work"
 alias rpp="best_rake parallel:prepare"
 
-# Zeus (https://github.com/burke/zeus)
-alias z="zeus"
-alias zc="time zeus cucumber"
-alias zt="time zeus test"
-alias zs="zeus start"
-
-# Zeus + Rake
-alias zr="zeus rake"
-alias zpc="time zeus parallel_cucumber"
-alias zpr="time zeus parallel_rspec"
-alias zrdc="zr db:create"
-alias zrdd="zr db:drop"
-alias zrdm="zr db:migrate"
-alias zrdmall="zrdm && zrdtp && zrpp"
-alias zrdmtp="zrdm && zrdtp"
-alias zrdpt="zr db:test:prepare"
-alias zrdr="zr db:rollback"
-alias zrdtp="zr db:test:prepare"
-alias zrds="zr db:seed"
-alias zrdsl="zr db:schema:load"
-alias zrpp="zr parallel:prepare"
-
 # Rails
 alias rials="rails"
 alias rg="rails generate"
 alias rgmo="rails generate model"
 alias rgc="rails generate controller"
+alias rr="rails runner"
 
 function rgm() {
   rails generate migration $@
@@ -362,13 +341,16 @@ function espec() {
 alias psr="powify server stop; powify server start"
 
 # Heroku
-alias hrdm="heroku run rake db:migrate"
 alias hrc="heroku run rails console"
+alias hrdb="heroku run rails dbconsole"
+alias hrdm="heroku run rake db:migrate"
 alias hero="heroku"
 alias her="heroku"
+alias hl="heroku logs"
 alias hlt="heroku logs -t"
-alias fs="foreman start"
 alias hcg="heroku config | grep -i"
+
+alias fs="foreman start"
 
 # zsh shorcuts
 alias reload="source ~/.zshrc"
@@ -416,6 +398,8 @@ alias gco="git checkout"
 alias gco-="git checkout -"
 alias gcob="git checkout -b"
 alias gcobi="git checkout \`git branch --sort=-committerdate | fzf\`"
+alias gcogem="git checkout Gemfile Gemfile.lock"
+alias gcogems="git checkout Gemfile Gemfile.lock"
 alias gcojs="git checkout package.json yarn.lock" # quickly revert JS package changes
 alias gcop="git checkout --patch"
 alias gcom="git checkout master"
@@ -480,6 +464,7 @@ alias grsh="git reset --soft 'HEAD^' && git reset"
 alias gs="git status"
 alias gsh="git show"
 alias gshow="git show"
+alias gsp="git show"
 alias gski="git stash --keep-index"
 alias gss="git show --stat"
 alias gssp="git stash show --patch"
@@ -492,6 +477,7 @@ alias ngc="git commit -n"
 
 alias fixup="git commit -nm 'FIXUP ME'"
 alias squash="git commit -nm 'SQUASH ME'"
+alias squashme="git commit -nm 'SQUASH ME'"
 
 function hpr {
     # by default, makes pull request from feature branch to master
