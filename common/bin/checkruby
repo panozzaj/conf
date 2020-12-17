@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# if no parameter passed, check all ruby files
+# otherwise, check only files changed since revision
+
+if [[ -z $1 ]]; then
+  for file in `fn [.]rb$`; do
+    echo "$file"
+    ruby -c $file 1> /dev/null
+  done
+else
+  for file in `git diff --name-only $1 | egrep [.]rb$`; do
+    echo "$file"
+    ruby -c $file 1> /dev/null
+  done
+fi
