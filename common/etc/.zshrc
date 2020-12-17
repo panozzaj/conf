@@ -178,6 +178,8 @@ alias rg="rails generate"
 alias rgmo="rails generate model"
 alias rgc="rails generate controller"
 alias rr="rails runner"
+alias tfld="tail -f log/development.log"
+alias tflt="tail -f log/test.log"
 
 function rgm() {
   rails generate migration $@
@@ -553,7 +555,8 @@ alias -g pxargs="xargs -n 1"
 # silver searcher - use less with color support for j/k support
 # hidden shows files with leading period, except for things in ~/.agignore
 # (see https://github.com/ggreer/the_silver_searcher/issues/24)
-alias ag="ag -i --pager 'less -R' --color-match='1;31' --hidden"
+alias ag="ag --smart-case --pager 'less -R' --color-match='1;31' --hidden"
+alias cag='ag -C5'
 alias agc='ag -C5'
 alias agc10='ag -C10'
 alias agl='ag -l'
