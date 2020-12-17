@@ -334,9 +334,6 @@
 [submodule "common/.vim/bundle-colorschemes/typewriter"]
 	path = common/.vim/bundle-colorschemes/typewriter
 	url = https://github.com/logico-dev/typewriter.git
-[submodule "common/.vim/bundle-colorschemes/vim-colors-blueprint"]
-	path = common/.vim/bundle-colorschemes/vim-colors-blueprint
-	url = https://github.com/thenewvu/vim-colors-blueprint.git
 [submodule "common/.vim/bundle-colorschemes/vrunchbang"]
 	path = common/.vim/bundle-colorschemes/vrunchbang
 	url = https://github.com/nightsense/vrunchbang.git
