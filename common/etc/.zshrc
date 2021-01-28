@@ -156,6 +156,7 @@ alias rubocopy="rubocop"
 
 # Rake
 alias ®="best_rake "
+alias br="best_rake "
 alias rkae="best_rake"
 alias rdc="best_rake db:create"
 alias rdd="best_rake db:drop"
@@ -251,6 +252,14 @@ function emig() {
   ls -d1 db/migrate/* | tail -1 | xargs $EDITOR
 }
 
+# cat the last Rails database migration
+function cmig() {
+  # https://stackoverflow.com/questions/246215 for ls command
+  ls -d1 db/migrate/* | tail -1 | xargs cat
+}
+
+alias cr="checkruby HEAD"
+
 # gem
 alias sgi="sudo gem install"
 alias sgu="sudo gem update"
@@ -343,9 +352,11 @@ function espec() {
 alias psr="powify server stop; powify server start"
 
 # Heroku
+alias hr="heroku run"
 alias hrc="heroku run rails console"
 alias hrdb="heroku run rails dbconsole"
 alias hrdm="heroku run rake db:migrate"
+alias hrr="heroku run rake"
 alias hero="heroku"
 alias her="heroku"
 alias hl="heroku logs"
@@ -437,12 +448,13 @@ alias glh="gl -10"
 alias glh1="glh -1"
 alias glp="git log --patch --decorate"
 alias glpw="glp --ignore-all-space"
+alias glom="gl origin/master^..HEAD"
 alias gls="git log --stat --decorate"
 alias gnoff="git merge --no-ff"
 alias gmom="echo 'git merge origin/master --ff-only'; git merge origin/master --ff-only"
 alias gmt="git mergetool"
 alias gp="git push"
-alias gpphm="git push && git push heroku master"
+alias gpphm="git push && gphm"
 alias gpfhm="time git push --force heroku master"
 alias gphm="time git push heroku master && osascript -e 'display notification \"Heroku deploy finished\"' || osascript -e 'display notification \"Heroku deploy FAILED\"'"
 alias gphmf="time git push --force heroku master"
@@ -465,7 +477,7 @@ alias grs="git rebase --skip"
 alias grsh="git reset --soft 'HEAD^' && git reset"
 alias gs="git status"
 alias gsh="git show"
-alias gshow="git show"
+alias gshw="git show -w"
 alias gsp="git show"
 alias gski="git stash --keep-index"
 alias gss="git show --stat"
