@@ -79,6 +79,14 @@ this.setState({
 })
 endsnippet
 
+snippet tsss "this.setState multi-line" b
+this.setState(
+  state => ({
+    $1
+  })
+)
+endsnippet
+
 snippet ts "this.state" w
 this.state
 endsnippet
@@ -94,6 +102,10 @@ const {
 endsnippet
 
 snippet tp "this.props" w
+this.props
+endsnippet
+
+snippet tpc "this.props.children" w
 this.props
 endsnippet
 
@@ -117,6 +129,16 @@ className='$1'
 endsnippet
 
 snippet s=
+style={{
+  $1
+}}
+endsnippet
+
+snippet ss=
+style={{ $1 }}
+endsnippet
+
+snippet ss
 style={{ $1 }}
 endsnippet
 
@@ -128,4 +150,8 @@ endsnippet
 
 snippet style=
 style={{ $1 }}
+endsnippet
+
+snippet bg
+backgroundColor: '$1',
 endsnippet
