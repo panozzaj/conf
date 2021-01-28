@@ -7,8 +7,7 @@
 # The point of this script is to be able to take a feature branch and
 # "extract" a number of commits from the branch you are currently on. Let's
 # call the branch you are on "A". It will remove the commits from that
-# branch. Then it creates a new branch (branch B) that has those commits
-# and pushes it up and creates a new pull request.
+# branch. Then it creates a new branch (branch B) that has those commits.
 
 # The commits to extract should be provided in order from least recently added
 # to the branch to most recently added to the branch. They do not need to be
@@ -92,16 +91,4 @@ for revision in "${revisions[@]}"; do
     (git cherry-pick --abort && echo "Had trouble cherry-picking commit $revision" >&2 && exit 1)
 done
 
-if git branch -r | grep "$new_branch_name" > /dev/null; then
-  # branch already exists in origin, force-push it
-  git push -f
-else
-  # push up the branch to origin for the first time
-  git push -u origin `git symbolic-ref --short HEAD`
-fi
-
-echo 'hub pull-request'
-export GIT_EDITOR='mvim --nofork'
-hub pull-request -o
-
-git checkout $feature_branch
+echo "New branch with extracted commits: $feature_branch"
