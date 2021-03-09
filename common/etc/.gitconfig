@@ -41,15 +41,8 @@
 [diff]
         renames = copies
         noprefix = true
-[diff "ansible-vault"]
-        textconv = ansible-vault view
 [difftool "sourcetree"]
         cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-[filter "lfs"]
-        clean = git-lfs clean -- %f
-        smudge = git-lfs smudge -- %f
-        process = git-lfs filter-process
-        required = true
 [github]
         user = panozzaj
 [grep]
@@ -72,6 +65,12 @@
 [user]
         name = Anthony Panozzo
         email = panozzaj@gmail.com
-
+[diff "ansible-vault"]
+	textconv = ansible-vault view
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
 [includeIf "gitdir:~/Documents/dev/woven/"]
-        path = .gitconfig-woven
+  path = .gitconfig-woven
