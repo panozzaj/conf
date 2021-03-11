@@ -6,7 +6,7 @@
 # ignore any patterns in a .gitignore file
 # see http://stackoverflow.com/a/16595367/532524 for example
 def ignored
-  files_with_ignore_patterns = [
+  [
     '.agignore',
     '.cvsignore',
     '.gitignore',
