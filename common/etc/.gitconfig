@@ -36,7 +36,7 @@
         interactive = auto
 [core]
         excludesfile = ~/.cvsignore
-        editor = $EDITOR -f
+        editor = /usr/local/bin/mvim -f
         ignorecase = false
 [diff]
         renames = copies

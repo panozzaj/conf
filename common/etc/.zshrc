@@ -24,8 +24,10 @@ fi
 # See https://github.com/eddiezane/lunchy/issues/57
 autoload bashcompinit
 bashcompinit
-#source $conf/common/bin/git-completion.bash
-source /usr/local/etc/bash_completion.d/git-completion.bash
+
+# gives warning on zsh startup but appears to mostly work
+# 2021-03-09 kind of still gives errors / warnings when trying tab-completion
+source /usr/local/etc/bash_completion.d/git-completion.bash 2> /dev/null
 
 # from `brew info zsh` install instructions
 [[ -e $(alias run-help) ]] && unalias run-help
@@ -45,7 +47,7 @@ bindkey -e
 # End of lines configured by zsh-newuser-install
 
 # usually overridden in host-specific .zshrc
-PROMPT="%F{red}%S[%T] %c%f%s ◊ "
+PROMPT="%F{cyan}%S[%T] %c%s%f ◊ "
 
 LS_COLORS='di=01;33'
 
@@ -179,6 +181,7 @@ alias rg="rails generate"
 alias rgmo="rails generate model"
 alias rgc="rails generate controller"
 alias rr="rails runner"
+alias tf="tail -f"
 alias tfld="tail -f log/development.log"
 alias tflt="tail -f log/test.log"
 
@@ -577,6 +580,9 @@ alias lag='ag -l'
 # might be better platform independent, but YAGNI right now
 alias xe="xargs mvim"
 
+# by default tree doesn't show hidden files, and these can be helpful
+alias tree="tree -a"
+
 # print STDERR in red
 alias -g errred='2> >(while read line; do echo -e "\e[01;31m$line\e[0m" >&2; done)'
 
@@ -711,4 +717,3 @@ function add_url {
 #}
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm"
-

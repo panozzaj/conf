@@ -35,7 +35,9 @@ end
  "conf/common/etc/.gitconfig",
  "conf/common/etc/.gitignore",
  "conf/common/etc/.gvimrc",
+ "conf/common/etc/.hushlogin",
  "conf/common/etc/.irbrc",
+ "conf/common/etc/.rvmrc",
  "conf/common/etc/.vimrc",
  "conf/common/etc/.zshrc.end",
 
