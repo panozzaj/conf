@@ -208,9 +208,6 @@
 [submodule "common/.vim/bundle/gundo.vim"]
 	path = common/.vim/bundle/gundo.vim
 	url = https://github.com/sjl/gundo.vim.git
-[submodule "common/.vim/bundle/tern_for_vim"]
-	path = common/.vim/bundle/tern_for_vim
-	url = https://github.com/marijnh/tern_for_vim.git
 [submodule "common/.vim/bundle/unite.vim"]
 	path = common/.vim/bundle/unite.vim
 	url = https://github.com/Shougo/unite.vim.git

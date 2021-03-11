@@ -1,8 +1,0 @@
-#!/bin/sh
-
-set -e
-
-cd ~/conf/common/.vim/bundle/tern_for_vim
-npm install
-
-echo "tern_for_vim setup complete"
