@@ -169,6 +169,24 @@ function! BasicAbbreviations()
   iabbrev imo in my opinion
   iabbrev Imo in my opinion
 
+  " Woven words
+  iabbrev acndidate candidate
+  iabbrev acndidates candidates
+  iabbrev canidate candidates
+  iabbrev canidates candidates
+  iabbrev caniddate candidate
+  iabbrev caniddates candidates
+  iabbrev cnadidate candidate
+  iabbrev cnadidates candidates
+
+  iabbrev simulaiton simulation
+  iabbrev simulaitons simulations
+
+  iabbrev asessment assessment
+  iabbrev asessments assessments
+  iabbrev assesment assessment
+  iabbrev assesments assessments
+
   " I commonly fat-finger these ruby commands
   iabbrev 3nd end
   iabbrev ned end
@@ -178,16 +196,14 @@ function! BasicAbbreviations()
   iabbrev retunr return
   iabbrev retunr return
   iabbrev retun return
-  iabbrev serviceORder serviceOrder
-  iabbrev serviceORders serviceOrders
-  iabbrev ServiceORders ServiceOrders
-  iabbrev ServiceORder ServiceOrder
   iabbrev done(): done();
   iabbrev }): });
   iabbrev lenght length
   iabbrev hae have
   iabbrev tht that
   iabbrev slef self
+  iabbrev presnet present
+  iabbrev presetn present
 
   " some spelling mistakes not (yet) caught by autocorrect.vim
   " or custom corrections that I wouldn't want to put in there
