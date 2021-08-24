@@ -73,6 +73,8 @@ bindkey "\e[3~" delete-char
 #alias r='echo "Nerfed r command"'
 alias r='best_rspec'
 
+alias t='./bin/test'
+
 alias ll='ls -la'
 
 # Quick change directories
@@ -185,32 +187,31 @@ alias tf="tail -f"
 alias tfld="tail -f log/development.log"
 alias tflt="tail -f log/test.log"
 
-function rgm() {
-  rails generate migration $@
-  echo ""
-  catdm
-}
-
-function catdm() {
-  find db/migrate | sort -r | head -1 | xargs cat
-}
-
-function rs() { # so this works for Rails 2 through 4
+# so this works for Rails 2 through 5+
+function rs() {
   # `-b 0.0.0.0` helps with subdomains in pow
-  if [[ -d script && -f script/server ]]; then
+  if [[ -d bin && -f bin/rails ]]; then
+    echo ./bin/rails server -b 0.0.0.0 $@
+    ./bin/rails server -b 0.0.0.0 $@
+  elif [[ -d script && -f script/server ]]; then
+    echo ./script/server -b 0.0.0.0 $@
     ./script/server -b 0.0.0.0 $@
   else
+    echo ./script/server -b 0.0.0.0 $@
     rails s -b 0.0.0.0 $@
   fi
 }
 
-# so this works for Rails 2 through 4
+# so this works for Rails 2 through 5+
 function rc() {
-  if [[ -d script && -f script/console ]]; then
-    ./script/console $@
-  elif [[ -d bin && -f bin/rails ]]; then
+  if [[ -d bin && -f bin/rails ]]; then
+    echo ./bin/rails console $@
     ./bin/rails console $@
+  elif [[ -d script && -f script/console ]]; then
+    echo ./script/console $@
+    ./script/console $@
   else
+    echo rails c $@
     rails c $@
   fi
 }
@@ -249,6 +250,12 @@ function reset_database() {
   reload_database
 }
 
+function rgm() {
+  rails generate migration $@
+  echo ""
+  catdm
+}
+
 # edit the last Rails database migration
 function emig() {
   # https://stackoverflow.com/questions/246215 for ls command
@@ -259,6 +266,10 @@ function emig() {
 function cmig() {
   # https://stackoverflow.com/questions/246215 for ls command
   ls -d1 db/migrate/* | tail -1 | xargs cat
+}
+
+function catdm() {
+  find db/migrate | sort -r | head -1 | xargs cat
 }
 
 alias cr="checkruby HEAD"
@@ -357,7 +368,8 @@ alias psr="powify server stop; powify server start"
 # Heroku
 alias hr="heroku run"
 alias hrc="heroku run rails console"
-alias hrdb="heroku run rails dbconsole"
+alias hrdb="heroku pg:psql"
+alias hrsql="heroku pg:psql"
 alias hrdm="heroku run rake db:migrate"
 alias hrr="heroku run rake"
 alias hero="heroku"
@@ -493,30 +505,12 @@ alias gwtff="git fetch && git wtf -A"
 alias ngc="git commit -n"
 
 alias fixup="git commit -nm 'FIXUP ME'"
+alias gsquash="git commit -nm 'SQUASH ME'"
 alias squash="git commit -nm 'SQUASH ME'"
 alias squashme="git commit -nm 'SQUASH ME'"
 
 function hpr {
-    # by default, makes pull request from feature branch to master
-    # example: hpr -> PR feature-branch onto master
-    if [[ $@ == "" ]]; then
-      echo "hub pull-request"
-      export GIT_EDITOR='mvim --nofork'
-      url=$(hub pull-request)
-      # TODO: hub pull-request actually takes -o argument to open in browser
-      if [[ "$url" != "" ]]; then
-        open "$url"
-        echo "Pull request created at $url"
-      fi
-    else
-      # TODO: update to match above function more closely to open PR, etc.
-      # otherwise, makes pull request from feature branch to branch
-      # example: hpr foo -> PR feature-branch onto foo
-      # repo is hardcoded, would be nice to generalize
-      repo=joinhaven
-      echo "hub pull-request -b $repo:$1 -h $repo:`git symbolic-ref --short HEAD`"
-      `GIT_EDITOR='mvim --nofork' hub pull-request -b $repo:$1 -h $repo:\`git symbolic-ref --short HEAD\``
-    fi
+  echo 'DEPRECATED: use "gh pr create" instead'
 }
 
 aliases() {
@@ -557,6 +551,7 @@ alias py="python"
 alias pre="pretty"
 
 alias ss="spring stop"
+alias ssr="spring stop; r"
 
 #alias ant='color-ant'
 alias mvn='color-mvn'
@@ -566,6 +561,8 @@ alias week='date "+%V"'
 alias wcl='wc -l'
 
 alias -g pxargs="xargs -n 1"
+
+alias tgp="./bin/test && git push"
 
 # silver searcher - use less with color support for j/k support
 # hidden shows files with leading period, except for things in ~/.agignore

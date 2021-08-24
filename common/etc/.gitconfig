@@ -18,7 +18,6 @@
         modified-but-not-deleted = ! git status --porcelain | egrep -v ' D' | cut -d ' ' -f 3
         pop = stash pop
         praise = blame
-        pup = !git push -u ${1-origin} `git symbolic-ref --short HEAD`
         rb = rebase @{u}
         rbr = rename-branch-remote
         rm-sub = remove-submodule
@@ -36,7 +35,7 @@
         interactive = auto
 [core]
         excludesfile = ~/.cvsignore
-        editor = /usr/local/bin/mvim -f
+        editor = "/usr/local/bin/mvim -f"
         ignorecase = false
 [diff]
         renames = copies
