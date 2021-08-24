@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# Push up to origin remote (default) or whatever we pass in as the remote.
+
+git push --set-upstream ${1-origin} `git symbolic-ref --short HEAD`
