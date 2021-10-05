@@ -57,6 +57,9 @@ else
 "  set pythonhome=/usr/local/Frameworks/Python.framework/Versions/2.7
 endif
 
+" https://github.com/vim-python/python-syntax
+let g:python_highlight_all = 1
+
 set scrolloff=2 " leave a gap between bottom of window and cursor, if possible
 
 set synmaxcol=200 " vim is often slow with long lines that are syntax highlighted, so limit to 200 characters in length

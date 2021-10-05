@@ -346,3 +346,6 @@
 [submodule "common/.vim/bundle/emmet-vim"]
 	path = common/.vim/bundle/emmet-vim
 	url = https://github.com/mattn/emmet-vim.git
+[submodule "common/.vim/bundle/python-syntax"]
+	path = common/.vim/bundle/python-syntax
+	url = git@github.com:vim-python/python-syntax.git
