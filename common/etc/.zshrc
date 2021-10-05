@@ -510,7 +510,7 @@ alias squash="git commit -nm 'SQUASH ME'"
 alias squashme="git commit -nm 'SQUASH ME'"
 
 function hpr {
-  echo 'DEPRECATED: use "gh pr create" instead'
+  gh pr create
 }
 
 aliases() {
