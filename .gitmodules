@@ -349,3 +349,6 @@
 [submodule "common/.vim/bundle/python-syntax"]
 	path = common/.vim/bundle/python-syntax
 	url = git@github.com:vim-python/python-syntax.git
+[submodule "common/open_source/fzf-tab"]
+	path = common/open_source/fzf-tab
+	url = https://github.com/Aloxaf/fzf-tab
