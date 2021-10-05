@@ -27,7 +27,7 @@ bashcompinit
 
 # gives warning on zsh startup but appears to mostly work
 # 2021-03-09 kind of still gives errors / warnings when trying tab-completion
-source /usr/local/etc/bash_completion.d/git-completion.bash 2> /dev/null
+#source /usr/local/etc/bash_completion.d/git-completion.bash 2> /dev/null
 
 # from `brew info zsh` install instructions
 [[ -e $(alias run-help) ]] && unalias run-help
@@ -714,3 +714,10 @@ function add_url {
 #}
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm"
+
+#if type brew &>/dev/null; then
+#  FPATH=$(brew --prefix)/share/zsh-completions:$FPATH
+#
+#  autoload -Uz compinit
+#  compinit
+#fi
