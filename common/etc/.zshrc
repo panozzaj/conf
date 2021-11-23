@@ -716,8 +716,6 @@ function add_url {
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm"
 
-source ~/conf/common/open_source/fzf-tab/fzf-tab.plugin.zsh
-
 #if type brew &>/dev/null; then
 #  FPATH=$(brew --prefix)/share/zsh-completions:$FPATH
 #
