@@ -73,3 +73,5 @@
 	required = true
 [includeIf "gitdir:~/Documents/dev/woven/"]
   path = .gitconfig-woven
+[includeIf "gitdir:~/Documents/dev/woven/code/audits-node-react/"]
+  path = .gitconfig-woven-your-coworker

@@ -12,7 +12,10 @@ if [ ! -f tmp/routes ] || [ tmp/routes -ot config/routes.rb ]; then
 
   echo "$generating routes"
 
-  if [ -f bin/rake ]; then
+  if [ -f bin/rails ]; then
+    command="./bin/rails"
+    echo 'Using Spring to speed up generation'
+  elif [ -f bin/rake ]; then
     command="./bin/rake"
     echo 'Using Spring to speed up generation'
   elif [ -S .zeus.sock ]; then

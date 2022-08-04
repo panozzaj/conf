@@ -483,6 +483,7 @@ alias gres="git reset"
 alias greset="git reset"
 alias gri="git rebase --interactive"
 alias griom="git rebase --interactive origin/master"
+alias grscp="git rebase --show-current-patch"
 alias grlh="git reflog | head"
 alias grhom="git reset --hard origin/master"
 alias grom="git rebase origin/master"
@@ -492,6 +493,7 @@ alias grr="git reset --hard \`git reflog | fzf | cut -d ' ' -f 1\`"
 alias grs="git rebase --skip"
 alias grsh="git reset --soft 'HEAD^' && git reset"
 alias gs="git status"
+alias gsgd="git status; git diff"
 alias gsh="git show"
 alias gshw="git show -w"
 alias gsp="git show"
@@ -532,6 +534,7 @@ alias yi='yarn install'
 alias ya='yarn add'
 alias yr='yarn run'
 alias yrm='yarn remove'
+alias yt='yarn test'
 
 # use random uuid for uuid generator
 alias uuid='uuid -v4'

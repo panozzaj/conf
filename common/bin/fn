@@ -37,7 +37,9 @@ else
   search_term, directory = ARGV
 end
 
-command = "find #{directory} #{ignored} | grep -i #{search_term}"
+command = ENV['NO_IGNORE'] ?
+  "find #{directory} | grep -i #{search_term}" :
+  "find #{directory} #{ignored} | grep -i #{search_term}"
 result = `#{command}`
 
 # the unless here prevents a blank line when there are no matches
