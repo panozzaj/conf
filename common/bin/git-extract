@@ -1,94 +1,164 @@
-#!/bin/sh
+#!/usr/bin/env ruby
 
-# WARNING: this script is highly experimental. It definitely needs some
-# testing, documentation, and error-handling to be ready for use since
-# if it fails at any point, you probably get into a bad state.
+require 'optparse'
+require 'time'
 
-# The point of this script is to be able to take a feature branch and
-# "extract" a number of commits from the branch you are currently on. Let's
-# call the branch you are on "A". It will remove the commits from that
-# branch. Then it creates a new branch (branch B) that has those commits.
+# WARNING: this script is experimental. It's possible to get in a bad state if
+# something is unexpected.
+#
+# This script takes the current branch and "extracts" some commits from the
+# branch you are currently on. Let's call the branch you are on "A". It will
+# remove the commits from that branch. Then it creates a new branch (branch B)
+# that has those commits.
+#
+# This can be useful for extracting a few commits for a separate pull request
+# when you those commits could stand apart from the current branch. For
+# example, if you fix a small bug and want to just make a quick PR for it. Or
+# there are a few refactoring-related commits that are incidental to the
+# changes you really want to make.
+#
+# The commits to extract should be provided in order from newest to oldest.
+# They do not need to be sequential.
 
-# The commits to extract should be provided in order from least recently added
-# to the branch to most recently added to the branch. They do not need to be
-# sequential.
+feature_branch=`git rev-parse --abbrev-ref HEAD`
 
-# Would be nice to parse ranges (ABC123...BCD234)
-
-feature_branch=$(git rev-parse --abbrev-ref HEAD)
-
-while getopts ":b:" opt; do
-  case $opt in
-    b)
-      new_branch_name=$OPTARG
-      ;;
-    \?)
-      echo "Invalid option: -$OPTARG" >&2
-      exit 1
-      ;;
-    :)
-      echo "Option -$OPTARG requires an argument." >&2
-      exit 1
-      ;;
-  esac
-done
-
-function usage() {
-  echo "Usage: $0 [-b branch-name] <first commit in history> [<other commits>...]"
+options = {
+  new_branch_name: nil,
 }
 
-# shift over the options we parsed to get revision(s) at end
-shift $(expr $OPTIND - 1)
-revisions=("$@")
+# Show help if no arguments provided
+# https://stackoverflow.com/a/20604834/532524
+ARGV << '-h' if ARGV.empty?
 
-# If we have just one revision in the extraction and we haven't specified a
-# branch name via the command-line, get the text of the commit and form it into
-# a valid/well-formed git branch name. Saves typing / thinking.
-if [[ ${#revisions[@]} -eq 1 && ! $new_branch_name ]]; then
-  new_branch_name=$(
+op = OptionParser.new
+
+op.banner = <<~EOS
+  Usage:
+    git-extract [-b branch_name] <last_commit> [<other_commits>...]
+    git-extract [-b branch_name] <first_commit>^...<last_commit> [<other_commits>...]
+EOS
+
+op.on(
+  '--new-branch-name branch_name',
+  '-b',
+  'Branch name for extracted commits (required if > 1 commit)'
+) do |value|
+  options[:new_branch_name] = value
+end
+
+op.on('-v', '--verbose') do
+  options[:verbose] = true
+end
+
+op.parse!(ARGV)
+
+puts "Performing task with options: #{options.inspect}" if options[:verbose]
+
+revisions = ARGV
+
+def print_error(msg)
+  puts "\033[0;31m#{msg}\033[0m"
+end
+
+def exit_with_error(msg)
+  print_error(msg)
+  exit 1
+end
+
+# see https://stackoverflow.com/questions/3878624
+unless `git status -s`.empty?
+  exit_with_error "There are uncommitted changes."
+end
+
+unless revisions.any?
+  exit_with_error "No revisions found"
+end
+
+revisions = revisions.map do |revision|
+  if revision == 'HEAD'
+    `git rev-parse HEAD`.chomp # HEAD will change as we are changing branches, etc., so make it absolute
+  elsif revision =~ /\.\./
+    `git log --oneline #{revision} | cut -d ' ' -f 1`.split("\n")
+  else
+    revision
+  end
+end.flatten
+
+new_branch_name = options[:new_branch_name]
+
+if revisions.one? && !new_branch_name
+  new_branch_name = `
     git log \
       --pretty=oneline \
       --abbrev-commit \
-      ${revisions[0]} | \
+      #{revisions.first} | \
       head -1 | \
       cut -d ' ' -f 2- | \
       tr '[:upper:]' '[:lower:]' | \
       sed 's/[/ _]/-/g' | \
       sed 's/[^a-z0-9-]//g'
-  )
-fi
+  `.chomp
+end
 
-if [[ ! $new_branch_name ]]; then
-  echo "Please specify a new branch name with -b <new branch name>" >&2
-  usage
-  exit 1
-fi
+unless new_branch_name
+  exit_with_error 'Please specify a new branch name when using multiple commits'
+end
 
-# Might be nice to check that the revisions we have here are all actually
-# present in the git repo. Reverse the order on the command-line since we
-# want to get the most recent first.
+unless `git branch --list #{new_branch_name}`.empty?
+  exit_with_error "Destination branch already exists: #{new_branch_name}"
+end
 
-# TODO: rebase gives the following message when environment is dirty:
-#
-#   Cannot rebase: You have unstaged changes.
-#   Please commit or stash them.
-#
-# We should probably stash or otherwise store these changes first, otherwise
-# they are basically permanently lost!
+puts "Extract to branch: #{new_branch_name}"
 
-for ((idx=${#revisions[@]}-1; idx >= 0; idx--)); do
-  revision=${revisions[idx]}
-  git rebase --onto $revision^ $revision $feature_branch || \
-    (git rebase --abort && echo "Had trouble removing commit $revision" >&2 && exit 1)
-done
+revisions.each do |revision|
+  result=`git show --no-patch --oneline #{revision}`
+  if $? == 0
+    puts "  #{result}"
+  else
+    exit_with_error "Could not find commit: #{revision}"
+  end
+end
 
-echo "Creating branch $new_branch_name"
-git checkout -b $new_branch_name
-git reset --hard origin/master
+print "\nExtract? [y/N] "
+confirm = $stdin.gets.chomp
+exit unless confirm.downcase == 'y'
 
-for revision in "${revisions[@]}"; do
-  git cherry-pick $revision || \
-    (git cherry-pick --abort && echo "Had trouble cherry-picking commit $revision" >&2 && exit 1)
-done
+# Add a line to the reflog make reversion easy in case something gets messed up
+# https://stackoverflow.com/questions/36770141/can-i-add-a-line-to-the-reflog
+`git update-ref -m "git-extract: before extraction (#{DateTime.now.strftime("%F %T")})" HEAD HEAD`
 
-echo "New branch with extracted commits: $feature_branch"
+puts "\nRemoving commits from #{feature_branch}"
+revisions.each do |revision|
+  output = `git rebase --quiet --onto #{revision}^ #{revision} #{feature_branch} &> /dev/null`
+  if $? == 0
+    puts "  Removed #{revision}"
+  else
+    print_error "Had trouble removing commit #{revision}"
+    `git rebase --abort`
+    exit 1
+  end
+end
+
+puts ''
+`git checkout -b #{new_branch_name}`
+`git reset --hard origin/master`
+
+puts "  Cherry-picking commits..."
+revisions.reverse.each do |revision|
+  output = `git cherry-pick #{revision}`
+  if $? == 0
+    if options[:verbose]
+      puts output
+    else
+      puts "    Cherry-picked #{revision}"
+    end
+  else
+    print_error "Had trouble cherry-picking commit #{revision}"
+    `git cherry-pick --abort`
+    exit 1
+  end
+end
+
+puts ''
+puts "Previous branch:                        #{feature_branch}"
+puts "Current branch with extracted commits:  #{new_branch_name}"
