@@ -105,8 +105,14 @@ let g:ale_sign_warning = '!'
 " Configure prettier support
 let g:ale_fixers = {
 \ 'javascript': ['prettier'],
+\ 'typescript': ['prettier'],
+\ 'typescriptreact': ['prettier'],
 \ 'css': ['prettier'],
 \}
+
+" see https://www.anthonygonzales.dev/blog/setup-eslint-prettier-with-typescript.html
+let g:ale_linters = {}
+let g:ale_linters.typescript = ['eslint', 'tsserver']
 
 " Run 'fix' commands after saving files
 let g:ale_fix_on_save = 1
