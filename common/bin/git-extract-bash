@@ -1,0 +1,129 @@
+#!/bin/sh
+
+# WARNING: this script is highly experimental. It definitely needs some
+# testing, documentation, and error-handling to be ready for use since
+# if it fails at any point, you probably get into a bad state.
+
+# The point of this script is to be able to take a feature branch and
+# "extract" a number of commits from the branch you are currently on. Let's
+# call the branch you are on "A". It will remove the commits from that
+# branch. Then it creates a new branch (branch B) that has those commits.
+
+# The commits to extract should be provided in order from least recently added
+# to the branch to most recently added to the branch. They do not need to be
+# sequential.
+
+feature_branch=$(git rev-parse --abbrev-ref HEAD)
+
+while getopts ":b:" opt; do
+  case $opt in
+    b)
+      new_branch_name=$OPTARG
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
+
+function usage() {
+  echo "Usage:"
+  echo "  $0 [-b branch-name] <first commit in history> [<other commits>...]"
+  echo "  $0 [-b branch-name] first_commit^...last_commit"
+}
+
+# shift over the options we parsed to get revision(s) at end
+shift $(expr $OPTIND - 1)
+revisions=("$@")
+
+if [[ ${#revisions[@]} -eq 1 && ${revisions[0]} == *".."*  ]]; then
+  # reverse since we want the oldest one first
+  revisions=$(git log --oneline ${revisions[0]} | cut -d ' ' -f 1 | tac)
+fi
+
+if [[ ${#revisions[@]} -eq 0 ]]; then
+  echo 'No revisions found'
+  exit 1
+fi
+
+# branch name via the command-line, get the text of the commit and form it into
+# a valid/well-formed git branch name. Saves typing / thinking.
+if [[ ${#revisions[@]} -eq 1 && ! $new_branch_name ]]; then
+  new_branch_name=$(
+    git log \
+      --pretty=oneline \
+      --abbrev-commit \
+      ${revisions[0]} | \
+      head -1 | \
+      cut -d ' ' -f 2- | \
+      tr '[:upper:]' '[:lower:]' | \
+      sed 's/[/ _]/-/g' | \
+      sed 's/[^a-z0-9-]//g'
+  )
+fi
+
+if [[ ! $new_branch_name ]]; then
+  echo "Please specify a new branch name with -b <new branch name>" >&2
+  usage
+  exit 1
+fi
+
+if [[ -n $(git branch --list $new_branch_name) ]]; then
+  echo "\033[0;31mDestination branch already exists: $new_branch_name\033[0m"
+  exit 1
+fi
+
+# see https://stackoverflow.com/questions/3878624/how-do-i-programmatically-determine-if-there-are-uncommitted-changes
+if [[ -n $(git status -s) ]];
+then
+  echo "\033[0;31mThere are uncommitted changes. Aborting!\n\033[0m"
+  git status
+  exit 1
+fi
+
+echo "Extracting commits to new branch called: $new_branch_name"
+
+for revision in "${revisions[@]}"; do
+  result=$(git show --no-patch --oneline $revision 2> /dev/null)
+  if [[ $? -eq 0 ]]; then
+    echo " $result"
+  else
+    echo "\033[0;31mCould not find commit: $revision\033[0m"
+    exit 1
+  fi
+done
+
+echo
+read -p "Confirm? [yN] " answer
+case $answer in
+    [Yy]* ) break;;
+    [Nn]* ) exit;;
+    * ) exit;;
+esac
+
+# Add a line to the reflog make reversion easy in case something gets messed up
+# https://stackoverflow.com/questions/36770141/can-i-add-a-line-to-the-reflog
+git update-ref -m "git-extract: before extraction ($(date +"%Y-%m-%d %T"))" HEAD HEAD
+
+# Reverse the order on the command-line since we want to get the most recent first.
+for ((idx=${#revisions[@]}-1; idx >= 0; idx--)); do
+  revision=${revisions[idx]}
+  git rebase --onto $revision^ $revision $feature_branch || \
+    (git rebase --abort; echo "Had trouble removing commit $revision" >&2; exit 1)
+done
+
+echo "Creating branch $new_branch_name"
+git checkout -b $new_branch_name
+git reset --hard origin/master
+
+for revision in "${revisions[@]}"; do
+  git cherry-pick $revision || \
+    (git cherry-pick --abort; echo "Had trouble cherry-picking commit $revision" >&2; exit 1)
+done
+
+echo "New branch with extracted commits: $feature_branch"
