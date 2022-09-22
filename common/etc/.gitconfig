@@ -48,6 +48,7 @@
         lineNumber = true
 [init]
         templatedir = ~/conf/common/git_templates
+	defaultBranch = main
 [merge]
         stat = true
 [mergetool "mvimdiff"]
@@ -73,5 +74,5 @@
 	required = true
 [includeIf "gitdir:~/Documents/dev/woven/"]
   path = .gitconfig-woven
-[includeIf "gitdir:~/Documents/dev/woven/code/audits-node-react/"]
+[includeIf "gitdir:~/Documents/dev/woven/code/woven-reviews/"]
   path = .gitconfig-woven-your-coworker
