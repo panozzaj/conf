@@ -451,6 +451,7 @@ alias gdomw="git diff origin/master --ignore-all-space"
 alias gds="git diff --stat" # all files that changed since revision
 alias gdsom="git diff --stat origin/master" # all files that changed since origin/master
 alias gdw="git diff --ignore-all-space"
+alias gex="git extract"
 alias geu="git edit-unmerged"
 alias gf="git fetch"
 alias gff="git ff"
@@ -548,7 +549,7 @@ alias vaup="vagrant up"
 alias vap="vagrant provision"
 alias varedo="vagrant destroy -f; vagrant up"
 
-alias wds="./bin/webpack-dev-server"
+alias wds="./bin/webpacker-dev-server"
 
 alias py="python"
 
@@ -741,3 +742,5 @@ load-nvmrc() {
 }
 add-zsh-hook chpwd load-nvmrc
 load-nvmrc
+
+alias weather="curl http://wttr.in/"
