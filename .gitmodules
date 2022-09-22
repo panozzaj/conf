@@ -331,15 +331,6 @@
 [submodule "common/.vim/bundle-colorschemes/typewriter"]
 	path = common/.vim/bundle-colorschemes/typewriter
 	url = https://github.com/logico-dev/typewriter.git
-[submodule "common/.vim/bundle-colorschemes/vrunchbang"]
-	path = common/.vim/bundle-colorschemes/vrunchbang
-	url = https://github.com/nightsense/vrunchbang.git
-[submodule "common/.vim/bundle-colorschemes/nemo"]
-	path = common/.vim/bundle-colorschemes/nemo
-	url = https://github.com/nightsense/nemo.git
-[submodule "common/.vim/bundle-colorschemes/strawberry"]
-	path = common/.vim/bundle-colorschemes/strawberry
-	url = https://github.com/nightsense/strawberry.git
 [submodule "common/.vim/bundle-colorschemes/palenight.vim"]
 	path = common/.vim/bundle-colorschemes/palenight.vim
 	url = https://github.com/drewtempelmeyer/palenight.vim.git
