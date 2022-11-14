@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+
+def usage_statement
+  <<~EOS
+    Usage: renumber_migration <file> [<file>*]
+  EOS
+end
+
+files = ARGV
+
+unless files.count > 0
+  puts usage_statement
+  abort 'Please specify migration files to renumber'
+end
+
+files.each do |file|
+  unless File.exist?(file)
+    abort "File does not exist: #{file}"
+  end
+end
+
+new_file_number = ENV['START'] || Time.now.strftime("%Y%m%d000000").to_i
+files.each do |file|
+  length = new_file_number.to_s.length
+  unless length == 14
+    raise "Got invalid new_file_number length: #{length} for #{new_file_number}"
+  end
+
+  new_filename = file.sub(/\d{14}/, new_file_number.to_s)
+  puts "Renumbering #{file} => #{new_filename}"
+  `mv #{file} #{new_filename}`
+  new_file_number += 1
+end
+
+command = "ls db/migrate | tail -#{3 + ARGV.length}"
+puts command
+`#{command}`
+
+puts 'Success!'
