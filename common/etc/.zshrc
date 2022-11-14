@@ -549,7 +549,7 @@ alias vaup="vagrant up"
 alias vap="vagrant provision"
 alias varedo="vagrant destroy -f; vagrant up"
 
-alias wds="./bin/webpacker-dev-server"
+alias wds="[ -f ./bin/webpack-dev-server ] && ./bin/webpack-dev-server || ./bin/webpacker-dev-server"
 
 alias py="python"
 
