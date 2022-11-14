@@ -432,14 +432,6 @@ let g:surround_35  = "#{\r}"   " #
 "      \ "v": "<C-W><CR><C-W>H<C-W>b<C-W>J<C-W>t",
 "      \ "gv": "<C-W><CR><C-W>H<C-W>b<C-W>J" }
 
-" Pasting blockwise and linewise selections is not possible in Insert and
-" Visual mode without the +virtualedit feature.  They are pasted as if they
-" were characterwise instead.
-" Uses the paste.vim autoload script.
-
-exe 'inoremap <script> <C-V>' paste#paste_cmd['i']
-exe 'vnoremap <script> <C-V>' paste#paste_cmd['v']
-
 " Use CTRL-Q to enter block selection mode
 noremap <C-Q>           <C-V>
 
