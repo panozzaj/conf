@@ -493,6 +493,9 @@ let g:user_emmet_settings = {
   \      'extends' : 'jsx',
   \      'quote_char': "'",
   \  },
+  \  'html' : {
+  \    'quote_char': "'",
+  \  },
   \}
 
 " for fzf.vim
