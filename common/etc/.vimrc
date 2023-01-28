@@ -211,8 +211,12 @@ function! BasicAbbreviations()
   iabbrev hae have
   iabbrev tht that
   iabbrev slef self
+  iabbrev prsent present
   iabbrev presnet present
   iabbrev presetn present
+  iabbrev prsent? present?
+  iabbrev presnet? present?
+  iabbrev presetn? present?
 
   " some spelling mistakes not (yet) caught by autocorrect.vim
   " or custom corrections that I wouldn't want to put in there
