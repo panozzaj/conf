@@ -179,6 +179,7 @@ alias rpp="best_rake parallel:prepare"
 
 # Rails
 alias rials="rails"
+alias rdb="rails db"
 alias rg="rails generate"
 alias rgmo="rails generate model"
 alias rgc="rails generate controller"
@@ -472,6 +473,7 @@ alias gmom="echo 'git merge origin/master --ff-only'; git merge origin/master --
 alias gmt="git mergetool"
 alias gp="git push"
 alias gpphm="git push && gphm"
+alias gpf="git push --force"
 alias gpfhm="time git push --force heroku master"
 alias gphm="time git push heroku master && osascript -e 'display notification \"Heroku deploy finished\"' || osascript -e 'display notification \"Heroku deploy FAILED\"'"
 alias gphmf="time git push --force heroku master"
@@ -509,6 +511,7 @@ alias gwtff="git fetch && git wtf -A"
 alias ngc="git commit -n"
 
 alias fixup="git commit -nm 'FIXUP ME'"
+alias gsq="git commit -nm 'SQUASH ME'"
 alias gsquash="git commit -nm 'SQUASH ME'"
 alias squash="git commit -nm 'SQUASH ME'"
 alias squashme="git commit -nm 'SQUASH ME'"
