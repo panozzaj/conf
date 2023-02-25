@@ -343,3 +343,6 @@
 [submodule "common/open_source/git-filter-repo"]
 	path = common/open_source/git-filter-repo
 	url = git@github.com:newren/git-filter-repo.git
+[submodule "common/.vim/bundle-colorschemes/papercolor-theme"]
+	path = common/.vim/bundle-colorschemes/papercolor-theme
+	url = https://github.com/NLKNguyen/papercolor-theme.git
