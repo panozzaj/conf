@@ -774,56 +774,16 @@ comma! -nargs=1 Silent
       \ | execute ':silent !'.<q-args>
       \ | execute ':redraw!'
 
-" Well, I never thought it would come to this, but... emacs-like bindings.
-" Pulled from https://github.com/maxbrunsfeld/vim-emacs-bindings.
-
-"function! KillLine()
-"  let [text_before_cursor, text_after_cursor] = SplitLineTextAtCursor()
-"  if len(text_after_cursor) == 0
-"    normal! dd
-"  else
-"    normal! d$
-"  endif
-"  return ''
-"endfunction
-
-"function! SplitLineTextAtCursor()
-"  let line_text = getline(line('.'))
-"  let text_after_cursor  = line_text[col('.')-1 :]
-"  let text_before_cursor = (col('.') > 1) ? line_text[: col('.')-2] : ''
-"  return [text_before_cursor, text_after_cursor]
-"endfunction
-
-"" some emacs-like bindings. might be obviated by https://github.com/tpope/vim-rsi
+"" readline-like bindings. might be obviated by https://github.com/tpope/vim-rsi
 nnoremap <M-b> b
 nnoremap <M-f> w
-"inoremap <C-b> <Left>
-"inoremap <C-f> <Right>
+nnoremap <C-b> <Left>
+nnoremap <C-f> <Right>
 inoremap <M-b> <C-o>b
 inoremap <M-f> <C-o>e<Right>
-"inoremap <C-d> <Del>
-"inoremap <M-d> <C-o>de
-"inoremap <M-h> <C-w>
-"" Ctrl+W, Alt+W to kill word backward in insert mode (like other apps)
-"inoremap <C-BS> <C-W>
-"inoremap <A-BS> <C-W>
-"" Ctrl+W, Alt+W to kill word backward in command mode
-"cnoremap <C-BS> <C-W>
-"cnoremap <A-BS> <C-W>
-" Already seems to work
-"inoremap <C-h> <BS>
-
-" These actually have somewhat useful bindings and I want to not be in insert mode
-"inoremap <C-a> <C-o>:call <SID>home()<CR>
-"inoremap <C-e> <End>
-" Would mess with digraphs
-"inoremap <C-k> <C-r>=<SID>kill_line()<CR>
-" When on command-line or search, Ctrl+A goes to beginning of line (like every
-" other Mac and Unix mapping.)
-"cnoremap <C-A> <Home>
-
-
 "nnoremap <C-k> :call KillLine()<CR>  " messes with ultisnips default "previous field" mapping
+
+" emacs muscle memory
 nnoremap <C-x><C-o> <C-W><C-W>
 nnoremap <C-x><C-2> :vsplit
 nnoremap <C-x><C-3> :split
