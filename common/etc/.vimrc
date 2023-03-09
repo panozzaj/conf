@@ -117,6 +117,12 @@ let g:ale_linters.typescript = ['eslint', 'tsserver']
 " Run 'fix' commands after saving files
 let g:ale_fix_on_save = 1
 
+" Avoid printing linter issues in "comments" to the right of the line, which
+" was obtrusive to me. Could also use 'current', but I typically just look at
+" the status text to see longer linter errors.
+" https://github.com/dense-analysis/ale/commit/300ea232de003f5ce45549be85d5da7f84fe23b0
+let g:ale_virtualtext_cursor = 'disabled'
+
 " tags-related commands and configuration
 
 vnoremap <leader>s :sort<CR>
