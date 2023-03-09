@@ -155,3 +155,120 @@ endsnippet
 snippet bg
 backgroundColor: '$1',
 endsnippet
+
+snippet ife "if...else" b
+if ($1) {
+    $2
+} else {
+    $3
+}
+endsnippet
+
+snippet clv "console.log variable" b
+console.log('$1: ', ${1})
+endsnippet
+
+snippet cl "console.log" b
+console.log('${1}')
+endsnippet
+
+snippet cev "console.error variable" b
+console.error('$1: ', ${1:err})
+endsnippet
+
+snippet ce "console.error" b
+console.error('${1}')
+endsnippet
+
+
+############
+# PROMISES #
+############
+
+snippet then "then" i
+then(($1) => {
+  $2
+})
+endsnippet
+
+snippet then( "then" i
+then(($1) => {
+  $2
+})
+endsnippet
+
+snippet }).t "then" i
+}).then(($1) => {
+  $2
+})
+endsnippet
+
+snippet })t "then" i
+}).then(($1) => {
+  $2
+})
+endsnippet
+
+snippet catch "catch" i
+catch(err => {
+  $1
+})
+endsnippet
+
+snippet catch( "catch" i
+catch(err => {
+  $1
+})
+endsnippet
+
+snippet }).c "catch" i
+}).catch(err => {
+  $1
+})
+endsnippet
+
+snippet })c "catch" i
+}).catch(err => {
+  $1
+})
+endsnippet
+
+snippet })f "finally" i
+}).finally(() => {
+  $1
+})
+endsnippet
+
+###########
+# TESTING #
+###########
+
+snippet xit "xit" b
+xit('${1:description}', () => {
+  $2
+})
+endsnippet
+
+snippet xdes "xdescribe" b
+xdescribe('${1:description}', () => {
+  $2
+})
+endsnippet
+
+snippet "des(c?)" "describe (test)" r
+describe('${1:description}', () => {
+  $2
+})
+endsnippet
+
+snippet it
+it('${1:description}', () => {
+  $2
+})
+endsnippet
+
+snippet bef
+beforeEach(() => {
+  $2
+})
+endsnippet

@@ -346,3 +346,6 @@
 [submodule "common/.vim/bundle-colorschemes/papercolor-theme"]
 	path = common/.vim/bundle-colorschemes/papercolor-theme
 	url = https://github.com/NLKNguyen/papercolor-theme.git
+[submodule "common/.vim/bundle/vim-startuptime"]
+	path = common/.vim/bundle/vim-startuptime
+	url = https://github.com/dstein64/vim-startuptime.git
