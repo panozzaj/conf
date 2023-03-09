@@ -4,3 +4,4 @@ common/.vim/tmp
 .netrwhist
 common/.vim/bundle/.floo
 common/tmp
+common/.vim/undodir

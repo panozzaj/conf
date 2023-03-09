@@ -9,11 +9,17 @@ filetype plugin indent on
 set history=1000 " lines of history to remember
 runtime macros/matchit.vim
 
-set esckeys " no delay for ESC, but cannot use ESC as beginning of key sequence (which is fine by me)
+if !has('nvim')
+    set esckeys " no delay for ESC, but cannot use ESC as beginning of key sequence (which is fine by me)
+endif
 
 highlight Pmenu guibg=brown gui=bold
 
 set showcmd
+
+" otherwise neovim doesn't find undos across sessions
+set undodir=~/.vim/undodir
+set undofile
 
 set undolevels=1000 "maximum number of changes that can be undone
 set laststatus=1    " always show statusline, unless one file present
