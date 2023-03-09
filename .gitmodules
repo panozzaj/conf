@@ -226,9 +226,6 @@
 [submodule "common/.vim/bundle/swift.vim"]
 	path = common/.vim/bundle/swift.vim
 	url = https://github.com/keith/swift.vim.git
-[submodule "common/.vim/bundle/vim-quicklink"]
-	path = common/.vim/bundle/vim-quicklink
-	url = https://github.com/christoomey/vim-quicklink.git
 [submodule "common/.vim/bundle/webapi-vim"]
 	path = common/.vim/bundle/webapi-vim
 	url = https://github.com/mattn/webapi-vim.git
