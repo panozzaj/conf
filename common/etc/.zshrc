@@ -615,14 +615,16 @@ zstyle ':vcs_info:*' check-for-changes true
 zstyle ':vcs_info:*' actionformats '%F{5}[%F{2}%b%F{3}|%F{1}%a%F{5}]%f '
 zstyle ':vcs_info:*' formats '%F{5}[%F{2}%b%F{5}] %F{2}%c%F{3}%u%f'
 # 2018-12-02 this seems to be causing a bunch of slowness all of a sudden...
-zstyle ':vcs_info:git*+set-message:*' hooks git-untracked
+#zstyle ':vcs_info:git*+set-message:*' hooks git-untracked
 zstyle ':vcs_info:*' enable git
-+vi-git-untracked() {
-  if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]] && \
-    git status --porcelain | grep '??' &> /dev/null ; then
-    hook_com[unstaged]+='%F{1}??%f'
-  fi
-}
+# 2023-03-09 This function causes slowness (especially in ~/conf),
+# and disabling it doesn't seem to break anything
+#+vi-git-untracked() {
+#  if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]] && \
+#    git status --porcelain | grep '??' &> /dev/null ; then
+#    hook_com[unstaged]+='%F{1}??%f'
+#  fi
+#}
 precmd () { vcs_info }
 
 # single quotes to evaluate each time the prompt is refreshed
