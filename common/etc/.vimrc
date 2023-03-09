@@ -91,10 +91,6 @@ let mapleader = "\<Space>"
 let g:closetag_html_style=1
 "source ~/.vim/closetag.vim
 
-" would need to change when I update LanguageTool version
-let g:languagetool_jar = '/usr/local/Cellar/languagetool/2.8/libexec/languagetool-commandline.jar'
-let g:languagetool_disable_rules = 'WHITESPACE_RULE,EN_QUOTES'
-
 let g:NERDShutUp=1
 
 " Don't continually check for lint errors, just when we save the buffer
