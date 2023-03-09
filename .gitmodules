@@ -208,9 +208,6 @@
 [submodule "common/.vim/bundle/unite.vim"]
 	path = common/.vim/bundle/unite.vim
 	url = https://github.com/Shougo/unite.vim.git
-[submodule "common/.vim/bundle/vimproc.vim"]
-	path = common/.vim/bundle/vimproc.vim
-	url = https://github.com/Shougo/vimproc.vim.git
 [submodule "common/.vim/bundle/vim-plug"]
 	path = common/.vim/bundle/vim-plug
 	url = https://github.com/junegunn/vim-plug.git
