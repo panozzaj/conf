@@ -125,6 +125,7 @@ let g:ale_virtualtext_cursor = 'disabled'
 
 " tags-related commands and configuration
 
+" sort highlighted lines alphabetically (imports / parameters / lists)
 vnoremap <leader>s :sort<CR>
 
 " not sure if this is the best tag solution, but seems to work halfway
