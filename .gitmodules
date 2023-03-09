@@ -262,9 +262,6 @@
 [submodule "common/.vim/bundle/vim-textobj-comment"]
 	path = common/.vim/bundle/vim-textobj-comment
 	url = https://github.com/glts/vim-textobj-comment.git
-[submodule "common/.vim/bundle/vim-textobj-rubyblock"]
-	path = common/.vim/bundle/vim-textobj-rubyblock
-	url = https://github.com/nelstrom/vim-textobj-rubyblock.git
 [submodule "common/.vim/bundle/vim-textobj-variable-segment"]
 	path = common/.vim/bundle/vim-textobj-variable-segment
 	url = https://github.com/Julian/vim-textobj-variable-segment.git
