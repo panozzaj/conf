@@ -73,9 +73,6 @@
 [submodule "common/.vim/bundle/vim-autocorrect"]
 	path = common/.vim/bundle/vim-autocorrect
 	url = https://github.com/panozzaj/vim-autocorrect.git
-[submodule "common/.vim/bundle/vim-eco"]
-	path = common/.vim/bundle/vim-eco
-	url = https://github.com/AndrewRadev/vim-eco.git
 [submodule "common/.vim/bundle/file-line"]
 	path = common/.vim/bundle/file-line
 	url = https://github.com/vim-scripts/file-line.git
