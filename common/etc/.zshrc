@@ -75,7 +75,7 @@ alias r='best_rspec'
 
 alias t='./bin/test'
 
-alias ll='ls -la'
+alias ll='ls -lah'
 
 # Quick change directories
 # typing a directory name or variable that expands to one is sufficient to change directories
@@ -453,6 +453,7 @@ alias gds="git diff --stat" # all files that changed since revision
 alias gdsom="git diff --stat origin/master" # all files that changed since origin/master
 alias gdw="git diff --ignore-all-space"
 alias gex="git extract"
+alias gexh="git extract HEAD"
 alias geu="git edit-unmerged"
 alias gf="git fetch"
 alias gff="git ff"
@@ -528,6 +529,8 @@ aliases() {
 alias ni='npm install'
 alias nis='npm install --save'
 alias nisd='npm install --save-dev'
+alias ng='npm list 2> /dev/null | grep $@'
+alias ngc='npm list 2> /dev/null | grep -C5 $@'
 alias nr='npm run'
 alias nrs='npm start' # npm run start
 alias nrt='npm run test'
