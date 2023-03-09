@@ -64,9 +64,6 @@
 [submodule "common/.vim/bundle/vim-scala"]
 	path = common/.vim/bundle/vim-scala
 	url = https://github.com/derekwyatt/vim-scala.git
-[submodule "common/.vim/bundle/Vim-R-plugin"]
-	path = common/.vim/bundle/Vim-R-plugin
-	url = https://github.com/jcfaria/Vim-R-plugin.git
 [submodule "common/.vim/bundle/LanguageTool"]
 	path = common/.vim/bundle/LanguageTool
 	url = https://github.com/vim-scripts/LanguageTool.git
@@ -346,3 +343,6 @@
 [submodule "common/.vim/bundle/vim-startuptime"]
 	path = common/.vim/bundle/vim-startuptime
 	url = https://github.com/dstein64/vim-startuptime.git
+[submodule "common/.vim/bundle/copilot.vim"]
+	path = common/.vim/bundle/copilot.vim
+	url = https://github.com/github/copilot.vim.git
