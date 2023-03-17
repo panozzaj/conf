@@ -135,6 +135,10 @@ vnoremap <leader>s :sort<CR>
 let g:tagman_ctags_binary = 'smarter_ctags'
 let g:tagman_library_tag_paths = '$GEM_HOME/gems node_modules vendor client/node_modules'
 
+" Enable Copilot for markdown files
+" See https://github.com/orgs/community/discussions/38074
+let g:copilot_filetypes = {'markdown': v:true}
+
 function! Wp()
   setlocal nonumber              " remove line numbering when writing
   setlocal spell spelllang=en_us " enable spell checking
