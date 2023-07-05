@@ -334,7 +334,7 @@ function gspec() {
 
 # roughly: run any specs that we have changed on our feature branch
 function gdomspec() {
-  git diff origin/master --stat=200 | \
+  git diff origin/$(main_branch) --stat=200 | \
     cut -f 2 -d ' ' | \
     grep spec/ | \
     grep -v spec/spec_helper.rb | \
@@ -443,8 +443,15 @@ alias gcobi="git checkout \`git branch --sort=-committerdate | fzf\`"
 alias gcogem="git checkout Gemfile Gemfile.lock"
 alias gcogems="git checkout Gemfile Gemfile.lock"
 alias gcojs="git checkout package.json yarn.lock" # quickly revert JS package changes
+
+# some older projects use master, so use this to simplify the transition
+function main_branch() {
+  # see https://stackoverflow.com/questions/68086082
+  git branch --list main master | sed -r 's/^[* ] //' | head -n 1
+}
+
 alias gcop="git checkout --patch"
-alias gcom="git checkout master"
+alias gcom='git checkout $(main_branch)'
 alias gcomm="git commit --message"
 alias gcn="git commit -n"
 alias gca="git commit -m 'Alphabetize'"
@@ -458,11 +465,11 @@ alias gcv="git cherry -v"
 alias gd="git diff"
 alias gdc="git diff --cached"
 alias gdcw="git diff --cached --ignore-all-space"
-alias gdom="git diff origin/master"
-alias gdoms="git diff origin/master --stat=200" # all files that changed since origin/master
-alias gdomw="git diff origin/master --ignore-all-space"
+alias gdom='git diff origin/$(main_branch)'
+alias gdoms='git diff origin/$(main_branch) --stat=200' # all files that changed on this branch
+alias gdomw='git diff origin/$(main_branch) --ignore-all-space'
 alias gds="git diff --stat" # all files that changed since revision
-alias gdsom="git diff --stat origin/master" # all files that changed since origin/master
+alias gdsom='git diff --stat origin/$(main_branch)' # all files that changed on this branch
 alias gdw="git diff --ignore-all-space"
 alias gex="git extract"
 alias gexh="git extract HEAD"
@@ -470,8 +477,8 @@ alias geu="git edit-unmerged"
 alias gf="git fetch"
 alias gff="git ff"
 alias gfa="git fetch --all"
-alias gfmom="echo 'git fetch' && git fetch && echo 'git merge origin/master --ff-only'; git merge origin/master --ff-only"
-alias gfrom="echo 'git fetch' && git fetch && echo 'git rebase origin/master' && git rebase origin/master"
+alias gfmom='echo "git fetch" && git fetch && echo "git merge origin/$(main_branch) --ff-only"; git merge origin/$(main_branch) --ff-only'
+alias gfrom='echo "git fetch" && git fetch && echo "git rebase origin/$(main_branch)" && git rebase origin/$(main_branch)'
 alias gfwtf="git fetch && git wtf -A"
 alias gl1="gl -1"
 alias gl="git log --oneline --graph --decorate"
@@ -479,17 +486,17 @@ alias glh="gl -10"
 alias glh1="glh -1"
 alias glp="git log --patch --decorate"
 alias glpw="glp --ignore-all-space"
-alias glom="gl origin/master^..HEAD"
+alias glom='gl origin/$(main_branch)^..HEAD'
 alias gls="git log --stat --decorate"
 alias gnoff="git merge --no-ff"
-alias gmom="echo 'git merge origin/master --ff-only'; git merge origin/master --ff-only"
+alias gmom='echo "git merge origin/$(main_branch) --ff-only"; git merge origin/$(main_branch) --ff-only'
 alias gmt="git mergetool"
 alias gp="git push"
 alias gpphm="git push && gphm"
 alias gpf="git push --force"
-alias gpfhm="time git push --force heroku master"
-alias gphm="time git push heroku master && osascript -e 'display notification \"Heroku deploy finished\"' || osascript -e 'display notification \"Heroku deploy FAILED\"'"
-alias gphmf="time git push --force heroku master"
+alias gpfhm='time git push --force heroku $(main_branch)'
+alias gphm='time git push heroku $(main_branch) && osascript -e "display notification \"Heroku deploy finished\"" || osascript -e "display notification \"Heroku deploy FAILED\""'
+alias gphmf='time git push --force heroku $(main_branch)'
 alias gpop="git pop"
 alias gpr="git pull --rebase"
 alias gpup="git pup"
@@ -498,11 +505,11 @@ alias grc="git rebase --continue"
 alias gres="git reset"
 alias greset="git reset"
 alias gri="git rebase --interactive"
-alias griom="git rebase --interactive origin/master"
+alias griom='git rebase --interactive origin/$(main_branch)'
 alias grscp="git rebase --show-current-patch"
 alias grlh="git reflog | head"
-alias grhom="git reset --hard origin/master"
-alias grom="git rebase origin/master"
+alias grhom='git reset --hard origin/$(main_branch)'
+alias grom='git rebase origin/$(main_branch)'
 alias grh="git reset --hard"
 alias grp="git reset --patch"
 alias grr="git reset --hard \`git reflog | fzf | cut -d ' ' -f 1\`"
@@ -645,7 +652,7 @@ RPROMPT='${vcs_info_msg_0_}'
 # Calculate writing word diff between revisions. Cribbed / modified from:
 # http://stackoverflow.com/questions/2874318/quantifying-the-amount-of-change-in-a-git-diff
 function git_words_added {
-  revision=${1:-origin/master}
+  revision=${1:-origin/$(main_branch)}
   git diff --word-diff=porcelain $revision | \
     grep -e "^+[^+]" | \
     wc -w | \
@@ -653,7 +660,7 @@ function git_words_added {
 }
 
 function git_words_removed {
-  revision=${1:-origin/master}
+  revision=${1:-origin/$(main_branch)}
   git diff --word-diff=porcelain $revision | \
     grep -e "^-[^-]" | \
     wc -w | \
@@ -661,7 +668,7 @@ function git_words_removed {
 }
 
 function git_words_diff {
-  revision=${1:-origin/master}
+  revision=${1:-origin/$(main_branch)}
   echo $(($(git_words_added $1) - $(git_words_removed $1)))
 }
 
