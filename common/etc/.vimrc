@@ -138,7 +138,12 @@ let g:tagman_library_tag_paths = '$GEM_HOME/gems node_modules vendor client/node
 
 " Enable Copilot for markdown files
 " See https://github.com/orgs/community/discussions/38074
-let g:copilot_filetypes = {'markdown': v:true}
+let g:copilot_filetypes = {
+\ 'eruby': v:true,
+\ 'markdown': v:true,
+\ 'rspec': v:true,
+\ 'rspec.ruby': v:true,
+\}
 
 function! Wp()
   setlocal nonumber              " remove line numbering when writing
