@@ -363,6 +363,14 @@ function espec() {
     xargs $EDITOR
 }
 
+# it's the same format
+alias cucumber_paste=rspec_paste
+
+# rerun the cucumber failures in the paste buffer
+function recuc() {
+  cucumber_paste | xargs cucumber
+}
+
 # Pow
 alias psr="powify server stop; powify server start"
 
