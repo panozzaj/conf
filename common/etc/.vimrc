@@ -110,6 +110,7 @@ let g:ale_fixers = {
 \ 'typescript': ['prettier'],
 \ 'typescriptreact': ['prettier'],
 \ 'css': ['prettier'],
+\ 'python': ['black'],
 \}
 
 " see https://www.anthonygonzales.dev/blog/setup-eslint-prettier-with-typescript.html
