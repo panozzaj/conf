@@ -81,6 +81,7 @@ alias ll='ls -lah'
 # typing a directory name or variable that expands to one is sufficient to change directories
 setopt AUTOCD
 alias -- -="cd -" # the -- signifies that the variable will start with a -, so `-` will invoke `cd -`
+alias cd-="cd -"
 
 # when you are typing and you have more than two dots in a row, converts the
 # third dot to /.. on the fly
@@ -122,6 +123,9 @@ alias grpe='grep'
 
 # magic power for mkdir (and less typing)
 alias mp="mkdir -p"
+function mpc() {
+  mkdir -p "$1" && cd "$1"
+}
 
 # Idea: chmod changes the mod, but what is the mod?
 # To query in human-readable terms, use this command.
