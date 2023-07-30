@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+# This script will remove all trailing whitespace from filenames in the current directory
+
+all_files = `git ls-tree --full-tree --name-only -r HEAD`.split("\n")
+
+# exclude image files and pdfs
+all_files.reject! { |file| file =~ /\.(ico|png|jpg|jpeg|gif|pdf|svg|sketch)$/ }
+
+# exclude font files
+all_files.reject! { |file| file =~ /\.(eot|ttf|woff\d?)$/ }
+
+# exclude VCR cassette files
+all_files.reject! { |file| file =~ /\/vcr_cassettes\/.*\.yml$/ }
+
+# exclude some other file types
+all_files.reject! { |file| file =~ /\.(csv|xml)$/ }
+
+all_files.each do |file|
+  puts "Analyzing: #{file}"
+  puts `gsed -i -e's/[[:space:]]*$//' "#{file}"`
+end
