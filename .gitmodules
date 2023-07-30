@@ -319,3 +319,6 @@
 [submodule "common/.vim/bundle/copilot.vim"]
 	path = common/.vim/bundle/copilot.vim
 	url = https://github.com/github/copilot.vim.git
+[submodule "common/.vim/bundle/vim-prisma"]
+	path = common/.vim/bundle/vim-prisma
+	url = https://github.com/prisma/vim-prisma.git
