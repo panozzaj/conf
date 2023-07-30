@@ -520,6 +520,7 @@ alias gsp="git show"
 alias gski="git stash --keep-index"
 alias gss="git show --stat"
 alias gssp="git stash show --patch"
+alias gsspw="git stash show --patch -w"
 alias gstash="git stash"
 alias gsup="git sup"
 alias gwip="git add -A . ; git commit -nm 'WIP'"
@@ -557,7 +558,11 @@ alias yi='yarn install'
 alias ya='yarn add'
 alias yr='yarn run'
 alias yrm='yarn remove'
+alias ys='yarn start'
 alias yt='yarn test'
+
+# python
+alias pi='pip install'
 
 # use random uuid for uuid generator
 alias uuid='uuid -v4'
@@ -597,9 +602,11 @@ alias tgp="./bin/test && git push"
 alias ag="ag --smart-case --pager 'less -R' --color-match='1;31' --hidden"
 alias cag='ag -C5'
 alias agc='ag -C5'
+alias agcw='ag -C5 -W 400'
 alias agc10='ag -C10'
 alias agl='ag -l'
 alias lag='ag -l'
+alias wag='ag -W 400' # don't print lines longer than 400 characters (good for minified files, etc.)
 
 # might be better platform independent, but YAGNI right now
 alias xe="xargs mvim"
