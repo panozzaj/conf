@@ -20,6 +20,7 @@ require 'time'
 # The commits to extract should be provided in order from newest to oldest.
 # They do not need to be sequential.
 
+main_branch=`git branch --list main master | sed -r 's/^[* ] //' | head -n 1`
 feature_branch=`git rev-parse --abbrev-ref HEAD`
 
 options = {
@@ -141,7 +142,7 @@ end
 
 puts ''
 `git checkout -b #{new_branch_name}`
-`git reset --hard origin/master`
+`git reset --hard origin/#{main_branch}`
 
 puts "  Cherry-picking commits..."
 revisions.reverse.each do |revision|

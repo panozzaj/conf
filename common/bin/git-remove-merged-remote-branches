@@ -2,14 +2,16 @@
 
 set -e
 
+main_branch=`git branch --list main master | sed -r 's/^[* ] //' | head -n 1`
+
 git fetch > /dev/null
-git checkout master > /dev/null 2>&1
+git checkout $main_branch > /dev/null 2>&1
 git remote prune origin
 
 branches_to_remove=$(
   git branch -r --merged | \
     grep origin | \
-    egrep -v "/(master|production|staging|qa|ci)$" | \
+    egrep -v "/($main_branch|production|staging|qa|ci)$" | \
     sed 's/origin\///'
 )
 
