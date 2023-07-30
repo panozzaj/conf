@@ -183,11 +183,11 @@ alias rpp="best_rake parallel:prepare"
 
 # Rails
 alias rials="rails"
-alias rdb="rails db"
-alias rg="rails generate"
-alias rgmo="rails generate model"
-alias rgc="rails generate controller"
-alias rr="rails runner"
+alias rdb="best_rails db"
+alias rg="best_rails generate"
+alias rgmo="best_rails generate model"
+alias rgc="best_rails generate controller"
+alias rr="best_rails runner"
 alias tf="tail -f"
 alias tfld="tail -f log/development.log"
 alias tflt="tail -f log/test.log"
@@ -195,10 +195,7 @@ alias tflt="tail -f log/test.log"
 # so this works for Rails 2 through 5+
 function rs() {
   # `-b 0.0.0.0` helps with subdomains in pow
-  if [[ -d bin && -f bin/rails ]]; then
-    echo ./bin/rails server -b 0.0.0.0 $@
-    ./bin/rails server -b 0.0.0.0 $@
-  elif [[ -d script && -f script/server ]]; then
+  if [[ -d script && -f script/server ]]; then
     echo ./script/server -b 0.0.0.0 $@
     ./script/server -b 0.0.0.0 $@
   else
@@ -209,9 +206,9 @@ function rs() {
 
 # so this works for Rails 2 through 5+
 function rc() {
-  if [[ -d bin && -f bin/rails ]]; then
-    echo ./bin/rails console $@
-    ./bin/rails console $@
+  if [[ -d bin && -f bin/spring ]]; then
+    echo spring rails console $@
+    spring rails console $@
   elif [[ -d script && -f script/console ]]; then
     echo ./script/console $@
     ./script/console $@
@@ -256,7 +253,7 @@ function reset_database() {
 }
 
 function rgm() {
-  rails generate migration $@
+  best_rails generate migration $@
   echo ""
   catdm
 }
@@ -285,7 +282,7 @@ alias sgu="sudo gem update"
 alias gi="gem install"
 alias gu="gem uninstall"
 
-alias cuc="cucumber"
+alias cuc="best_cucumber"
 alias -g PIPE="|"
 
 # helpful: https://git-scm.com/docs/git-status#_output
@@ -318,7 +315,7 @@ function gcuc() {
   modified_files | \
     grep features/ | \
     grep -v features/support/ | \
-    xargs cucumber
+    xargs best_cucumber
 }
 
 # roughly: run any specs that we have changed since the last commit

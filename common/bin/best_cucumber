@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [ `which spring` ]; then
+  # use spring command if it is around
+  spring cucumber $@
+elif [ -f bin/cucumber ]; then
+  # use binstub if it is around
+  echo ./bin/cucumber $@
+  ./bin/cucumber $@
+else
+  echo 'Running with naked `cucumber`'
+  cucumber $@
+fi

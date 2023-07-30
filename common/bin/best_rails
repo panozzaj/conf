@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [ `which spring` ]; then
+  # use spring command if it is around
+  spring rails $@
+elif [ -f bin/rails ]; then
+  # use binstub if it is around
+  echo ./bin/rails $@
+  ./bin/rails $@
+else
+  echo 'Running with naked `rails`'
+  rails $@
+fi
