@@ -405,6 +405,16 @@ alias zshrch="$EDITOR ~/conf/hosts/$HOST/etc/.zshrc"
 alias zshrcl="$EDITOR ~/conf/hosts/$HOST/etc/.zshrc" # local
 alias zshrci="$EDITOR ~/conf/init/etc/.zshrc"
 
+# you can do this in dry-run mode, but not in real mode, per
+# fatal: the option '--ignore-missing' requires '--dry-run'
+git_add_ignore_missing() {
+  for arg in "$@"; do
+    if [ -f "$arg" ]; then
+      git add "$arg"
+    fi
+  done
+}
+
 alias g="git"
 alias ga="git add --all"
 alias gaa="git add --all"
@@ -412,7 +422,7 @@ alias gai="git add --interactive"
 alias gaia="git add --intent-to-add"
 alias gagem="git add Gemfile Gemfile.lock"
 alias gagems="git add Gemfile Gemfile.lock"
-alias gajs="git add package.json yarn.lock"
+alias gajs="git_add_ignore_missing package.json package-lock.json yarn.lock"
 alias gam="git amend"
 alias gamn="git amend -n"
 alias gamend="git amend"
