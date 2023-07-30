@@ -1,13 +1,21 @@
-#!/bin/bash
-# find any files without a newline at the end
-# AP - mostly incomplete, still needs to:
-#  take path to search under
-#  filter images
-#  maybe ignore files in .gitignore
+#!/usr/bin/env ruby
 
-for file in `find . \( -name '.git' -o -name 'tmp' \) -prune -o -type f -print`; do
-  last_char=`tail -c 1 $file`
-  if [ "$last_char" != "" ]; then
-    echo $file
-  fi
-done
+# find any files without a newline at the end
+
+all_files = `git ls-tree --full-tree --name-only -r HEAD`.split("\n")
+
+# exclude image files and pdfs
+all_files.reject! { |file| file =~ /\.(ico|png|jpg|jpeg|gif|pdf|svg|sketch)$/ }
+
+# exclude font files
+all_files.reject! { |file| file =~ /\.(eot|ttf|woff\d?)$/ }
+
+# exclude other files
+all_files.reject! { |file| file =~ /\.(csv|xml)$/ }
+
+all_files.each do |file|
+  last_char = `tail -c 1 "#{file}"`
+  if last_char != "\n"
+    puts file
+  end
+end
