@@ -136,14 +136,33 @@ vnoremap <leader>s :sort<CR>
 let g:tagman_ctags_binary = 'smarter_ctags'
 let g:tagman_library_tag_paths = '$GEM_HOME/gems node_modules vendor client/node_modules'
 
-" Enable Copilot for markdown files
+" Enable Copilot for certain filetypes
 " See https://github.com/orgs/community/discussions/38074
 let g:copilot_filetypes = {
 \ 'eruby': v:true,
 \ 'markdown': v:true,
 \ 'rspec': v:true,
 \ 'rspec.ruby': v:true,
+\ 'gitcommit': v:true,
 \}
+
+" Disable Copilot for large files (see https://codeinthehole.com/tips/vim-and-github-copilot/)
+autocmd BufReadPre *
+\ let f=getfsize(expand("<afile>"))
+\ | if f > 100000 || f == -2
+\ | let b:copilot_enabled = v:false
+\ | endif
+
+" Disable Copilot for certain filename patterns
+autocmd BufReadPre *
+\ if expand("%:t") =~# '\.min\.' ||
+\    expand("%:t") =~# '\.minified\.' ||
+\    expand("%:t") =~# '\.min\.js$' ||
+\    expand("%:t") =~# '\.minified\.js$' ||
+\    expand("%:t") =~# '^\.env$' ||
+\    expand("%:t") =~# '.pem$'
+\ | let b:copilot_enabled = v:false
+\ | endif
 
 function! Wp()
   setlocal nonumber              " remove line numbering when writing
