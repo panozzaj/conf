@@ -415,6 +415,16 @@ git_add_ignore_missing() {
   done
 }
 
+# you can do this in dry-run mode, but not in real mode, per
+# fatal: the option '--ignore-missing' requires '--dry-run'
+git_checkout_ignore_missing() {
+  for arg in "$@"; do
+    if [ -f "$arg" ]; then
+      git checkout "$arg" > /dev/null 2>&1
+    fi
+  done
+}
+
 alias g="git"
 alias ga="git add --all"
 alias gaa="git add --all"
@@ -449,7 +459,7 @@ alias gcob="git checkout -b"
 alias gcobi="git checkout \`git branch --sort=-committerdate | fzf\`"
 alias gcogem="git checkout Gemfile Gemfile.lock"
 alias gcogems="git checkout Gemfile Gemfile.lock"
-alias gcojs="git checkout package.json yarn.lock" # quickly revert JS package changes
+alias gcojs="git_checkout_ignore_missing package.json package-lock.json yarn.lock" # quickly revert JS package changes
 
 # some older projects use master, so use this to simplify the transition
 function main_branch() {
@@ -559,6 +569,7 @@ alias nisd='npm install --save-dev'
 alias ng='npm list 2> /dev/null | grep $@'
 alias ngc='npm list 2> /dev/null | grep -C5 $@'
 alias nr='npm run'
+alias nrd='npm run dev'
 alias nrs='npm start' # npm run start
 alias nrt='npm run test'
 alias ns='npm start'
