@@ -3,14 +3,29 @@
 # if no parameter passed, check all ruby files
 # otherwise, check only files changed since revision
 
+failures=()
+
 if [[ -z $1 ]]; then
-  for file in `fn [.]rb$`; do
-    echo "$file"
-    ruby -c $file 1> /dev/null
-  done
+  files=$(fn "[.]rb$")
 else
-  for file in `git diff --name-only $1 | egrep [.]rb$`; do
-    echo "$file"
-    ruby -c $file 1> /dev/null
+  files=$(git diff --name-only $1 | egrep [.]rb$)
+fi
+
+# iterate over files, which are separated by newlines
+echo "Checking Ruby syntax..."
+
+for file in $files; do
+  echo "$file"
+  ruby -c $file 1> /dev/null
+  if [[ $? -ne 0 ]]; then
+    failures+=($file)
+  fi
+done
+
+if [[ ${#failures[@]} -ne 0 ]]; then
+  echo "\nRuby syntax errors detected in the following files:"
+  for file in ${failures[@]}; do
+    echo "  $file"
   done
+  exit 1
 fi
