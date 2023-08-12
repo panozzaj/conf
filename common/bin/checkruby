@@ -23,7 +23,8 @@ for file in $files; do
 done
 
 if [[ ${#failures[@]} -ne 0 ]]; then
-  echo "\nRuby syntax errors detected in the following files:"
+  echo ""
+  echo "Ruby syntax errors detected in the following files:"
   for file in ${failures[@]}; do
     echo "  $file"
   done
