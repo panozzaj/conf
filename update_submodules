@@ -1,4 +1,20 @@
 #!/bin/sh
 
 git submodule init
-git submodule foreach 'git pull origin main 2>/dev/null || git pull origin master'
+
+# Update each submodule
+git submodule foreach '
+    # Fetch the latest info from the remote
+    git fetch
+
+    # Try to determine the primary branch (main, master, release)
+    # copilot-vim at least uses `release` as the primary branch name
+    for branch in main master release; do
+        if git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+            echo "Updating $name to latest $branch"
+            git checkout $branch
+            git pull origin $branch
+            break
+        fi
+    done
+'
