@@ -639,11 +639,11 @@ alias tgp="./bin/test && git push"
 alias ag="ag --smart-case --pager 'less -R' --color-match='1;31' --hidden"
 alias cag='ag -C5'
 alias agc='ag -C5'
-alias agcw='ag -C5 -W 400'
+alias agcw='ag -C5 -W 300'
 alias agc10='ag -C10'
 alias agl='ag -l'
 alias lag='ag -l'
-alias wag='ag -W 400' # don't print lines longer than 400 characters (good for minified files, etc.)
+alias wag='ag -W 300' # don't print lines longer than 300 characters (good for minified files, etc.)
 
 # might be better platform independent, but YAGNI right now
 alias xe="xargs mvim"
