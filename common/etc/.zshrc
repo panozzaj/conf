@@ -165,6 +165,7 @@ alias rubocopy="rubocop"
 # Rake
 alias ®="best_rake "
 alias br="best_rake "
+alias brt="best_rake -T"
 alias rkae="best_rake"
 alias rdc="best_rake db:create"
 alias rdd="best_rake db:drop"
@@ -282,6 +283,7 @@ alias sgu="sudo gem update"
 alias gi="gem install"
 alias gu="gem uninstall"
 
+alias c="best_cucumber"
 alias cuc="best_cucumber"
 alias -g PIPE="|"
 
@@ -315,6 +317,7 @@ function gcuc() {
   modified_files | \
     grep features/ | \
     grep -v features/support/ | \
+    grep -v features/step_definitions/ | \
     xargs best_cucumber
 }
 

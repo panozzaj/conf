@@ -1,13 +1,16 @@
 #!/bin/sh
 
+# strip any "cucumber" words from arguments
+args=`echo $@ | sed -e 's/cucumber //g'`
+
 if [ `which spring` ]; then
   # use spring command if it is around
-  spring cucumber $@
+  spring cucumber $args
 elif [ -f bin/cucumber ]; then
   # use binstub if it is around
-  echo ./bin/cucumber $@
-  ./bin/cucumber $@
+  echo ./bin/cucumber $args
+  ./bin/cucumber $args
 else
   echo 'Running with naked `cucumber`'
-  cucumber $@
+  cucumber $args
 fi
