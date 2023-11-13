@@ -126,15 +126,8 @@ let g:ale_fix_on_save = 1
 " https://github.com/dense-analysis/ale/commit/300ea232de003f5ce45549be85d5da7f84fe23b0
 let g:ale_virtualtext_cursor = 'disabled'
 
-" tags-related commands and configuration
-
 " sort highlighted lines alphabetically (imports / parameters / lists)
 vnoremap <leader>s :sort<CR>
-
-" not sure if this is the best tag solution, but seems to work halfway
-" decently
-let g:tagman_ctags_binary = 'smarter_ctags'
-let g:tagman_library_tag_paths = '$GEM_HOME/gems node_modules vendor client/node_modules'
 
 " Enable Copilot for certain filetypes
 " See https://github.com/orgs/community/discussions/38074
