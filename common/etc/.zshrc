@@ -386,18 +386,24 @@ function recuc() {
 alias psr="powify server stop; powify server start"
 
 # Heroku
-alias hr="heroku run"
-alias hrc="heroku run rails console"
-alias hrdb="heroku pg:psql"
-alias hrsql="heroku pg:psql"
-alias hrdm="heroku run rake db:migrate"
-alias hrr="echo heroku run rake '<your command>'; heroku run rake"
-alias hrrr="echo heroku run rails runner '<your command>'; heroku run rails runner"
+alias hr="heroku whoami && heroku run"
+alias hrc="heroku whoami && heroku run rails console"
+alias hrdb="heroku whoami && heroku pg:psql"
+alias hrsql="heroku whoami && heroku pg:psql"
+alias hrdm="heroku whoami && heroku run rake db:migrate"
+alias hrr="heroku whoami && echo heroku run rake '<your command>'; heroku run rake"
+alias hrrr="heroku whoami && echo heroku run rails runner '<your command>'; heroku run rails runner"
 alias hero="heroku"
 alias her="heroku"
 alias hl="heroku logs"
 alias hlt="heroku logs -t"
-alias hcg="heroku config | grep -i"
+
+# takes heroku params after search term
+function hcg() {
+  search=$1
+  shift
+  heroku config "$@" | grep -i $search
+}
 
 alias fs="foreman start"
 
