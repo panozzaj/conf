@@ -604,22 +604,34 @@ function! ResetPopupMenu()
 endfunction
 
 
-" Colorscheme stuff
 function! RandomColorscheme()
-  " random color, from http://vim.1045645.n5.nabble.com/Random-color-scheme-at-start-td1165585.html
+  if !exists("g:randomColorschemeCalled")
+    let g:randomColorschemeCalled = 0
+  endif
+
+  " Get all colorschemes
   let mycolors = split(globpath(&rtp,"**/colors/*.vim"),"\n")
+
+  " Select a random colorscheme
   let i = localtime() % len(mycolors)
+  let chosen_colorscheme = fnamemodify(mycolors[i], ':t:r')
   exe 'so ' . mycolors[i]
   unlet mycolors
+
+  " Only echo if we've already called this function once
+  " (otherwise we see on startup)
+  if g:randomColorschemeCalled
+    redraw
+    echo "Applied colorscheme: " . chosen_colorscheme
+  endif
+
+  let g:randomColorschemeCalled = 1
+
   highlight clear SignColumn " important for vim-gitgutter plugin to not look strange
-  "if s:hilightdebugging
-  "  call TurnOnDebuggingMatching()  " restore my custom debugging highlighting if we were using it
-  "endif
+
   call ResetPopupMenu()
-  " need to reset the css colors after calling random colorscheme
-  " AP 2016-05-10 doesn't seem to work after upgrading vim-css-color
-  "source ~/conf/common/.vim/bundle/vim-css-color/after/syntax/css.vim
 endfunction
+
 
 let g:niji_matching_filetypes = ['javascript']
 
