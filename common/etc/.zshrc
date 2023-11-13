@@ -197,19 +197,22 @@ alias -g aas="app/assets/stylesheets"
 alias -g aaj="app/assets/javascripts"
 
 
-# so this works for Rails 2 through 5+
+# so this works for Rails 2 through 7+
 function rs() {
+  # kill any existing servers on this port
+  lsof -i tcp:3000 | tail -n+2 | awk '{print $2}' | sort -u | xargs kill -9
+
   # `-b 0.0.0.0` helps with subdomains in pow
   if [[ -d script && -f script/server ]]; then
     echo ./script/server -b 0.0.0.0 $@
     ./script/server -b 0.0.0.0 $@
   else
-    echo ./script/server -b 0.0.0.0 $@
-    rails s -b 0.0.0.0 $@
+    echo rails server -b 0.0.0.0 $@
+    rails server -b 0.0.0.0 $@
   fi
 }
 
-# so this works for Rails 2 through 5+
+# so this works for Rails 2 through 7+
 function rc() {
   if [[ -d bin && -f bin/spring ]]; then
     echo spring rails console $@
