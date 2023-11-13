@@ -57,7 +57,7 @@ print_usage_and_exit if table_names.empty?
 
 schema_filename = './db/schema.rb'
 structure_filename = './db/structure.sql'
-unless File.exists?(schema_filename) || File.exists?(structure_filename)
+unless File.exist?(schema_filename) || File.exist?(structure_filename)
   abort "Error: neither #{schema_filename} nor #{structure_filename} exists."
 end
 
