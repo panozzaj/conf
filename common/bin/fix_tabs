@@ -1,0 +1,43 @@
+#!/usr/bin/env ruby
+
+# This script will remove all leading tabs from filenames in the current directory
+
+# fail if gexpand is not available
+unless system("which gexpand > /dev/null")
+  puts "ERROR: gexpand is not available. Please install it with `brew install coreutils`"
+  exit 1
+end
+
+# fail if sponge is not available
+unless system("which sponge > /dev/null")
+  puts "ERROR: sponge is not available. Please install it with `brew install moreutils`"
+  exit 1
+end
+
+number_of_spaces = 2
+
+directory = "'#{ARGV[0] || '.'}'"
+all_files = `git ls-tree --full-tree --name-only -r HEAD #{directory}`.split("\n")
+
+# exclude image files and pdfs
+all_files.reject! { |file| file =~ /\.(ico|png|jpg|jpeg|gif|pdf|svg|sketch)$/ }
+
+# exclude font files
+all_files.reject! { |file| file =~ /\.(eot|ttf|woff\d?)$/ }
+
+# exclude VCR cassette files
+all_files.reject! { |file| file =~ %r{/vcr_cassettes/.*\.yml$} }
+
+# exclude some other file types
+all_files.reject! { |file| file =~ /\.(csv|xml)$/ }
+
+all_files.each do |file|
+  puts "Analyzing: #{file}"
+  `gexpand --tabs #{number_of_spaces} "#{file}" | sponge "#{file}"`
+  # if any changes in that file, print them
+  unless `git diff -q "#{file}"`.empty?
+    puts `git -c color.ui=always diff "#{file}"`
+  end
+end
+
+puts "Done!"
