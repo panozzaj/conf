@@ -871,3 +871,7 @@ nnoremap <D-RIGHT> :tabnext<CR>
 " a time when I actually want to navigate in insert mode, I always just
 " escape out and navigate using normal mode.
 set mouse-=i
+
+" https://stackoverflow.com/questions/11903889
+" Get alt working to not put in special characters
+set macmeta
