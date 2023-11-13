@@ -193,6 +193,10 @@ alias tf="tail -f"
 alias tfld="tail -f log/development.log"
 alias tflt="tail -f log/test.log"
 
+alias -g aas="app/assets/stylesheets"
+alias -g aaj="app/assets/javascripts"
+
+
 # so this works for Rails 2 through 5+
 function rs() {
   # `-b 0.0.0.0` helps with subdomains in pow
