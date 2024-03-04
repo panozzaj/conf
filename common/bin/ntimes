@@ -12,7 +12,7 @@ for ((n=0; n < $1; n++)); do
     successes=$[successes + 1]
   else
     failures=$[failures + 1]
-    say -v Zarvox -r400 "failed"
+    say -v Alex -r400 "failed"
   fi
 
   echo -e "\nSuccesses: $successes"
@@ -24,5 +24,5 @@ sleep 1
 if [[ 0 -eq $failures ]]; then
   say -v Alex -r200 "Success!"
 else
-  say -v Zarvox -r200 "At least some failed..."
+  say -v Alex -r200 "At least some failed..."
 fi

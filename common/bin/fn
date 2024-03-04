@@ -38,8 +38,8 @@ def ignored
 end
 
 command = ENV['NO_IGNORE'] ?
-  "find \"#{directory}\" | grep -i #{search_term}" :
-  "find \"#{directory}\" #{ignored} | grep -i #{search_term}"
+  "find \"#{directory}\" | grep -i #{search_term} | sort" :
+  "find \"#{directory}\" #{ignored} | grep -i #{search_term} | sort"
 result = `#{command}`
 
 # the unless here prevents a blank line when there are no matches

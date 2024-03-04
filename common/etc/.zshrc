@@ -290,8 +290,8 @@ alias sgu="sudo gem update"
 alias gi="gem install"
 alias gu="gem uninstall"
 
-alias c="best_cucumber"
-alias cuc="best_cucumber"
+alias c="time best_cucumber"
+alias cuc="time best_cucumber"
 alias -g PIPE="|"
 
 # helpful: https://git-scm.com/docs/git-status#_output
@@ -321,34 +321,88 @@ function gpaste() {
 
 # roughly: run any cucumber files that we have changed since the last commit
 function gcuc() {
-  modified_files | \
+  echo 'Finding cucumber files that have changed since the last commit.'
+
+  files=$(modified_files | \
     grep features/ | \
     grep -v features/support/ | \
-    grep -v features/step_definitions/ | \
-    xargs best_cucumber
+    grep -v features/step_definitions/
+  )
+
+  if [ -z "$files" ]; then
+    echo "No cucumber files changed."
+    return 1
+  fi
+
+  echo -n "best_cucumber "
+  echo $files | xargs echo
+  echo $files | xargs best_cucumber
+}
+
+# roughly: run any cucumber files that we have changed on our feature branch
+function gdomcuc() {
+  echo "Finding cucumber files that have changed from $(main_branch)."
+
+  files=$(git diff origin/$(main_branch) --stat=200 | \
+    cut -f 2 -d ' ' | \
+    grep features/ | \
+    grep -v features/support/ | \
+    grep -v features/step_definitions/
+  )
+
+  if [ -z "$files" ]; then
+    echo "No cucumber files changed from $(main_branch) branch."
+    return 1
+  fi
+
+  echo -n "best_cucumber "
+  echo $files | xargs echo
+  echo $files | xargs best_cucumber
 }
 
 # roughly: run any specs that we have changed since the last commit
 function gspec() {
-  modified_files | \
+  echo 'Finding spec files that have changed since the last commit.'
+
+  files=$(modified_files | \
     grep spec/ | \
     grep -v spec/spec_helper.rb | \
     grep -v spec/factories | \
     grep -v spec/fixtures/ | \
-    grep -v spec/support/ | \
-    xargs best_rspec
+    grep -v spec/support/
+  )
+
+  if [ -z "$files" ]; then
+    echo "No spec files changed."
+    return 1
+  fi
+
+  echo -n "best_rspec "
+  echo $files | xargs echo
+  echo $files | xargs best_rspec
 }
 
 # roughly: run any specs that we have changed on our feature branch
 function gdomspec() {
-  git diff origin/$(main_branch) --stat=200 | \
+  echo "Finding spec files that have changed from $(main_branch)."
+
+  files=$(git diff origin/$(main_branch) --stat=200 | \
     cut -f 2 -d ' ' | \
     grep spec/ | \
     grep -v spec/spec_helper.rb | \
     grep -v spec/factories | \
     grep -v spec/fixtures/ | \
-    grep -v spec/support/ | \
-    xargs best_rspec
+    grep -v spec/support/
+  )
+
+  if [ -z "$files" ]; then
+    echo "No spec files changed from $(main_branch) branch."
+    return 1
+  fi
+
+  echo -n "best_rspec "
+  echo $files | xargs echo
+  echo $files | xargs best_rspec
 }
 
 # returns the list of filenames from rspec output format
@@ -388,6 +442,7 @@ alias psr="powify server stop; powify server start"
 # Heroku
 alias hr="heroku whoami && heroku run"
 alias hrc="heroku whoami && heroku run rails console"
+alias hrrc="heroku whoami && heroku run rails console"
 alias hrdb="heroku whoami && heroku pg:psql"
 alias hrsql="heroku whoami && heroku pg:psql"
 alias hrdm="heroku whoami && heroku run rake db:migrate"
@@ -638,6 +693,7 @@ alias tgp="./bin/test && git push"
 # (see https://github.com/ggreer/the_silver_searcher/issues/24)
 alias ag="ag --smart-case --pager 'less -R' --color-match='1;31' --hidden"
 alias cag='ag -C5'
+alias cag10='ag -C10'
 alias agc='ag -C5'
 alias agcw='ag -C5 -W 300'
 alias agc10='ag -C10'

@@ -1,3 +1,14 @@
 #!/bin/sh
 
-git ls-files --unmerged | cut -f2 | sort -u | xargs $EDITOR
+if [ "$EDITOR" == "mvim" ] || [ "$EDITOR" == "vim" ]; then
+  # jump to first unmerged hunk
+  git ls-files --unmerged | \
+    cut -f2 | \
+    sort -u | \
+    xargs $EDITOR "+/<<<"
+else
+  git ls-files --unmerged | \
+    cut -f2 | \
+    sort -u | \
+    xargs $EDITOR
+fi
