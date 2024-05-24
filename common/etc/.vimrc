@@ -106,6 +106,7 @@ let g:ale_sign_warning = '!'
 
 " Configure prettier support
 let g:ale_fixers = {
+\ 'scss': ['prettier'],
 \ 'javascript': ['prettier'],
 \ 'typescript': ['prettier'],
 \ 'typescriptreact': ['prettier'],
