@@ -752,6 +752,25 @@ nnoremap <leader>9 :NotRocket<CR>
 
 " kill manual key and replace with Ag search
 nnoremap K :Ag! <cword><cr>
+vnoremap K :<C-u>call VisualSelectionSearch()<CR>
+
+function! VisualSelectionSearch()
+    " Save the current contents of the register and its type
+    let l:originalReg = getreg('"')
+    let l:originalRegType = getregtype('"')
+
+    " Yank the visually selected text into the unnamed register without newlines
+    normal! gv"xy
+
+    " Escape special characters for the search pattern
+    let l:searchTerm = escape(@x, '\')
+
+    " Build and execute the Ag command with the yanked text
+    execute "Ag! " . shellescape(l:searchTerm, 1)
+
+    " Restore the original contents and type of the unnamed register
+    call setreg('"', l:originalReg, l:originalRegType)
+endfunction
 
 " create buffer on `gf` if the file does not currently exist (slight
 " modification from help file to accommodate colon remapping)
