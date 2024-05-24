@@ -870,3 +870,8 @@ add-zsh-hook chpwd load-nvmrc
 load-nvmrc
 
 alias weather="curl http://wttr.in/"
+
+# https://www.jdeen.com/blog/fix-ruby-macos-nscfconstantstring-initialize-error
+# Was getting:
+# objc[75787]: +[__NSCFConstantString initialize] may have been in progress in another thread when fork() was called.#
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
