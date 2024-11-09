@@ -72,6 +72,7 @@ bindkey "\e[3~" delete-char
 # files unintentionally, etc.
 #alias r='echo "Nerfed r command"'
 alias r='best_rspec'
+alias rff='best_rspec --fail-fast'
 
 alias t='./bin/test'
 
@@ -195,6 +196,7 @@ alias tflt="tail -f log/test.log"
 
 alias -g aas="app/assets/stylesheets"
 alias -g aaj="app/assets/javascripts"
+alias -g aav="app/views" # doesn't totally make sense, but my fingers make this
 
 
 # so this works for Rails 2 through 7+
@@ -262,8 +264,9 @@ function reset_database() {
 
 function rgm() {
   best_rails generate migration $@
-  echo ""
-  catdm
+  if [ $? -eq 0 ]; then
+    emig
+  fi
 }
 
 # edit the last Rails database migration
@@ -619,8 +622,10 @@ alias gsup="git sup"
 alias gwip="git add -A . ; git commit -nm 'WIP'"
 alias gwtf="git wtf -A"
 alias gwtff="git fetch && git wtf -A"
+
 alias ngc="git commit -n"
 
+# various git commit helpers
 alias fixup="git commit -nm 'FIXUP ME'"
 alias gsq="git commit -nm 'SQUASH ME'"
 alias gsquash="git commit -nm 'SQUASH ME'"
@@ -705,6 +710,7 @@ alias wag='ag -W 300' # don't print lines longer than 300 characters (good for m
 
 # might be better platform independent, but YAGNI right now
 alias xe="xargs mvim"
+alias eom="git diff $(main_branch) --name-only | xargs mvim"
 
 # by default tree doesn't show hidden files, and these can be helpful
 alias tree="tree -a"
