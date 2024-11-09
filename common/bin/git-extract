@@ -102,7 +102,9 @@ if revisions.one? && !new_branch_name
 end
 
 unless new_branch_name
-  exit_with_error 'Please specify a new branch name when using multiple commits'
+  print_error 'Please specify a new branch name when using multiple commits'
+  puts op # print usage
+  exit 1
 end
 
 unless `git branch --list #{new_branch_name}`.empty?

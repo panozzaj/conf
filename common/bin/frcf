@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Enable debug mode
+set -x
+
+# Function to stream files
+stream_files() {
+    local pattern=$1
+    git ls-files |
+    while IFS= read -r file; do
+        if [ -z "$pattern" ] || echo "$file" | grep -q "$pattern"; then
+            echo "$file" >&2  # Debug output to stderr
+            echo "$file"
+        fi
+    done
+}
+
+# Use process substitution to provide streaming input to fzf
+# Redirect stderr to a debug file
+selected_file=$(fzf --ansi < <(stream_files "$1") 2>debug.log)
+
+# If a file was selected, copy its path to clipboard
+if [ -n "$selected_file" ]; then
+    echo "$selected_file" | tr -d '\n' | pbcopy
+    echo "File path copied to clipboard: $(pbpaste)"
+fi
+
+# Print debug information
+echo "Debug log:" >&2
+cat debug.log >&2

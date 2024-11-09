@@ -1,28 +1,74 @@
 #!/bin/bash
 
+fail_fast=false
+times=0
+interrupted=false
+
+# Function to handle interrupt
+handle_interrupt() {
+    echo -e "\nInterrupt received. Stopping execution."
+    interrupted=true
+}
+
+# Set up the interrupt trap
+trap handle_interrupt SIGINT
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --fail-fast)
+      fail_fast=true
+      shift
+      ;;
+    *)
+      if [[ $times -eq 0 ]]; then
+        times=$1
+        shift
+      else
+        break
+      fi
+      ;;
+  esac
+done
+
+echo "Running command $@ $times times. (fail_fast=$fail_fast)"
+
 successes=0
 failures=0
 
-for ((n=0; n < $1; n++)); do
-  # run all arguments except for the count as new command
-  "${@:2}"
+for ((n=0; n < $times; n++)); do
+  if $interrupted; then
+    break
+  fi
 
-  if [[ $? == 0 ]]; then
-    # no need to say success, that should be more common
-    successes=$[successes + 1]
+  "$@"
+
+  if [[ $? -eq 0 ]]; then
+    ((successes++))
   else
-    failures=$[failures + 1]
-    say -v Alex -r400 "failed"
+    ((failures++))
+
+    if [[ $fail_fast == true ]]; then
+      echo -e "\nFailed on iteration $((n+1)). Stopping execution."
+      break
+    fi
   fi
 
   echo -e "\nSuccesses: $successes"
   echo -e "Failures: $failures\n"
 done
 
-sleep 1
-
-if [[ 0 -eq $failures ]]; then
-  say -v Alex -r200 "Success!"
+if $interrupted; then
+    echo "Execution interrupted."
+    echo "Final results:"
+    echo -e "Successes: $successes"
+    echo -e "Failures: $failures\n"
+    echo "Exiting with status 130 (interrupt)."
+    exit 130  # Standard exit code for interrupt
+elif [[ $failures == 0 ]]; then
+  echo "Exiting with status 0 (success)."
+  exit 0
 else
-  say -v Alex -r200 "At least some failed..."
+  echo "Exiting with status 1 (failure)."
+  exit 1
 fi

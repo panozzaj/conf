@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Check if fzf is installed
+if ! command -v fzf &> /dev/null; then
+    echo "fzf is not installed. Please install it first."
+    exit 1
+fi
+
+# Create a new branch for dependency updates
+git checkout master
+git pull
+git checkout -b dependency-updates
+
+# Get all remote Dependabot branches
+dependabot_branches=$(git branch -r | grep dependabot | sed 's/origin\///')
+
+# Use fzf to select branches
+selected_branches=$(echo "$dependabot_branches" | fzf --multi --reverse --header="Select Dependabot branches to cherry-pick (TAB to select, ENTER to confirm)" --bind="ctrl-a:select-all,ctrl-d:deselect-all" --color=bg+:#3e4451,bg:#2c323c,fg:#abb2bf,fg+:#abb2bf,hl:#528bff,hl+:#528bff,info:#4b5263,prompt:#61afef,pointer:#528bff,marker:#98c379)
+
+# Check if any branches were selected
+if [ -z "$selected_branches" ]; then
+    echo "No branches selected. Exiting."
+    exit 0
+fi
+
+# Cherry-pick each selected Dependabot branch
+for branch in $selected_branches
+do
+    echo "Cherry-picking $branch"
+    if ! git cherry-pick origin/$branch; then
+        echo "Conflict in $branch. Please resolve manually and run 'git cherry-pick --continue'"
+        exit 1
+    fi
+done
+
+echo "All selected Dependabot changes have been applied to the 'dependency-updates' branch"
+echo "Please review the changes, test locally, and then push the branch to create a PR"
