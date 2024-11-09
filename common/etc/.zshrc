@@ -843,6 +843,11 @@ function add_url {
   echo "$1" >> /Users/anthony/Documents/dev/incremental-reading/to_import/urls.txt
 }
 
+# https://jvns.ca/til/programs-can-make-your-cursor-disappear/
+function reset_cursor {
+  echo -e "\033[?25h"
+}
+
 # http://stackoverflow.com/questions/2187829/constantly-updated-clock-in-zsh-prompt
 #TMOUT=5 # every five seconds, reset the prompt so the clock is refreshed
 #
