@@ -418,6 +418,8 @@ augroup panozzaj_group
   autocmd FileType less set omnifunc=csscomplete#CompleteCSS
   autocmd FileType make set noexpandtab " Don't expand tab in Makefiles
 
+  autocmd FileType json setlocal tabstop=2 shiftwidth=2
+
   " on file load, go to the last known cursor position if it is valid
   autocmd BufReadPost *
     \ if line("'\"") > 0 && line("'\"") <= line("$") |
