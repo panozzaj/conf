@@ -81,6 +81,8 @@ set nofoldenable      " disable folding
 set exrc
 set secure
 
+let g:gutentags_ctags_exclude = ['node_modules']
+
 " Allow netrw to remove non-empty local directories
 let g:netrw_local_rmdir='rm -r'
 " https://gist.github.com/t-mart/610795fcf7998559ea80
