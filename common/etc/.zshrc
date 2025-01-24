@@ -848,6 +848,10 @@ function reset_cursor {
   echo -e "\033[?25h"
 }
 
+function echo_path {
+  echo $PATH | tr ':' '\n'
+}
+
 # http://stackoverflow.com/questions/2187829/constantly-updated-clock-in-zsh-prompt
 #TMOUT=5 # every five seconds, reset the prompt so the clock is refreshed
 #
