@@ -866,7 +866,7 @@ function echo_path {
 #  compinit
 #fi
 
-alias weather="curl http://wttr.in/"
+alias weather="curl 'https://wttr.in/Fishers?u'"
 
 # https://www.jdeen.com/blog/fix-ruby-macos-nscfconstantstring-initialize-error
 # Was getting:
