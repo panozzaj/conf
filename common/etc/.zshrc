@@ -859,30 +859,12 @@ function echo_path {
 #    zle reset-prompt
 #}
 
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm"
-
 #if type brew &>/dev/null; then
 #  FPATH=$(brew --prefix)/share/zsh-completions:$FPATH
 #
 #  autoload -Uz compinit
 #  compinit
 #fi
-
-export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
-
-# https://medium.com/@kinduff/automatic-version-switch-for-nvm-ff9e00ae67f3
-autoload -U add-zsh-hook
-load-nvmrc() {
-  if [[ -f .nvmrc && -r .nvmrc ]]; then
-    nvm use --silent
-  elif [[ $(nvm version) != $(nvm version default)  ]]; then
-    echo "Reverting to nvm default version"
-    nvm use default
-  fi
-}
-add-zsh-hook chpwd load-nvmrc
-load-nvmrc
 
 alias weather="curl http://wttr.in/"
 
