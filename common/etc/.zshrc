@@ -815,28 +815,10 @@ if [[ ! "$PATH" =~ "\\./node_modules/\\.bin" ]]; then
   export PATH=$PATH:./node_modules/.bin
 fi
 
-alias news="newsboat -C ~/Dropbox/newsbeuter/config -u ~/Dropbox/newsbeuter/urls"
-function add_feed {
-    echo "$1" >> ~/Dropbox/newsbeuter/urls
-}
-function add_rss {
-    echo "$1" >> ~/Dropbox/newsbeuter/urls
-}
-
 function install_jsctags {
   npm install jsctags
   # https://github.com/mozilla/doctorjs/issues/52
   gsed -i '51i tags: [],' ./node_modules/jsctags/jsctags/ctags/index.js
-}
-
-function add_newsbeuter_url {
-  if result=$(grep --fixed "$1" ~/Dropbox/newsbeuter/urls); then
-    echo "Matched: $result"
-    echo 'That URL appears to be present already in the URL file. Not adding.'
-  else
-    echo "$1" >> ~/Dropbox/newsbeuter/urls
-    echo "Added URL to ~/Dropbox/newsbeuter/urls"
-  fi
 }
 
 function add_url {
