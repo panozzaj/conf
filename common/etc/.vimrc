@@ -807,10 +807,6 @@ endfu
 "  source ~/conf/platforms/$PLATFORM/etc/.vimrc
 "endif
 
-if has("gui_gtk") || has("gui_gtk2") || has("gui_gnome") || has("unix")
-  source ~/conf/platforms/ubuntu-10.04/etc/.vimrc
-endif
-
 " xmledit plugin - use for html
 "let g:xmledit_enable_html=1
 
