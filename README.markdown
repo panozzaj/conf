@@ -1,8 +1,10 @@
-This is my attempt at following the configuration architecture discussed at http://furius.ca/projects/doc/conf.html.
+This contains what are essentially my dotfiles and additional useful scripts that I put on my PATH.
 
 If you want to use this repository, be sure to run `git submodule update --init` after checking it out to get the submodules.
 
-1) Wanting to support multiple platforms (different versions of Ubuntu, OS X, and (if I make poor life choices) Windows (Cygwin)) using common tools. There are certain portions of configurations that are common, and others that are specific to different platforms and different hosts.
+Original goals (although I'm trying to simplify a bit...):
+
+1) Support multiple platforms (different versions of Ubuntu, OS X, and (if I make poor life choices) Windows (Cygwin)) using common tools. There are certain portions of configurations that are common, and others that are specific to different platforms and different hosts.
 2) The need to make changes on one platform and optionally have them impact other platforms.
 3) Easy and quick syncing.
 4) Version control.
