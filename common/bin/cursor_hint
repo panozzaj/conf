@@ -1,0 +1,11 @@
+#!/bin/bash
+
+statement=$1
+
+if [ -z "$statement" ]; then
+  echo "Usage: cursor_hint <statement>"
+  exit 1
+fi
+
+# write a new file to .cursor/hints/YYYY-MM-DD-<random>
+echo "$1" > ./.cursor/hints/$(date +%F)-$RANDOM-$RANDOM
