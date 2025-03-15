@@ -535,12 +535,6 @@ alias gcogem="git checkout Gemfile Gemfile.lock"
 alias gcogems="git checkout Gemfile Gemfile.lock"
 alias gcojs="git_checkout_ignore_missing package.json package-lock.json yarn.lock" # quickly revert JS package changes
 
-# some older projects use master, so use this to simplify the transition
-function main_branch() {
-  # see https://stackoverflow.com/questions/68086082
-  git branch --list main master | sed -r 's/^[* ] //' | head -n 1
-}
-
 alias gcop="git checkout --patch"
 alias gcom='git checkout $(main_branch)'
 alias gcomm="git commit --message"

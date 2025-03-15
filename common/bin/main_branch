@@ -1,0 +1,2 @@
+#!/bin/sh
+git branch --list main master | sed -r 's/^[* ] //' | head -n 1
