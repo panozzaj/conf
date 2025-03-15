@@ -708,6 +708,15 @@ alias xe="xargs mvim"
 
 # by default tree doesn't show hidden files, and these can be helpful
 alias tree="tree -a"
+alias tff="tree -a --fromfile"
+
+function stree() {
+  if [[ -n "$1" ]]; then
+    git ls-files | egrep "$1" | tree -a --fromfile
+  else
+    git ls-files | tree -a --fromfile
+  fi
+}
 
 # print STDERR in red
 alias -g errred='2> >(while read line; do echo -e "\e[01;31m$line\e[0m" >&2; done)'
