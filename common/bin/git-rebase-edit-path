@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# git-rebase-edit-path: Rebase current HEAD onto a previous version, stopping for edits on commits that modify files matching the path
+# Usage: git-rebase-edit-path <path_pattern> <target_commit>
+
+path_pattern="$1"
+target_commit="$2"
+
+if [ -z "$target_commit" ]; then
+    target_commit="origin/$(main_branch)"
+fi
+
+if [ -z "$path_pattern" ] || [ -z "$target_commit" ]; then
+    echo "Usage: git-rebase-edit-path <path_pattern> <target_commit>"
+    echo "  path_pattern: Pattern to match file paths (e.g. 'src/' or '*.js')"
+    echo "  target_commit: The commit to rebase onto (e.g. 'HEAD~5' or a commit hash)"
+    exit 1
+fi
+
+# Verify that the target commit exists
+if ! git rev-parse --verify "$target_commit" >/dev/null 2>&1; then
+    echo "Error: Target commit '$target_commit' does not exist"
+    exit 1
+fi
+
+# Get the current branch
+current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+if [ -z "$current_branch" ]; then
+    echo "Error: Not on a branch (detached HEAD state)"
+    exit 1
+fi
+
+# Get the range of commits to rebase
+commit_range="${target_commit}..HEAD"
+commit_list=$(git rev-list --reverse "$commit_range")
+
+if [ -z "$commit_list" ]; then
+    echo "No commits to rebase"
+    exit 0
+fi
+
+# Create a temporary rebase todo file
+temp_todo=$(mktemp)
+trap 'rm -f "$temp_todo"' EXIT
+
+# Build the rebase todo file
+for commit in $commit_list; do
+    commit_msg=$(git log -1 --pretty=format:"%s" "$commit")
+
+    # Check if this commit changes files matching the path pattern
+    if git diff-tree --no-commit-id --name-only -r "$commit" | grep -q "$path_pattern"; then
+        # This commit modifies files matching the pattern - mark for edit
+        echo "edit $commit $commit_msg" >> "$temp_todo"
+    else
+        # This commit doesn't modify matching files - just pick it
+        echo "pick $commit $commit_msg" >> "$temp_todo"
+    fi
+done
+
+# Start the rebase with our custom todo file
+GIT_SEQUENCE_EDITOR="cat $temp_todo >" git rebase -i "$target_commit"
+
+# Provide instructions for the user
+echo
+echo "Rebase in progress. For commits marked with 'edit':"
+echo "  - Make your changes"
+echo "  - Use 'git add' to stage your changes"
+echo "  - Use 'git rebase --continue' to proceed"
+echo "  - Or use 'git rebase --abort' to cancel the rebase"
