@@ -322,3 +322,6 @@
 [submodule "common/.vim/bundle/vim-prisma"]
 	path = common/.vim/bundle/vim-prisma
 	url = https://github.com/prisma/vim-prisma.git
+[submodule "common/.vim/bundle/fzf"]
+	path = common/.vim/bundle/fzf
+	url = https://github.com/junegunn/fzf
