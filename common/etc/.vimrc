@@ -539,7 +539,7 @@ let g:user_emmet_settings = {
   \}
 
 " for fzf.vim
-set rtp+=/usr/local/opt/fzf
+set rtp+=/opt/homebrew/bin/fzf
 
 " Default key bindings, plus ctrl+s to be like other fuzzy finders
 let g:fzf_action = {
