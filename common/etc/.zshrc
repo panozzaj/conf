@@ -705,7 +705,6 @@ alias wag='ag -W 300' # don't print lines longer than 300 characters (good for m
 
 # might be better platform independent, but YAGNI right now
 alias xe="xargs mvim"
-alias eom="git diff $(main_branch) --name-only | xargs mvim"
 
 # by default tree doesn't show hidden files, and these can be helpful
 alias tree="tree -a"
