@@ -895,3 +895,15 @@ set mouse-=i
 " https://stackoverflow.com/questions/11903889
 " Get alt working to not put in special characters
 set macmeta
+
+augroup NetrwKeymaps
+  autocmd!
+  autocmd FileType netrw call s:NetrwKeymaps()
+augroup END
+
+function! s:NetrwKeymaps()
+  " Remove the global ? mapping
+  nunmap ?
+  " Optionally, remap ? just for netrw buffers
+  nmap <buffer> ? <Plug>NetrwHideEdit
+endfunction
