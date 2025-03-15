@@ -549,6 +549,7 @@ alias gcpi="git cherry-pick \`git reflog | fzf | cut -d ' ' -f 1\`"
 alias gcv="git cherry -v"
 alias gd="git diff"
 alias gdc="git diff --cached"
+alias gdcs="git diff --cached --stat"
 alias gdcw="git diff --cached --ignore-all-space"
 alias gdom='git diff origin/$(main_branch)'
 alias gdoms='git diff origin/$(main_branch) --stat=200' # all files that changed on this branch
