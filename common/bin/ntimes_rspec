@@ -254,6 +254,7 @@ def run_single_iteration(test_target, run_index, options, worker_number)
 
   # --- Run test ONCE with JSON formatter ---
   json_command = "#{options.runner_command} #{Shellwords.escape(test_target)} -f json"
+  puts "Running command: #{json_command}" if options.very_verbose
   json_output, stderr_output, json_status = Open3.capture3(env, json_command)
 
   # --- Check exit status ---
