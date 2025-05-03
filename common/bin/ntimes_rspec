@@ -503,103 +503,107 @@ ensure # This block always runs
     if test_failures.empty?
       puts "No failures detected in the runs performed."
     else
-      # Sort by unique failure details count desc, then total failures desc
-      sorted_failures = test_failures.sort_by do |test_id, data|
-        unique_details = data[:failure_details] || Set.new # Handle potential nil if aggregation failed
-        total_fails = data[:failures] || 0
-        [-unique_details.size, -total_fails]
+      # Sort by file path, then line number (numerically)
+      match = test_id.match(/^(.*?):(\d+)$/)
+      if match
+        file_path = match[1]
+        line_number = match[2].to_i
+        [file_path, line_number]
+      else
+        # Fallback for unexpected format: sort by the full id string
+        [test_id, 0]
       end
+    end
 
-      # Check if global stop-after condition was met based on aggregated results
-      if options.stop_after_count && failed_test_ids.size >= options.stop_after_count
-         puts "\n*** Global Stop-After Condition Met: #{failed_test_ids.size} unique test(s) failed (limit: #{options.stop_after_count})."
-         puts "*** Note: Due to parallel execution, the run may not have stopped immediately when the limit was reached."
-         interrupt_reason = "stop-after" # Set for final message
-         report_interrupted = true # Mark report as interrupted by stop-after
-      end
+    # Check if global stop-after condition was met based on aggregated results
+    if options.stop_after_count && failed_test_ids.size >= options.stop_after_count
+       puts "\n*** Global Stop-After Condition Met: #{failed_test_ids.size} unique test(s) failed (limit: #{options.stop_after_count})."
+       puts "*** Note: Due to parallel execution, the run may not have stopped immediately when the limit was reached."
+       interrupt_reason = "stop-after" # Set for final message
+       report_interrupted = true # Mark report as interrupted by stop-after
+    end
 
-      puts "
+    puts "
 Intermittent test failures (most frequent/varied first):"
-      sorted_failures.each do |test_id, data|
-        # Skip tests with zero failures
-        next if data[:failures].nil? || data[:failures].zero?
+    sorted_failures.each do |test_id, data|
+      # Skip tests with zero failures
+      total_fails = data[:failures] || 0
+      next if total_fails.zero?
 
-        # Determine actual runs attempted for this test
-        actual_runs = data[:runs_attempted] || options.times # Use recorded runs or default
+      # Determine actual runs attempted for this test
+      actual_runs = data[:runs_attempted] || options.times # Use recorded runs or default
 
-        total_fails = data[:failures] || 0
-        failure_rate_actual = actual_runs > 0 ? (total_fails * 100.0 / actual_runs).round(1) : 0.0
-        puts "\n- #{test_id}: #{total_fails} failures out of #{actual_runs} attempted runs (#{failure_rate_actual}%)"
+      failure_rate_actual = actual_runs > 0 ? (total_fails * 100.0 / actual_runs).round(1) : 0.0
+      puts "\n- #{test_id}: #{pluralize(total_fails, 'failure')} out of #{pluralize(actual_runs, 'attempted run')} (#{failure_rate_actual}%)"
 
-        failed_runs_list = (data[:failed_runs] || []).uniq.sort
-        puts "  Failed runs (index): #{failed_runs_list.join(', ')}" unless failed_runs_list.empty?
+      failed_runs_list = (data[:failed_runs] || []).uniq.sort
+      puts "  Failed runs (index): #{failed_runs_list.join(', ')}" unless failed_runs_list.empty?
 
-        unique_details = data[:failure_details] || Set.new
-        unique_details_count = unique_details.size
-        # Check if it's a hash (new format) or set (old/fallback)
-        if unique_details.is_a?(Hash) && unique_details_count > 0
-          puts "  Found #{unique_details_count} unique failure signature(s):"
-          unique_details.each_with_index do |(signature, count), idx|
-            # Signature should be the array [description, class, msg, backtrace]
-            if signature.is_a?(Array) && signature.size >= 3
-               description, exception_class, msg, backtrace_str = signature
-               puts "\n    Failure ##{idx + 1}: (#{count} failures)"
-               # Print description (indented)
-               puts "      #{description || 'No Description'}"
-               # Print exception class and message (indented)
-               msg_lines = (msg || 'No Message').lines
-               puts "      #{exception_class || 'No Exception Class'}: #{msg_lines[0].chomp}"
-               msg_lines[1..].each { |line| puts "        #{line.chomp}" }
-               # Print stack trace, prefixed with # and indented
-               if backtrace_str && !backtrace_str.empty?
-                 puts backtrace_str.lines.map { |l| "        # #{l.chomp}" }.join("\n")
-               else
-                  puts "        # No backtrace available"
-               end
-            else
-               # Handle case where signature is not the expected array
-               puts "\n    Failure ##{idx + 1}: (#{count} failures) - Malformed signature data: #{signature.inspect}"
-            end
-          end
-        else
-          # unique_details_count == 0
-          # Original block for printing truncated output when details are missing and not using -vv
-          if total_fails > 0 && unique_details_count == 0
-            raw_samples = data[:raw_output_samples] || {}
-            if !raw_samples.empty?
-              puts "  (Failure details were not captured successfully)"
-              # Print TRUNCATED output here if needed (or rely on the -vv block)
-              # Example: Print context only
-              raw_samples.each do |run_idx, output_data|
-                puts "    Diagnostic Info for Run ##{run_idx}: Context: #{output_data[:context] || 'N/A'} (use -vv for full output)"
-              end
-            else
-              puts "  (Failure details were not captured, and no raw output was stored)"
-            end
+      unique_details = data[:failure_details] || Set.new
+      unique_details_count = unique_details.size
+      # Check if it's a hash (new format) or set (old/fallback)
+      if unique_details.is_a?(Hash) && unique_details_count > 0
+        puts "  Found #{unique_details_count} unique failure signature(s):"
+        unique_details.each_with_index do |(signature, count), idx|
+          # Signature should be the array [description, class, msg, backtrace]
+          if signature.is_a?(Array) && signature.size >= 3
+             description, exception_class, msg, backtrace_str = signature
+             puts "\n    Failure ##{idx + 1}: (#{pluralize(count, 'failure')})"
+             # Print description (indented)
+             puts "      #{description || 'No Description'}"
+             # Print exception class and message (indented)
+             msg_lines = (msg || 'No Message').lines
+             puts "      #{exception_class || 'No Exception Class'}: #{msg_lines[0].chomp}"
+             msg_lines[1..].each { |line| puts "        #{line.chomp}" }
+             # Print stack trace, prefixed with # and indented
+             if backtrace_str && !backtrace_str.empty?
+               puts backtrace_str.lines.map { |l| "        # #{l.chomp}" }.join("\n")
+             else
+                puts "        # No backtrace available"
+             end
+          else
+             # Handle case where signature is not the expected array
+             puts "\n    Failure ##{idx + 1}: (#{pluralize(count, 'failure')} - Malformed signature data: #{signature.inspect}"
           end
         end
+      else
+        # unique_details_count == 0
+        # Original block for printing truncated output when details are missing and not using -vv
+        if total_fails > 0 && unique_details_count == 0
+          raw_samples = data[:raw_output_samples] || {}
+          if !raw_samples.empty?
+            puts "  (Failure details were not captured successfully)"
+            # Print TRUNCATED output here if needed (or rely on the -vv block)
+            # Example: Print context only
+            raw_samples.each do |run_idx, output_data|
+              puts "    Diagnostic Info for Run ##{run_idx}: Context: #{output_data[:context] || 'N/A'} (use -vv for full output)"
+            end
+          else
+            puts "  (Failure details were not captured, and no raw output was stored)"
+          end
+        end
+      end
 
-        # Always print raw samples if -vv is set and samples exist
-        raw_samples_for_vv = data[:raw_output_samples] || {}
-        if options.very_verbose && !raw_samples_for_vv.empty?
-          puts "\n  Raw Output Samples (--very-verbose):"
-          raw_samples_for_vv.each do |run_idx, output_data|
-             puts "    Diagnostic Info for Run ##{run_idx}:"
-             puts "      Context: #{output_data[:context] || 'N/A'}"
-             puts "      Stderr:"
-             if output_data[:stderr] && !output_data[:stderr].empty? && output_data[:stderr] != "(Not Captured)"
-                output_data[:stderr].lines.each { |line| puts "        #{line.chomp}" }
-             else
-                puts "        #{output_data[:stderr]}" # Print (empty) or (Not Captured)
-             end
-             puts "      Stdout (JSON Attempt):"
-             if output_data[:json] && !output_data[:json].empty? && output_data[:json] != "(Not Captured)"
-                output_data[:json].lines.each { |line| puts "        #{line.chomp}" }
-             else
-                puts "        #{output_data[:json]}" # Print (empty) or (Not Captured)
-             end
+      # Always print raw samples if -vv is set and samples exist
+      raw_samples_for_vv = data[:raw_output_samples] || {}
+      if options.very_verbose && !raw_samples_for_vv.empty?
+        puts "\n  Raw Output Samples (--very-verbose):"
+        raw_samples_for_vv.each do |run_idx, output_data|
+           puts "    Diagnostic Info for Run ##{run_idx}:"
+           puts "      Context: #{output_data[:context] || 'N/A'}"
+           puts "      Stderr:"
+           if output_data[:stderr] && !output_data[:stderr].empty? && output_data[:stderr] != "(Not Captured)"
+              output_data[:stderr].lines.each { |line| puts "        #{line.chomp}" }
+           else
+              puts "        #{output_data[:stderr]}" # Print (empty) or (Not Captured)
            end
-        end
+           puts "      Stdout (JSON Attempt):"
+           if output_data[:json] && !output_data[:json].empty? && output_data[:json] != "(Not Captured)"
+              output_data[:json].lines.each { |line| puts "        #{line.chomp}" }
+           else
+              puts "        #{output_data[:json]}" # Print (empty) or (Not Captured)
+           end
+         end
       end
     end
   end
