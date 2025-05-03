@@ -415,6 +415,7 @@ augroup panozzaj_group
   autocmd BufNewFile,BufRead *.json set filetype=javascript
   autocmd BufNewFile,BufRead *.plist set filetype=xml
   autocmd BufNewFile,BufRead *.scss set filetype=scss
+  autocmd BufNewFile,BufRead *.sqlx set filetype=sql
 
   autocmd FileType conf set foldmethod=manual
   autocmd FileType less set omnifunc=csscomplete#CompleteCSS

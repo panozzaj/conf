@@ -780,6 +780,12 @@ function git_words_diff {
   echo $(($(git_words_added $1) - $(git_words_removed $1)))
 }
 
+alias dfc="dataform compile"
+alias dff="dataform format"
+alias dfr="dataform run"
+alias dfrdr="dataform run --dry-run"
+alias dfra="dataform run --actions"
+
 # some Ruby compiler optimizations
 # see http://stackoverflow.com/questions/4461346/slow-rails-stack
 # TODO: pretty old.. not sure if this is actually useful nowadays
