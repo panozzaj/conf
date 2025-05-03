@@ -28,6 +28,7 @@ options.runner_command = "./bin/rspec" # Default runner command
 options.very_verbose = false # Default very verbose state
 options.time_script = true # Default: time the script execution
 options.iteration_timeout = 180 # Default timeout for a single test iteration in seconds
+options.test_env_base = 0 # Starting number for TEST_ENV_NUMBER assignment
 # Default parallel processes to number of cores, fallback to 1
 begin
   options.parallel_processes = Etc.nprocessors
@@ -91,6 +92,10 @@ opt_parser = OptionParser.new do |opts|
 
   opts.on("--iteration-timeout SECONDS", Integer, "Timeout in seconds for a single test iteration (default: #{options.iteration_timeout})") do |sec|
     options.iteration_timeout = sec
+  end
+
+  opts.on("--test-env-base BASE", Integer, "Starting number for TEST_ENV_NUMBER (default: #{options.test_env_base})") do |base|
+    options.test_env_base = base
   end
 
   # --- Boolean Flags / Switches ---
@@ -279,10 +284,10 @@ end
 
 # --- Function to run a single iteration of a test target ---
 def run_single_iteration(test_target, run_index, options, worker_number)
-  # Set TEST_ENV_NUMBER based on the parallel worker number
-  # Worker 0 uses the default DB (no TEST_ENV_NUMBER), worker 1 uses TEST_ENV_NUMBER=2, etc.
+  # Set TEST_ENV_NUMBER based on the parallel worker number and the base
+  # Worker 0 gets base + 1, worker 1 gets base + 2, etc.
   env = {}
-  test_env_num_val = worker_number + 1
+  test_env_num_val = options.test_env_base + worker_number + 1
   env['TEST_ENV_NUMBER'] = test_env_num_val.to_s if test_env_num_val > 1
 
   # --- Run test ONCE with JSON formatter ---
