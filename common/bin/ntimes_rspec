@@ -1,0 +1,545 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'ostruct'
+require 'pathname'
+require 'English'
+require 'shellwords'
+require 'json'
+require 'set'
+require 'open3'
+require 'parallel'
+require 'etc'
+
+# Default options
+options = OpenStruct.new
+options.times = 50
+options.paths = ['spec'] # Default path
+options.verbose = false # Default verbose state
+options.fail_fast_count = nil # Per-test fail-fast count (nil means disabled)
+options.stop_after_count = nil # Global stop count (nil means disabled)
+options.runner_command = "./bin/rspec" # Default runner command
+options.very_verbose = false # Default very verbose state
+# Default parallel processes to number of cores, fallback to 1
+begin
+  options.parallel_processes = Etc.nprocessors
+rescue NotImplementedError
+  options.parallel_processes = 1
+end
+
+# Parse command-line options
+OptionParser.new do |opts|
+  opts.banner = "Usage: ntimes_suite.rb [options] [paths...]"
+
+  opts.on("-n", "--times TIMES", Integer, "Number of times to run each spec example (default: #{options.times})") do |n|
+    options.times = n
+  end
+
+  opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+    options.verbose = v
+  end
+
+  opts.on("-vv", "--very-verbose", "Run very verbosely (implies -v, shows full failure output)") do |vv|
+    options.very_verbose = vv
+    options.verbose = true if vv # -vv implies -v
+  end
+
+  opts.on("-F", "--fail-fast [COUNT]", Integer, "Stop running a test after it fails COUNT times (default: 1)") do |count|
+    options.fail_fast_count = count || 1
+  end
+
+  opts.on("-S", "--stop-after [COUNT]", Integer, "Stop entire suite after COUNT unique tests fail (default: 1)") do |count|
+    options.stop_after_count = count || 1
+  end
+
+  opts.on("-j", "--parallel [PROCESSES]", Integer, "Number of parallel processes to use (default: #{options.parallel_processes})") do |p|
+    options.parallel_processes = p > 0 ? p : 1 # Ensure at least 1 process
+  end
+
+  opts.on("-c", "--command COMMAND", "RSpec runner command (default: #{options.runner_command})") do |cmd|
+    options.runner_command = cmd
+  end
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+# Remaining arguments are paths/files
+options.paths = ARGV if ARGV.any?
+
+puts "Running specs #{options.times} times in paths: #{options.paths.join(', ')}"
+
+# --- Find initial spec files/targets ---
+spec_files = []
+options.paths.each do |path_str|
+  path_to_check_existence = path_str
+  # Check if path contains :line_number and separate for existence check
+  if path_str.match?(/:\d+$/)
+    path_to_check_existence = path_str.sub(/:\d+$/, '')
+  end
+
+  pn = Pathname.new(path_to_check_existence)
+
+  if pn.directory?
+    # Recursively find spec files within the directory
+    spec_files.concat(Pathname.glob(pn + '**/*_spec.rb').map(&:to_s))
+  elsif pn.file? && pn.extname == '.rb'
+    # If the file part exists and is a .rb file, add the original string (with potential :line)
+    spec_files << path_str
+  elsif !pn.exist?
+    warn "Warning: Path or file component not found, skipping: #{path_str}"
+  else
+    warn "Warning: Path is not a directory or .rb file, skipping: #{path_str}"
+  end
+end
+
+spec_files.uniq! # Remove duplicates
+
+if spec_files.empty?
+  warn "Error: No valid spec files or directories found for paths: #{options.paths.join(', ')}"
+  exit(1)
+end
+
+puts "Found #{spec_files.count} initial spec targets."
+
+# --- Discover individual test examples ---
+puts "Discovering individual test examples..."
+individual_test_targets = []
+
+# Separate explicit file:line targets from file/directory paths
+explicit_targets = []
+discovery_paths = []
+
+spec_files.each do |target|
+  if target.match?(/:\d+$/)
+    explicit_targets << target
+  else
+    # Assume it's a file or directory path for the discovery command
+    discovery_paths << target
+  end
+end
+
+# Process explicit file:line targets first
+explicit_targets.each do |target|
+  file_part = target.sub(/:\d+$/, '')
+  line_part = target.match(/:(\d+)$/)[1]
+  begin
+    relative_file_part = Pathname.new(file_part).expand_path.relative_path_from(Pathname.pwd).to_s
+    individual_test_targets << "#{relative_file_part}:#{line_part}"
+  rescue ArgumentError => e
+    warn "\nWarning: Could not make path relative for explicit target #{target}. Skipping. Error: #{e.message}"
+  end
+end
+
+# Run a single dry run command for all remaining file/directory paths if any exist
+if discovery_paths.any?
+  escaped_paths = discovery_paths.map { |p| Shellwords.escape(p) }.join(' ')
+  # Use the specified runner command for discovery too
+  # ALWAYS use ./bin/rspec for discovery, ignore options.runner_command here
+  discovery_runner = "./bin/rspec"
+  dry_run_command = "#{discovery_runner} #{escaped_paths} --dry-run -f json"
+  puts "Running discovery command: #{dry_run_command}" if options.verbose
+  # Capture both stdout and stderr for better error reporting
+  json_output, stderr_output, dry_run_status = Open3.capture3(dry_run_command)
+
+  if dry_run_status.success?
+    begin
+      parsed_output = JSON.parse(json_output)
+      if parsed_output && parsed_output['examples']
+        parsed_output['examples'].each do |example|
+          begin
+            example_relative_path = Pathname.new(example['file_path']).expand_path.relative_path_from(Pathname.pwd).to_s
+            individual_test_targets << "#{example_relative_path}:#{example['line_number']}"
+          rescue ArgumentError => e
+             warn "\nWarning: Could not make path relative for discovered example #{example['file_path']}:#{example['line_number']}. Skipping. Error: #{e.message}"
+          end
+        end
+      else
+         warn "\nWarning: No examples found in combined dry-run JSON." unless parsed_output['examples'] # Be more specific
+         puts "Dry run output (truncated): #{json_output[0..500]}..." if options.verbose # Show output if verbose
+      end
+    rescue JSON::ParserError => e
+      warn "\nWarning: Failed to parse combined RSpec dry-run JSON. Error: #{e.message}"
+      warn "Stderr: #{stderr_output}" unless stderr_output.empty?
+      warn "Stdout (truncated): #{json_output[0..1000]}..."
+    end
+  else
+    # Don't warn if dry run exits 1 and examples were found (e.g., only pending/skipped)
+    # Check if JSON parsing worked despite exit 1
+    json_parsed_ok = false
+    begin
+      parsed_output = JSON.parse(json_output) # Try parsing even if exit code is non-zero
+      json_parsed_ok = true if parsed_output && parsed_output['examples']
+    rescue JSON::ParserError
+      # Ignore parsing error here, handled below
+    end
+
+    # Only warn if exit status is not 1 OR if it is 1 but JSON parsing failed or found no examples
+    unless dry_run_status.exitstatus == 1 && json_parsed_ok
+      warn "\nWarning: RSpec dry-run command failed for paths: #{discovery_paths.join(', ')}. Exit status: #{dry_run_status.exitstatus}"
+      warn "Stderr: #{stderr_output}" unless stderr_output.empty?
+      warn "Stdout (truncated): #{json_output[0..1000]}..."
+    end
+  end
+end
+
+individual_test_targets.uniq!
+
+# Sort the discovered targets for consistent and readable output
+individual_test_targets.sort_by! do |target|
+  match = target.match(/^(.*?):(\d+)$/)
+  if match
+    file_path = match[1]
+    line_number = match[2].to_i
+    [file_path, line_number]
+  else
+    # Should not happen if discovery logic is correct, but handle defensively
+    [target, 0] # Put incorrectly formatted targets first
+  end
+end
+
+puts "Initial discovery found #{explicit_targets.size} explicit targets and #{discovery_paths.size} paths/files for detailed discovery." if options.verbose
+
+if individual_test_targets.empty?
+  warn "Error: No individual test examples found for the given targets."
+  exit(1)
+end
+
+puts "Discovered #{individual_test_targets.count} individual test examples to run #{options.times} times."
+
+if options.verbose
+  puts "  Discovered targets:"
+  individual_test_targets.each { |target| puts "    - #{target}" }
+end
+
+# --- Results storage ---
+# { "file_path:line_number" => { failures: 0, failed_runs: [], failure_details: Set.new } }
+# failure_details stores unique [description, class, message, stack_trace_string] pairs
+test_failures = Hash.new do |h, k|
+  h[k] = { failures: 0, failed_runs: [], failure_details: Set.new }
+end
+
+# --- Track failed test IDs for stop-after ---
+failed_test_ids = Set.new
+
+# --- Interrupt Handling Setup ---
+interrupted = false
+interrupt_reason = "user"
+Signal.trap('INT') do
+  puts "\n\nCtrl+C detected! Interrupting runs and generating summary..."
+  interrupt_reason = "user"
+  interrupted = true
+end
+
+# --- Function to run a single iteration of a test target ---
+def run_single_iteration(test_target, run_index, options, worker_number)
+  # Set TEST_ENV_NUMBER based on the parallel worker number
+  # Worker 0 uses the default DB (no TEST_ENV_NUMBER), worker 1 uses TEST_ENV_NUMBER=2, etc.
+  env = {}
+  test_env_num_val = worker_number + 1
+  env['TEST_ENV_NUMBER'] = test_env_num_val.to_s if test_env_num_val > 1
+
+  # --- Run test ONCE with JSON formatter ---
+  json_command = "#{options.runner_command} #{Shellwords.escape(test_target)} -f json"
+  json_output, stderr_output, json_status = Open3.capture3(env, json_command)
+
+  # --- Check exit status ---
+  exit_status = json_status.exitstatus
+
+  # 1. Handle Success (Exit Code 0)
+  if exit_status == 0
+    # Optionally parse JSON to ensure it looks like a pass, but for now, trust exit code 0
+    return nil # Pass
+  end
+
+  # 2. Handle Test Failure (Exit Code 1)
+  if exit_status == 1
+    begin
+      parsed_output = JSON.parse(json_output)
+      if parsed_output && parsed_output['examples'] && !parsed_output['examples'].empty? && parsed_output['examples'].first
+         example = parsed_output['examples'].first
+         if example['status'] == 'failed'
+           if example['exception']
+             description = example['full_description']
+             exception_class = example['exception']['class']
+             msg = example['exception']['message']
+             backtrace_str = (example['exception']['backtrace'] || []).join("\n")
+             if description && exception_class && msg
+               # Return details AND raw output
+               return {
+                 run_index: run_index,
+                 details: [description, exception_class, msg, backtrace_str],
+                 raw_json: json_output,
+                 raw_stderr: stderr_output,
+                 error_context: "Failure details parsed successfully",
+                 raw_output_available: true
+               }
+             else
+               # Log missing essential details
+               puts "\nDiag: Missing essential failure details in RSpec JSON for #{test_target} on run ##{run_index} (parallel). Desc: #{description.inspect}, Class: #{exception_class.inspect}, Msg: #{msg.inspect}"
+               return { run_index: run_index, details: nil, raw_json: json_output, raw_stderr: stderr_output, error_context: "Failed test JSON missing essential details (desc/class/msg)", raw_output_available: true }
+             end
+           else
+             # Log missing 'exception' key
+             puts "\nDiag: Missing 'exception' details in RSpec JSON for #{test_target} on run ##{run_index} (parallel). Example data: #{example.inspect}"
+             return { run_index: run_index, details: nil, raw_json: json_output, raw_stderr: stderr_output, error_context: "Failed test JSON missing 'exception' key", raw_output_available: true }
+           end
+         else # Status was not 'failed' despite exit code 1 (unexpected)
+           return { run_index: run_index, details: nil, raw_json: json_output, raw_stderr: stderr_output, error_context: "RSpec exited 1 but JSON status was '#{example['status']}'", raw_output_available: true }
+         end
+      else # JSON missing examples array
+         return { run_index: run_index, details: nil, raw_json: json_output, raw_stderr: stderr_output, error_context: "RSpec exited 1 but JSON missing/empty 'examples' array", raw_output_available: true }
+      end
+    rescue JSON::ParserError => e
+      # Failed to parse JSON despite exit code 1
+      return { run_index: run_index, details: nil, raw_json: json_output, raw_stderr: stderr_output, error_context: "RSpec exited 1, JSON Parse Error: #{e.message}", raw_output_available: true }
+    end
+  end
+
+  # 3. Handle Other Errors (Exit Code != 0 and != 1)
+  # Rspec command itself failed for some reason (e.g., setup error, invalid command)
+  return { run_index: run_index, details: nil, raw_json: json_output, raw_stderr: stderr_output, error_context: "RSpec command failed unexpectedly (Exit: #{exit_status})", raw_output_available: true }
+end
+
+# --- Main execution logic ---
+puts "\nStarting test runs (using up to #{options.parallel_processes} processes per test)..."
+begin # Ensure report runs even if interrupted
+  # Create a lambda to access the shared `interrupted` flag safely
+  global_interrupted_flag = -> { interrupted }
+
+  total_targets = individual_test_targets.count
+  individual_test_targets.each_with_index do |test_target, index|
+    break if interrupted # Check global interrupt before starting a test target
+
+    current_progress = index + 1
+    puts "\n[#{current_progress}/#{total_targets}] Running #{test_target} #{options.times} times..."
+
+    # --- Aggregate results for the current test target (initialize) ---
+    target_failures = 0
+    target_failed_runs = []
+    target_failure_details_with_counts = Hash.new(0)
+    highest_run_index_processed_for_target = 0 # Track highest index processed
+    target_raw_output_samples = {} # Store raw output for this target
+
+    # Process iterations in batches controlled by parallel_processes
+    (1..options.times).each_slice(options.parallel_processes) do |batch_run_indices|
+       break if interrupted # Check global interrupt before starting a batch
+
+       # Run the current batch of iterations in parallel
+       batch_results = Parallel.map(batch_run_indices, in_processes: options.parallel_processes) do |run_idx|
+         # Check global interrupt flag before starting an iteration within batch
+         next nil if global_interrupted_flag.call
+
+         # Get worker number for setting TEST_ENV_NUMBER
+         worker_num = Parallel.worker_number
+
+         # Run the single iteration, passing the worker number
+         result = run_single_iteration(test_target, run_idx, options, worker_num)
+
+         # Print progress *after* the iteration finishes
+         print(result.nil? ? '.' : 'F')
+
+         # Return result for batch aggregation
+         result
+       end
+
+       # --- Aggregate results from the completed batch ---
+       # Process results alongside original indices to track highest index processed
+       last_processed_index_in_batch = 0
+       batch_run_indices.zip(batch_results).each do |run_idx, res|
+          last_processed_index_in_batch = run_idx # Update highest index processed in this batch
+          if res
+             target_failures += 1
+             target_failed_runs << res[:run_index]
+             if res[:details]
+               target_failure_details_with_counts[res[:details]] += 1
+             else
+               # Always store raw output samples for the first few failures (up to limit)
+               if target_raw_output_samples.size < 3
+                 # Debug check before storing
+                 if res[:raw_output_available]
+                   puts "DEBUG [Aggregation]: Raw output available for run ##{res[:run_index]}. Attempting storage."
+                 else
+                   puts "DEBUG [Aggregation]: Raw output NOT available for run ##{res[:run_index]}. Storage skipped."
+                 end
+                 target_raw_output_samples[res[:run_index]] = {
+                   json: res.fetch(:raw_json, "(Not Captured)"), # Use fetch for safety
+                   stderr: res.fetch(:raw_stderr, "(Not Captured)"),
+                   context: res.fetch(:error_context, "(No Context)")
+                 }
+               end
+             end
+          end
+        end
+
+        # Update overall max index processed for this target
+        highest_run_index_processed_for_target = [highest_run_index_processed_for_target, last_processed_index_in_batch].max
+
+        # Check fail-fast condition *after each batch*
+        if options.fail_fast_count && target_failures >= options.fail_fast_count
+          puts " (Fail-fast triggered after #{target_failures} failures)" # Add reason for stopping early
+          break # Stop processing further batches for *this test target* ONLY.
+        end
+      end
+
+      # If the loop finished naturally (no fail-fast break), print final count if not already printed by fail-fast
+      unless options.fail_fast_count && target_failures >= options.fail_fast_count
+          puts " (#{target_failures} failures)"
+      end
+      # Determine final runs_attempted count
+      final_runs_attempted = 0
+      fail_fast_triggered = options.fail_fast_count && target_failures >= options.fail_fast_count
+      if !interrupted && !fail_fast_triggered
+        # Completed fully
+        final_runs_attempted = options.times
+      else
+        # Interrupted or fail-fast triggered - use highest index processed
+        final_runs_attempted = highest_run_index_processed_for_target
+      end
+
+      # Store aggregated results for the completed test target
+      test_id = test_target
+      test_failures[test_id] = {
+        failures: target_failures,
+        failed_runs: target_failed_runs.sort,
+        failure_details: target_failure_details_with_counts, # Store the hash with counts
+        runs_attempted: final_runs_attempted, # Store final count
+        raw_output_samples: target_raw_output_samples # Store raw output samples
+      }
+      # Only add to failed_test_ids if actual failures occurred
+      failed_test_ids.add(test_id) if target_failures > 0
+
+      # --- Check conditions to stop processing SUBSEQUENT tests ---
+
+      # Only the stop-after condition should break the outer loop
+      if options.stop_after_count && failed_test_ids.size >= options.stop_after_count
+        puts "\n  Stop-after condition met: #{failed_test_ids.size} unique test(s) failed (limit: #{options.stop_after_count}). Stopping subsequent tests."
+        # Stop-after takes precedence over fail-fast for the final interrupt reason
+        interrupt_reason = "stop-after"
+        interrupted = true
+        break # Stop processing *next* test targets (break the outer loop)
+      end
+
+    end # individual_test_targets.each_with_index loop
+
+ensure # This block always runs
+  # --- Report results ---
+  report_interrupted = interrupted # Capture state before potential further changes
+
+  puts "\n--- #{report_interrupted ? "Interrupted Run (#{interrupt_reason})" : 'Final'} Failure Summary ---"
+
+  if test_failures.empty?
+    puts "No failures detected in the runs performed."
+  else
+    # Sort by unique failure details count desc, then total failures desc
+    sorted_failures = test_failures.sort_by do |test_id, data|
+      unique_details = data[:failure_details] || Set.new # Handle potential nil if aggregation failed
+      total_fails = data[:failures] || 0
+      [-unique_details.size, -total_fails]
+    end
+
+    # Check if global stop-after condition was met based on aggregated results
+    if options.stop_after_count && failed_test_ids.size >= options.stop_after_count
+       puts "\n*** Global Stop-After Condition Met: #{failed_test_ids.size} unique test(s) failed (limit: #{options.stop_after_count})."
+       puts "*** Note: Due to parallel execution, the run may not have stopped immediately when the limit was reached."
+       interrupt_reason = "stop-after" # Set for final message
+       report_interrupted = true # Mark report as interrupted by stop-after
+    end
+
+    puts "\nIntermittent test failures (most frequent/varied first):"
+    sorted_failures.each do |test_id, data|
+      # Determine actual runs attempted for this test
+      actual_runs = data[:runs_attempted] || options.times # Use recorded runs or default
+
+      total_fails = data[:failures] || 0
+      failure_rate_actual = actual_runs > 0 ? (total_fails * 100.0 / actual_runs).round(1) : 0.0
+      puts "\n- #{test_id}: #{total_fails} failures out of #{actual_runs} attempted runs (#{failure_rate_actual}%)"
+
+      failed_runs_list = (data[:failed_runs] || []).uniq.sort
+      puts "  Failed runs (index): #{failed_runs_list.join(', ')}" unless failed_runs_list.empty?
+
+      unique_details = data[:failure_details] || Set.new
+      unique_details_count = unique_details.size
+      # Check if it's a hash (new format) or set (old/fallback)
+      if unique_details.is_a?(Hash) && unique_details_count > 0
+        puts "  Found #{unique_details_count} unique failure signature(s):"
+        unique_details.each_with_index do |(signature, count), idx|
+          # Signature should be the array [description, class, msg, backtrace]
+          if signature.is_a?(Array) && signature.size >= 3
+             description, exception_class, msg, backtrace_str = signature
+             puts "\n    Failure ##{idx + 1}: (#{count} failures)"
+             # Print description (indented)
+             puts "      #{description || 'No Description'}"
+             # Print exception class and message (indented)
+             msg_lines = (msg || 'No Message').lines
+             puts "      #{exception_class || 'No Exception Class'}: #{msg_lines[0].chomp}"
+             msg_lines[1..].each { |line| puts "        #{line.chomp}" }
+             # Print stack trace, prefixed with # and indented
+             if backtrace_str && !backtrace_str.empty?
+               puts backtrace_str.lines.map { |l| "        # #{l.chomp}" }.join("\n")
+             else
+                puts "        # No backtrace available"
+             end
+          else
+             # Handle case where signature is not the expected array
+             puts "\n    Failure ##{idx + 1}: (#{count} failures) - Malformed signature data: #{signature.inspect}"
+          end
+        end
+      else
+        # unique_details_count == 0
+        # Original block for printing truncated output when details are missing and not using -vv
+        if total_fails > 0 && unique_details_count == 0
+          raw_samples = data[:raw_output_samples] || {}
+          if !raw_samples.empty?
+            puts "  (Failure details were not captured successfully)"
+            # Print TRUNCATED output here if needed (or rely on the -vv block)
+            # Example: Print context only
+            raw_samples.each do |run_idx, output_data|
+              puts "    Diagnostic Info for Run ##{run_idx}: Context: #{output_data[:context] || 'N/A'} (use -vv for full output)"
+            end
+          else
+            puts "  (Failure details were not captured, and no raw output was stored)"
+          end
+        end
+      end
+
+      # Always print raw samples if -vv is set and samples exist
+      raw_samples_for_vv = data[:raw_output_samples] || {}
+      if options.very_verbose && !raw_samples_for_vv.empty?
+        puts "\n  Raw Output Samples (--very-verbose):"
+        raw_samples_for_vv.each do |run_idx, output_data|
+           puts "    Diagnostic Info for Run ##{run_idx}:"
+           puts "      Context: #{output_data[:context] || 'N/A'}"
+           puts "      Stderr:"
+           if output_data[:stderr] && !output_data[:stderr].empty? && output_data[:stderr] != "(Not Captured)"
+              output_data[:stderr].lines.each { |line| puts "        #{line.chomp}" }
+           else
+              puts "        #{output_data[:stderr]}" # Print (empty) or (Not Captured)
+           end
+           puts "      Stdout (JSON Attempt):"
+           if output_data[:json] && !output_data[:json].empty? && output_data[:json] != "(Not Captured)"
+              output_data[:json].lines.each { |line| puts "        #{line.chomp}" }
+           else
+              puts "        #{output_data[:json]}" # Print (empty) or (Not Captured)
+           end
+         end
+      end
+    end
+  end
+
+  # Use the captured interrupt state for the final message
+  # If interrupted is true, the reason MUST be 'stop-after' based on the logic above
+  final_message = "Script finished"
+  final_message += " (interrupted by #{interrupt_reason})" if report_interrupted
+  final_message += "."
+  puts "\n#{final_message}"
+
+  # Optional: Add a note if any tests triggered their individual fail-fast, even if run wasn't interrupted
+  any_fail_fast_triggered = test_failures.any? do |_id, data|
+    options.fail_fast_count && data[:failures] >= options.fail_fast_count
+  end
+  puts "(Note: One or more tests may have stopped their runs early due to --fail-fast=#{options.fail_fast_count})" if any_fail_fast_triggered && !report_interrupted
+
+end # End begin/ensure block
