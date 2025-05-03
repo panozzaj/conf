@@ -20,6 +20,7 @@ options.fail_fast_count = nil # Per-test fail-fast count (nil means disabled)
 options.stop_after_count = nil # Global stop count (nil means disabled)
 options.runner_command = "./bin/rspec" # Default runner command
 options.very_verbose = false # Default very verbose state
+options.time_script = true # Default: time the script execution
 # Default parallel processes to number of cores, fallback to 1
 begin
   options.parallel_processes = Etc.nprocessors
@@ -38,21 +39,31 @@ if options.parallel_processes > 1
   end
 end
 
+# --- Manual pre-parsing for -v/--verbose ---
+# Check ARGV *before* OptionParser sees it
+verbose_found = nil # Use nil to track if set explicitly
+ARGV.delete_if do |arg|
+  if arg == '-v' || arg == '--verbose'
+    verbose_found = true
+    true # delete it
+  elsif arg == '--no-verbose'
+    verbose_found = false # Explicitly set to false
+    true # delete it
+  else
+    false # keep it
+  end
+end
+# Set options.verbose only if the flag was found manually
+options.verbose = verbose_found unless verbose_found.nil?
+
 # Parse command-line options
-OptionParser.new do |opts|
+puts "ARGV before parse: #{ARGV.inspect}" # DEBUG
+opt_parser = OptionParser.new do |opts|
   opts.banner = "Usage: ntimes_suite.rb [options] [paths...]"
 
+  # --- Options that take arguments ---
   opts.on("-n", "--times TIMES", Integer, "Number of times to run each spec example (default: #{options.times})") do |n|
     options.times = n
-  end
-
-  opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
-    options.verbose = v
-  end
-
-  opts.on("-vv", "--very-verbose", "Run very verbosely (implies -v, shows full failure output)") do |vv|
-    options.very_verbose = vv
-    options.verbose = true if vv # -vv implies -v
   end
 
   opts.on("-F", "--fail-fast [COUNT]", Integer, "Stop running a test after it fails COUNT times (default: 1)") do |count|
@@ -71,6 +82,17 @@ OptionParser.new do |opts|
     options.runner_command = cmd
   end
 
+  # --- Boolean Flags / Switches ---
+  opts.on("-vv", "--very-verbose", "Run very verbosely (implies -v, shows full failure output)") do |vv|
+    options.very_verbose = vv
+    options.verbose = true if vv # -vv implies -v, ensure verbose is still set if -vv used
+  end
+
+  opts.on("--[no-]time", "Time the entire script execution (default: true)") do |t|
+    options.time_script = t
+  end
+
+  # --- Help ---
   opts.on("-h", "--help", "Prints this help") do
     puts opts
     exit
@@ -78,7 +100,8 @@ OptionParser.new do |opts|
 end.parse!
 
 # Remaining arguments are paths/files
-options.paths = ARGV if ARGV.any?
+# options.paths = ARGV if ARGV.any?
+options.paths = ARGV.empty? ? ['spec'] : ARGV # Correctly handle paths
 
 puts "Running specs #{options.times} times in paths: #{options.paths.join(', ')}"
 
@@ -317,6 +340,8 @@ end
 
 # --- Main execution logic ---
 puts "\nStarting test runs (using up to #{options.parallel_processes} processes per test)..."
+start_time = Time.now # Record start time
+
 begin # Ensure report runs even if interrupted
   # Create a lambda to access the shared `interrupted` flag safely
   global_interrupted_flag = -> { interrupted }
@@ -555,3 +580,11 @@ ensure # This block always runs
   puts "(Note: One or more tests may have stopped their runs early due to --fail-fast=#{options.fail_fast_count})" if any_fail_fast_triggered && !report_interrupted
 
 end # End begin/ensure block
+
+# --- Calculate and print duration ---
+end_time = Time.now
+duration_seconds = (end_time - start_time).round(2)
+
+if options.time_script
+  puts "Total script execution time: #{duration_seconds} seconds."
+end
