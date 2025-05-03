@@ -670,7 +670,21 @@ alias vaup="vagrant up"
 alias vap="vagrant provision"
 alias varedo="vagrant destroy -f; vagrant up"
 
-alias wds="[ -f ./bin/webpack-dev-server ] && ./bin/webpack-dev-server || ./bin/webpacker-dev-server"
+# kill existing server, and then use ./bin/webpacker-dev-server or ./bin/shakapacker-dev-server
+function wds() {
+  # kill any existing servers on this port
+  lsof -i tcp:3035 | tail -n+2 | awk '{print $2}' | sort -u | xargs kill -9
+
+  if [[ -f ./bin/webpacker-dev-server ]]; then
+    echo ./bin/webpacker-dev-server $@
+    ./bin/webpacker-dev-server $@
+  elif [[ -f ./bin/shakapacker-dev-server ]]; then
+    echo ./bin/shakapacker-dev-server $@
+    ./bin/shakapacker-dev-server $@
+  else
+    echo "This project does not have a ./bin/webpacker-dev-server or ./bin/shakapacker-dev-server"
+  fi
+}
 
 alias py="python"
 
