@@ -27,6 +27,17 @@ rescue NotImplementedError
   options.parallel_processes = 1
 end
 
+# Check for parallel gem if running in parallel
+if options.parallel_processes > 1
+  begin
+    require 'parallel'
+  rescue LoadError
+    warn "Error: The 'parallel' gem is required for parallel execution (-j > 1)."
+    warn "Please install it: gem install parallel"
+    exit(1)
+  end
+end
+
 # Parse command-line options
 OptionParser.new do |opts|
   opts.banner = "Usage: ntimes_suite.rb [options] [paths...]"
