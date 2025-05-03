@@ -11,6 +11,12 @@ require 'open3'
 require 'parallel'
 require 'etc'
 
+# --- Helper Functions ---
+def pluralize(count, singular, plural = nil)
+  plural ||= "#{singular}s"
+  "#{count} #{count == 1 ? singular : plural}"
+end
+
 # Default options
 options = OpenStruct.new
 options.times = 50
@@ -105,10 +111,9 @@ opt_parser = OptionParser.new do |opts|
 end.parse!
 
 # Remaining arguments are paths/files
-# options.paths = ARGV if ARGV.any?
 options.paths = ARGV.empty? ? ['spec'] : ARGV # Correctly handle paths
 
-puts "Running specs #{options.times} times in paths: #{options.paths.join(', ')}"
+puts "Running specs #{pluralize(options.times, 'time')} in paths: #{options.paths.join(', ')}"
 
 # --- Find initial spec files/targets ---
 spec_files = []
@@ -141,7 +146,7 @@ if spec_files.empty?
   exit(1)
 end
 
-puts "Found #{spec_files.count} initial spec targets."
+puts "Found #{pluralize(spec_files.count, 'initial spec target')}."
 
 # --- Discover individual test examples ---
 puts "Discovering individual test examples..."
@@ -239,14 +244,14 @@ individual_test_targets.sort_by! do |target|
   end
 end
 
-puts "Initial discovery found #{explicit_targets.size} explicit targets and #{discovery_paths.size} paths/files for detailed discovery." if options.verbose
+puts "Initial discovery found #{pluralize(explicit_targets.size, 'explicit target')} and #{pluralize(discovery_paths.size, 'path/file')} for detailed discovery." if options.verbose
 
 if individual_test_targets.empty?
   warn "Error: No individual test examples found for the given targets."
   exit(1)
 end
 
-puts "Discovered #{individual_test_targets.count} individual test examples to run #{options.times} times."
+puts "Discovered #{pluralize(individual_test_targets.count, 'individual test example')} to run #{pluralize(options.times, 'time')}."
 
 if options.verbose
   puts "  Discovered targets:"
@@ -344,7 +349,7 @@ def run_single_iteration(test_target, run_index, options, worker_number)
 end
 
 # --- Main execution logic ---
-puts "\nStarting test runs (using up to #{options.parallel_processes} processes per test)..."
+puts "\nStarting test runs (using up to #{pluralize(options.parallel_processes, 'process', 'processes')} per test)..."
 start_time = Time.now # Record start time
 
 begin # Ensure report runs even if interrupted
@@ -356,7 +361,7 @@ begin # Ensure report runs even if interrupted
     break if interrupted # Check global interrupt before starting a test target
 
     current_progress = index + 1
-    puts "\n[#{current_progress}/#{total_targets}] Running #{test_target} #{options.times} times..."
+    puts "\n[#{current_progress}/#{total_targets}] Running #{test_target} #{pluralize(options.times, 'time')}..."
 
     # --- Aggregate results for the current test target (initialize) ---
     target_failures = 0
@@ -441,14 +446,14 @@ begin # Ensure report runs even if interrupted
 
         # Check fail-fast condition *after each batch*
         if options.fail_fast_count && target_failures >= options.fail_fast_count
-          puts " (Fail-fast triggered after #{target_failures} failures)" # Add reason for stopping early
+          puts " (Fail-fast triggered after #{pluralize(target_failures, 'failure')})" # Add reason for stopping early
           break # Stop processing further batches for *this test target* ONLY.
         end
       end
 
       # If the loop finished naturally (no fail-fast break), print final count if not already printed by fail-fast
       unless options.fail_fast_count && target_failures >= options.fail_fast_count
-          puts " (#{target_failures} failures)"
+          puts " (#{pluralize(target_failures, 'failure')})"
       end
       # Determine final runs_attempted count
       final_runs_attempted = 0
@@ -614,10 +619,10 @@ Intermittent test failures (most frequent/varied first):"
 
 end # End begin/ensure block
 
-# --- Calculate and print duration ---
+# Calculate and print duration
 end_time = Time.now
 duration_seconds = (end_time - start_time).round(2)
 
 if options.time_script
-  puts "Total script execution time: #{duration_seconds} seconds."
+  puts "Total script execution time: #{pluralize(duration_seconds, 'second')}."
 end
