@@ -10,6 +10,23 @@ require 'set'
 require 'open3'
 require 'parallel'
 require 'etc'
+require 'rainbow'
+
+# --- Check for Rainbow Gem ---
+begin
+  require 'rainbow'
+rescue LoadError
+  warn "Error: The 'rainbow' gem is required for colored output."
+  warn "Please install it: gem install rainbow"
+  # Optionally, you could disable colors here or exit,
+  # but for now, we'll let it proceed and potentially fail later if Rainbow methods are called.
+  # Alternatively, define dummy color methods if the gem is not found.
+  class String
+    def green; self; end
+    def red; self; end
+  end
+  puts "Warning: 'rainbow' gem not found. Output will not be colored."
+end
 
 # --- Helper Functions ---
 def pluralize(count, singular, plural = nil)
@@ -191,7 +208,18 @@ if discovery_paths.any?
   dry_run_command = "#{discovery_runner} #{escaped_paths} --dry-run -f json"
   puts "Running discovery command: #{dry_run_command}" if options.verbose
   # Capture both stdout and stderr for better error reporting
-  json_output, stderr_output, dry_run_status = Open3.capture3(dry_run_command)
+  raw_json_output, stderr_output, dry_run_status = Open3.capture3(dry_run_command)
+
+  # Attempt to find the actual start of the JSON content if there's a preamble
+  json_output = raw_json_output # Default to raw output
+  first_json_line_index = raw_json_output.lines.find_index { |line| line.strip.start_with?('{') }
+  if first_json_line_index
+    json_output = raw_json_output.lines[first_json_line_index..].join
+  else
+    # If no line starting with '{' is found, it might be an empty output or already an error
+    # The parsing attempt below will handle it and trigger warnings if necessary
+    puts "Warning: Could not find starting '{' in RSpec dry-run JSON output. Attempting to parse as is." if options.verbose && !raw_json_output.strip.empty?
+  end
 
   if dry_run_status.success?
     begin
@@ -277,7 +305,7 @@ failed_test_ids = Set.new
 interrupted = false
 interrupt_reason = "user"
 Signal.trap('INT') do
-  puts "\n\nCtrl+C detected! Interrupting runs and generating summary..."
+  #puts "\n\nCtrl+C detected! Interrupting runs and generating summary..."
   interrupt_reason = "user"
   interrupted = true
 end
@@ -306,8 +334,19 @@ def run_single_iteration(test_target, run_index, options, worker_number)
 
   # 2. Handle Test Failure (Exit Code 1)
   if exit_status == 1
+    # Attempt to find the actual start of the JSON content if there's a preamble
+    json_to_parse = json_output # Default to the raw output
+    first_json_line_index = json_output.lines.find_index { |line| line.strip.start_with?('{') }
+    if first_json_line_index
+      json_to_parse = json_output.lines[first_json_line_index..].join
+    else
+      # If no line starting with '{' is found, it might be an empty output or already an error.
+      # The parsing attempt below will handle it. We could add a verbose warning here if needed.
+      puts "Warning: Could not find starting '{' in RSpec JSON output for #{test_target} on run ##{run_index}. Attempting to parse as is." if options.very_verbose && !json_output.strip.empty?
+    end
+
     begin
-      parsed_output = JSON.parse(json_output)
+      parsed_output = JSON.parse(json_to_parse) # Use the potentially cleaned JSON
       if parsed_output && parsed_output['examples'] && !parsed_output['examples'].empty? && parsed_output['examples'].first
          example = parsed_output['examples'].first
          if example['status'] == 'failed'
@@ -344,6 +383,7 @@ def run_single_iteration(test_target, run_index, options, worker_number)
       end
     rescue JSON::ParserError => e
       # Failed to parse JSON despite exit code 1
+      # The json_output here is the original raw output, which is what we want to store for diagnostics.
       return { run_index: run_index, details: nil, raw_json: json_output, raw_stderr: stderr_output, error_context: "RSpec exited 1, JSON Parse Error: #{e.message}", raw_output_available: true }
     end
   end
@@ -393,24 +433,30 @@ begin # Ensure report runs even if interrupted
            result = run_single_iteration(test_target, run_idx, options, worker_num)
 
            # Print progress *after* the iteration finishes
-           print(result.nil? ? '.' : 'E') # Use 'E' for errors/failures
+           print(result.nil? ? Rainbow('.').green : Rainbow('E').red)
 
            # Return result for batch aggregation
            result
          end
-       rescue Parallel::Timeout, Parallel::DeadWorker => e
-         puts "
+       rescue ::Parallel::DeadWorker, ::Parallel::Kill => e
+         # If the interrupt was already initiated by the user (Ctrl+C), don't override the reason or print redundant warnings.
+         # The main interrupt handler has already set `interrupted = true` and `interrupt_reason = "user"`.
+         unless interrupt_reason == "user"
+           puts "
   WARNING: Batch failed for target '#{test_target}' due to #{e.class}! (Indices: #{batch_run_indices.join(', ')})"
-         puts "    Error: #{e.message}"
+           puts "    Error: #{e.message}"
 
-         # Mark all iterations in this batch as failed due to the exception
-         batch_results = batch_run_indices.map do |run_idx|
-           { run_index: run_idx, details: nil, raw_output_available: false, error_context: "Batch failed due to #{e.class}" }
+           # Mark all iterations in this batch as failed due to the exception
+           batch_results = batch_run_indices.map do |run_idx|
+             { run_index: run_idx, details: nil, raw_output_available: false, error_context: "Batch failed due to #{e.class}" }
+           end
+
+           # Treat this target as interrupted to stop further batches for it
+           # This will override the global `interrupted` flag if it wasn't already true, or keep it true.
+           # It will also set a more specific interrupt_reason if not already set by user.
+           interrupt_reason = e.class.name.split('::').last # e.g., "Timeout" or "DeadWorker"
          end
-
-         # Treat this target as interrupted to stop further batches for it
-         interrupt_reason = e.class.name.split('::').last # e.g., "Timeout" or "DeadWorker"
-         interrupted = true
+         interrupted = true # Ensure interrupted is true, whether by user or by this exception
          # We break *after* processing this failed batch's results below
        end
 
@@ -505,10 +551,8 @@ ensure # This block always runs
     puts "
 --- #{report_interrupted ? "Interrupted Run (#{interrupt_reason})" : 'Final'} Failure Summary ---"
 
-    if test_failures.empty?
-      puts "No failures detected in the runs performed."
-    else
-      # Sort by file path, then line number (numerically)
+    # Sort failures by file path, then line number (numerically)
+    sorted_failures = test_failures.sort_by do |test_id, data|
       match = test_id.match(/^(.*?):(\d+)$/)
       if match
         file_path = match[1]
@@ -529,7 +573,7 @@ ensure # This block always runs
     end
 
     puts "
-Intermittent test failures (most frequent/varied first):"
+Failures by location (file path, line number):"
     sorted_failures.each do |test_id, data|
       # Skip tests with zero failures
       total_fails = data[:failures] || 0
