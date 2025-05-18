@@ -417,6 +417,9 @@ augroup panozzaj_group
   autocmd BufNewFile,BufRead *.scss set filetype=scss
   autocmd BufNewFile,BufRead *.sqlx set filetype=sql
 
+  autocmd BufNewFile *.mdc 0r ~/.vim/file_templates/template.mdc
+  autocmd BufNewFile,BufRead *.mdc set filetype=markdown
+
   autocmd FileType conf set foldmethod=manual
   autocmd FileType less set omnifunc=csscomplete#CompleteCSS
   autocmd FileType make set noexpandtab " Don't expand tab in Makefiles

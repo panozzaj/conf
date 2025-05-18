@@ -1,0 +1,27 @@
+snippet clv "console.log variable" b
+console.log('$1: ', ${1})
+endsnippet
+
+snippet cl "console.log" b
+console.log('${1}')
+endsnippet
+
+snippet cev "console.error variable" b
+console.error('$1: ', ${1:err})
+endsnippet
+
+snippet ce "console.error" b
+console.error('${1}')
+endsnippet
+
+snippet pv
+puts "$1: #{${1}}"
+endsnippet
+
+snippet pry
+require 'pry'; binding.pry
+endsnippet
+
+snippet pdb
+require 'pry'; binding.pry
+endsnippet

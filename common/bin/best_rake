@@ -1,9 +1,6 @@
 #!/bin/sh
 
-if [ `which spring` ]; then
-  # use spring command if it is around
-  spring rake $@
-elif [ -f bin/rake ]; then
+if [ -f bin/rake ]; then
   # use binstub if it is around
   ./bin/rake $@
 elif [ -S .zeus.sock ]; then

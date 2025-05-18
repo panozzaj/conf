@@ -3,10 +3,7 @@
 # strip any "rspec" words from arguments
 args=`echo $@ | sed -e 's/rspec //g'`
 
-if [ `which spring` ]; then
-  # use spring command if it is around
-  spring rspec $args
-elif [ -f bin/rspec ]; then
+if [ -f bin/rspec ]; then
   # use binstub if it is around
   echo ./bin/rspec $args
   ./bin/rspec $args

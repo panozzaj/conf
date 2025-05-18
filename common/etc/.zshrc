@@ -71,10 +71,10 @@ bindkey "\e[3~" delete-char
 # rspec functionality here, uncomment the other alias. Otherwise I may delete
 # files unintentionally, etc.
 #alias r='echo "Nerfed r command"'
-alias r='best_rspec'
-alias rff='best_rspec --fail-fast'
+alias r='time best_rspec'
+alias rff='time best_rspec --fail-fast'
 
-alias t='./bin/test'
+alias t='time ./bin/test'
 
 alias ll='ls -lah'
 
@@ -745,6 +745,10 @@ fi
 
 if [[ ! "$PATH" =~ "/usr/local/sbin" ]]; then
   PATH="/usr/local/sbin:$PATH"
+fi
+
+if [[ ! "$PATH" =~ "$HOME/.docker/bin" ]]; then
+  PATH="$HOME/.docker/bin:$PATH"
 fi
 
 # set this after /usr/local/bin setting to get latest git
