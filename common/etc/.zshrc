@@ -281,6 +281,8 @@ function cmig() {
   ls -d1 db/migrate/* | tail -1 | xargs cat
 }
 
+alias catmig=cmig
+
 function catdm() {
   find db/migrate | sort -r | head -1 | xargs cat
 }
