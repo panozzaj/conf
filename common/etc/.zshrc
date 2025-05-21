@@ -804,6 +804,11 @@ alias dff="dataform format"
 alias dfr="dataform run"
 alias dfrdr="dataform run --dry-run"
 alias dfra="dataform run --actions"
+function dfraid() {
+  cmd="dataform run --include-deps --include-dependents --actions $@"
+  echo $cmd
+  eval $cmd
+}
 
 # some Ruby compiler optimizations
 # see http://stackoverflow.com/questions/4461346/slow-rails-stack
