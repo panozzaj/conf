@@ -506,8 +506,7 @@ alias ga="git add --all"
 alias gaa="git add --all"
 alias gai="git add --interactive"
 alias gaia="git add --intent-to-add"
-alias gagem="git add Gemfile Gemfile.lock"
-alias gagems="git add Gemfile Gemfile.lock"
+alias gagems="git add Gemfile Gemfile.lock; git diff --cached Gemfile Gemfile.lock; echo 'added, consider running gem_summary to get a quick commit message'"
 alias gajs="git_add_ignore_missing package.json package-lock.json yarn.lock"
 alias gam="git amend"
 alias gamn="git amend -n"
@@ -861,6 +860,25 @@ function reset_cursor {
 
 function echo_path {
   echo $PATH | tr ':' '\n'
+}
+
+function gem_summary {
+  if git diff --cached Gemfile Gemfile.lock; then
+    echo "No staged changes in Gemfile.lock"
+    return 1
+  else
+    echo "Staged changes detected:"
+  fi
+
+  git diff --cached Gemfile Gemfile.lock
+
+  summary_prompt="output the primary gem that was updated in this format: gems: (Upgrade|Downgrade) <gemname> <version1> -> <version2>"
+  summary=$(git diff --cached -U0 Gemfile Gemfile.lock | llm $summary_prompt)
+
+  echo $summary
+  if [[ -n "$summary" ]]; then
+    git commit -m "$summary" --edit
+  fi
 }
 
 # http://stackoverflow.com/questions/2187829/constantly-updated-clock-in-zsh-prompt
