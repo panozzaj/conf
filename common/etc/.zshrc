@@ -870,17 +870,36 @@ function echo_path {
 }
 
 function gem_summary {
-  if git diff --cached Gemfile Gemfile.lock; then
+  if [[ -n $(git diff --cached Gemfile Gemfile.lock) ]]; then
+    echo "Staged changes detected:"
+  else
     echo "No staged changes in Gemfile.lock"
     return 1
-  else
-    echo "Staged changes detected:"
   fi
 
   git diff --cached Gemfile Gemfile.lock
 
-  summary_prompt="output the primary gem that was updated in this format: gems: (Upgrade|Downgrade) <gemname> <version1> -> <version2>"
+  summary_prompt="output the primary gem that was updated in this format: gems: (Upgrade|Downgrade) <gemname> <version1> -> <version2>. If the gem was added, just say 'gems: Added <gemname>'. If the gem was removed, just say 'gems: Removed <gemname>'."
   summary=$(git diff --cached -U0 Gemfile Gemfile.lock | llm $summary_prompt)
+
+  echo $summary
+  if [[ -n "$summary" ]]; then
+    git commit -m "$summary" --edit
+  fi
+}
+
+function llm_commit {
+  if [[ -n $(git diff --cached) ]]; then
+    echo "Staged changes detected:"
+  else
+    echo "No staged changes"
+    return 1
+  fi
+
+  git diff --cached
+
+  summary_prompt='output a one line description of the change. it MUST be 50 characters or less total. if the change was only to .cursor/rules file(s), start with ".cursor/rules: "'
+  summary=$(git diff --cached -U0 | llm $summary_prompt)
 
   echo $summary
   if [[ -n "$summary" ]]; then
