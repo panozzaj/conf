@@ -6,11 +6,6 @@ if ! command -v fzf &> /dev/null; then
     exit 1
 fi
 
-# Create a new branch for dependency updates
-git checkout master
-git pull
-git checkout -b dependency-updates
-
 # Get all remote Dependabot branches
 dependabot_branches=$(git branch -r | grep dependabot | sed 's/origin\///')
 
@@ -33,5 +28,5 @@ do
     fi
 done
 
-echo "All selected Dependabot changes have been applied to the 'dependency-updates' branch"
+echo "All selected Dependabot changes have been applied to the current branch."
 echo "Please review the changes, test locally, and then push the branch to create a PR"
