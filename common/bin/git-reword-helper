@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# This is the script you will execute, e.g., git-reword-helper HEAD~3
+
+# --- Configuration ---
+# Assumes 'custom_reword_editor.sh' is in the same directory as this script or in PATH.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+EDITOR_SCRIPT_PATH="$SCRIPT_DIR/custom_reword_editor.sh" # Or just "custom_reword_editor.sh" if in PATH
+
+if [ ! -x "$EDITOR_SCRIPT_PATH" ]; then
+    echo "Error: Editor script '$EDITOR_SCRIPT_PATH' not found or not executable." >&2
+    echo "Please ensure it's in the same directory as this script, or in your PATH, and is executable." >&2
+    exit 1
+fi
+
+# Store the user's original GIT_EDITOR to pass it to our custom editor script
+# and to restore it later if this script were to do more.
+# If 'git config core.editor' is not set, default to 'vim'.
+ORIGINAL_GIT_EDITOR=$(git config core.editor || echo "vim")
+export REAL_GIT_EDITOR="$ORIGINAL_GIT_EDITOR"
+
+# Set our custom script as the GIT_EDITOR for the rebase operation
+export GIT_EDITOR="$EDITOR_SCRIPT_PATH"
+
+# --- Cleanup ---
+# Define files that custom_reword_editor.sh uses, for cleanup.
+MAPPINGS_FILE="/tmp/git_reword_mappings.txt"
+REWORD_COUNTER_FILE="/tmp/git_reword_counter.txt"
+ORIGINAL_TODO_CAPTURE_FILE="/tmp/git_rebase_todo_original.txt"
+
+cleanup_temporary_files() {
+    rm -f "$MAPPINGS_FILE" "$REWORD_COUNTER_FILE" "$ORIGINAL_TODO_CAPTURE_FILE"
+}
+
+# Set a trap to clean up the temporary files when this script exits (normally or on error/interrupt).
+trap cleanup_temporary_files EXIT
+
+# Execute the actual git rebase command with all arguments passed to this script
+git rebase -i "$@"
+
+# The trap will handle cleanup upon exit.
+# Note: If git rebase itself forks and detaches in ways that break trap inheritance,
+# cleanup might be incomplete in some edge cases. For typical interactive rebases, this should work.
+echo "Rebase process initiated. Temporary files will be cleaned up on exit."
