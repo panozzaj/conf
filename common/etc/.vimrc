@@ -1,6 +1,13 @@
 " vim: set ts=2 sw=2:
 set nocompatible
 
+" Disable warnings about
+" A: swap files
+" I: intro message
+" F: file changed messages (I almost always press load and then undo if
+" needed)
+set shortmess+=AIF
+
 runtime bundle/vim-pathogen/autoload/pathogen.vim
 execute pathogen#infect('bundle/{}', 'bundle-colorschemes/{}')
 
