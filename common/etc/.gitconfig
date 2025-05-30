@@ -42,6 +42,7 @@
 [diff]
         renames = copies
         noprefix = true
+        colorMoved = default
 [difftool "sourcetree"]
         cmd = opendiff \"$LOCAL\" \"$REMOTE\"
 [github]
@@ -78,3 +79,20 @@
   path = .gitconfig-woven
 [includeIf "gitdir:~/Documents/dev/woven/code/woven-reviews/"]
   path = .gitconfig-woven-your-coworker
+
+[core]
+    pager = delta
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    navigate = true    # use n and N to move between diff sections
+    #line-numbers = true
+
+    # delta detects terminal colors automatically; set one of these to disable auto-detection
+    # dark = true
+    # light = true
+
+[merge]
+    conflictstyle = zdiff3
