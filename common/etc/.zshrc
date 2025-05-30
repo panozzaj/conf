@@ -386,6 +386,8 @@ function gspec() {
   echo $files | xargs echo
   echo $files | xargs best_rspec
 }
+alias gdspec=gspec
+alias gsspec=gspec
 
 # roughly: run any specs that we have changed on our feature branch
 function gdomspec() {
