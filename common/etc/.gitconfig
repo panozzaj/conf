@@ -29,6 +29,7 @@
         rest = reset
         rset = reset
         sub = submodule
+        wt = worktree
 [branch]
         autosetupmerge = true
 [color]
