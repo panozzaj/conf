@@ -325,3 +325,6 @@
 [submodule "common/.vim/bundle/fzf"]
 	path = common/.vim/bundle/fzf
 	url = https://github.com/junegunn/fzf
+[submodule "common/open_source/zummoner"]
+	path = common/open_source/zummoner
+	url = https://github.com/day50-dev/zummoner.git
