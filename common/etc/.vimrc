@@ -918,3 +918,7 @@ function! s:NetrwKeymaps()
   " Optionally, remap ? just for netrw buffers
   nmap <buffer> ? <Plug>NetrwHideEdit
 endfunction
+
+" change vim unimpaired binding to show the file when moving to next/previous file
+nnoremap <silent> ]a :keepjumps next<CR>:echo expand('%')<CR>
+nnoremap <silent> [a :keepjumps previous<CR>:echo expand('%')<CR>
