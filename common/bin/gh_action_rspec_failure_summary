@@ -1,0 +1,277 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'open3'
+require 'fileutils'
+require 'optparse'
+require 'rainbow'
+require 'shellwords'
+require 'net/http'
+require 'uri'
+
+# --- Helper Functions ---
+
+def run_cmd(cmd)
+  stdout, stderr, status = if cmd.is_a?(Array)
+                            Open3.capture3(*cmd)
+                          else
+                            Open3.capture3(cmd)
+                          end
+  unless status.success?
+    cmd_str = cmd.is_a?(Array) ? cmd.join(' ') : cmd
+    abort Rainbow("Error running: #{cmd_str}\n#{stderr}").red
+  end
+  stdout.strip
+end
+
+def get_owner_and_repo
+  remote_url = run_cmd("git remote get-url origin")
+  # git@github.com:owner/repo.git or https://github.com/owner/repo.git
+  match = remote_url.match(%r{(?:[:/])(?<owner>[^/]+)/(?<repo>[^/]+?)(\.git)?$})
+  if match
+    return [match[:owner], match[:repo]]
+  else
+    abort Rainbow("Could not parse owner and repo from git remote URL: #{remote_url}").red
+  end
+end
+
+def get_auth_token
+  token = run_cmd("gh auth token")
+  abort Rainbow("Could not get auth token from gh. Please run 'gh auth login'.").red if token.empty?
+  token
+end
+
+def get_latest_run_id(workflow: nil)
+  cmd = ['gh', 'run', 'list', '--limit', '10', '--json', 'status,databaseId,displayTitle,name']
+  cmd << "--workflow=\"#{workflow}\"" if workflow
+  json_output = run_cmd(cmd.join(' '))
+  begin
+    runs = JSON.parse(json_output)
+  rescue JSON::ParserError
+    abort Rainbow("Error parsing JSON from gh command. Output was:\n#{json_output}").red
+  end
+  abort Rainbow('No runs found.').red if runs.empty?
+  completed_run = runs.find { |r| r['status'] == 'completed' }
+  if completed_run
+    puts Rainbow("✅ Found latest completed run: '#{completed_run['name']}' (#{completed_run['databaseId']})").green
+    if runs[0]['databaseId'] != completed_run['databaseId'] && runs[0]['status'] != 'completed'
+      warn Rainbow("⚠️  Note: The absolute latest run '#{runs[0]['name']}' (#{runs[0]['databaseId']}) is '#{runs[0]['status']}'. Using the most recent completed run instead.").yellow
+    elsif runs[0]['status'] != 'completed'
+      warn Rainbow("⚠️  Latest run '#{runs[0]['name']}' (#{runs[0]['databaseId']}) is not completed (status: #{runs[0]['status']}). This shouldn't happen if a completed run was found.").yellow
+    end
+    return completed_run['databaseId']
+  else
+    abort Rainbow("No completed runs found in the last 10 runs.").red
+  end
+end
+
+def get_job_ids_for_run(run_id, name_filter: nil, verbose: false)
+  puts "📋 Fetching job IDs for run #{run_id}..." if verbose
+  cmd_array = ['gh', 'run', 'view', run_id.to_s, '--json', 'jobs']
+  json_output = run_cmd(cmd_array)
+  begin
+    run_data = JSON.parse(json_output)
+    jobs = run_data['jobs']
+    if verbose
+      puts "🔍 Found the following jobs:"
+      jobs.each { |job| puts "  - #{job['name']} (ID: #{job['databaseId']})" }
+    end
+    if name_filter && !name_filter.empty?
+      puts "🔍 Filtering jobs where name includes '#{name_filter}' (case-insensitive)..." if verbose
+      jobs.filter! { |job| job['name']&.downcase&.include?(name_filter.downcase) }
+    end
+    job_ids = jobs.map { |job| job['databaseId'] }
+    puts Rainbow("✅ Found #{job_ids.count} matching job(s).").green
+    job_ids
+  rescue JSON::ParserError => e
+    abort Rainbow("Error parsing job JSON for run #{run_id}: #{e.message}\nOutput: #{json_output}").red
+  rescue NoMethodError
+    abort Rainbow("Error: Could not find 'jobs' data in the output for run #{run_id}. Output: #{json_output}").red
+  end
+end
+
+def fetch_log_content(run_id:, name_filter: nil, verbose: false)
+  job_ids = get_job_ids_for_run(run_id, name_filter: name_filter, verbose: verbose)
+  tmp_dir = "tmp/github_actions/run/#{run_id}"
+  log_file_path = File.join(tmp_dir, "combined_job_logs.log")
+
+  FileUtils.rm_rf(tmp_dir) if Dir.exist?(tmp_dir)
+  FileUtils.mkdir_p(tmp_dir)
+
+  if job_ids.empty?
+    warn Rainbow("⚠️ No jobs found for run #{run_id} with filter '#{name_filter}'. Cannot fetch logs.").yellow
+    FileUtils.touch(log_file_path)
+    return log_file_path
+  end
+
+  owner, repo = get_owner_and_repo
+  puts "Repo: #{owner}/#{repo}" if verbose
+  token = get_auth_token
+
+  File.open(log_file_path, 'a') do |log_file|
+    job_ids.each_with_index do |job_id, index|
+      puts "📡 Fetching logs for job #{job_id} via API (#{index + 1}/#{job_ids.count})..." if verbose
+
+      api_url = "https://api.github.com/repos/#{owner}/#{repo}/actions/jobs/#{job_id}/logs"
+      uri = URI(api_url)
+
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
+
+      # First request to get the redirect
+      request = Net::HTTP::Get.new(uri.request_uri)
+      request['Authorization'] = "token #{token}"
+      request['Accept'] = 'application/vnd.github+json'
+      request['X-GitHub-Api-Version'] = '2022-11-28'
+
+      response = http.request(request)
+
+      if response.is_a?(Net::HTTPRedirection)
+        redirect_url = response['location']
+        puts "  -> Following redirect to download logs..." if verbose
+
+        # Second request to the redirect URL to get the actual log content
+        redirect_uri = URI(redirect_url)
+        log_content_response = Net::HTTP.get_response(redirect_uri)
+
+        if log_content_response.is_a?(Net::HTTPSuccess)
+          log_content = log_content_response.body
+          log_file.puts "=== Logs for job #{job_id} ==="
+          log_file.puts log_content
+          log_file.puts "=== End of logs for job #{job_id} ===\n"
+          warn Rainbow("🤔 Logs for job #{job_id} were empty.").yellow if log_content.strip.empty?
+        else
+           warn Rainbow("⚠️ Failed to download logs from #{redirect_url}. Status: #{log_content_response.code} Body: #{log_content_response.body}").yellow
+        end
+      elsif response.is_a?(Net::HTTPSuccess)
+        # This can happen if the log is so small it is returned directly
+        log_content = response.body
+        log_file.puts "=== Logs for job #{job_id} ==="
+        log_file.puts log_content
+        log_file.puts "=== End of logs for job #{job_id} ===\n"
+        warn Rainbow("🤔 Logs for job #{job_id} were empty (no redirect).").yellow if log_content.strip.empty?
+      else
+        warn Rainbow("⚠️ Failed to get log URL for job #{job_id}. Status: #{response.code}, Body: #{response.body}").yellow
+        log_file.puts "=== Failed to fetch logs for job #{job_id} (API Status: #{response.code}) ===\n"
+      end
+    end
+  end
+
+  puts Rainbow("✅ All job logs fetched via API and saved to #{log_file_path}.").green
+  log_file_path
+end
+
+def search_and_summarize_logs(log_file_path, verbose: false)
+  puts Rainbow("\n🔍 Searching log file #{log_file_path} for failure and retry patterns...").cyan
+  begin
+    log_content = File.read(log_file_path)
+  rescue Errno::ENOENT
+    warn Rainbow("⚠️ Log file not found: #{log_file_path}").yellow
+    return
+  rescue => e
+    warn Rainbow("⚠️ Error reading log file #{log_file_path}: #{e.message}").yellow
+    return
+  end
+  all_lines = log_content.lines
+  failed_specs = []
+  retry_specs_from_log = []
+  all_lines.each do |line|
+    if line.include?('RSpec::Retry:')
+      spec = line[/\.\/spec\/[^:]+:\d+/]
+      retry_specs_from_log << spec if spec
+    end
+  end
+  retry_specs_from_log.uniq!
+  failed_header_index = all_lines.find_index { |line| line.include?('Failed examples:') }
+  if failed_header_index
+    puts Rainbow("Found 'Failed examples:' header at line #{failed_header_index + 1}").blue if verbose
+    (failed_header_index + 1).upto(all_lines.length - 1) do |i|
+      line = all_lines[i].strip
+      next if line.empty?
+      match_data = line.match(/rspec\s+(\.\/spec\/[^:]+:\d+)/)
+      if match_data
+        spec = match_data[1]
+        failed_specs << spec if spec
+      end
+    end
+  else
+    puts Rainbow("⚠️  Could not find 'Failed examples:' header in the log file.").yellow if verbose
+  end
+  failed_specs.uniq!
+  passed_after_retry_specs = retry_specs_from_log - failed_specs
+  puts Rainbow("\n--- Summary ---").bold
+  if failed_specs.any?
+    puts Rainbow("\n❌ #{Rainbow('Failed examples:').red.bold} (#{failed_specs.count} unique specs)")
+    failed_specs.each { |spec_path| puts "  #{spec_path}" }
+  else
+    puts Rainbow("\n✅ No final 'Failed examples' found.").green
+  end
+  if passed_after_retry_specs.any?
+    puts Rainbow("\n🔁 #{Rainbow('Passed after RSpec retry:').yellow.bold} (#{passed_after_retry_specs.count} unique specs)")
+    passed_after_retry_specs.each { |spec_path| puts "  #{spec_path}" }
+  else
+    puts Rainbow("\n✅ No specs passed after retrying (or no retries occurred).").green
+  end
+  puts Rainbow("\n----------------").bold
+end
+
+# --- Main Execution ---
+
+options = { verbose: false }
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{$PROGRAM_NAME} [options]"
+  opts.on("-r", "--run-id RUN_ID", Integer, "GitHub Actions run ID (defaults to latest completed)") do |id|
+    options[:run_id] = id
+  end
+  opts.on("-n", "--name-filter FILTER", String, "Filter jobs by name (substring, case-insensitive)") do |filter|
+    options[:name_filter] = filter
+  end
+  opts.on("-w", "--workflow WORKFLOW_NAME", String, "Workflow name (optional, to find the latest run if no ID is specified)") do |name|
+    options[:workflow] = name
+  end
+  opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+    options[:verbose] = v
+  end
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+unless system('command -v gh > /dev/null 2>&1')
+  abort Rainbow("Error: 'gh' command not found. Please install the GitHub CLI (brew install gh).").red
+end
+begin
+  require 'rainbow'
+rescue LoadError
+  warn Rainbow("Warning: 'rainbow' gem not found. Output will not be colored. Run 'gem install rainbow'.").yellow
+end
+
+run_id = options[:run_id]
+unless run_id
+  puts Rainbow("No run ID specified, finding the latest run...").blue
+  run_id = get_latest_run_id(workflow: options[:workflow])
+  abort Rainbow("Could not determine a run ID.").red unless run_id
+  puts Rainbow("Using latest Run ID: #{run_id}").bold
+else
+  puts Rainbow("Using specified Run ID: #{run_id}").bold
+end
+
+name_filter = options[:name_filter]
+name_filter = nil if name_filter&.empty?
+
+if name_filter
+  puts Rainbow("Using job name filter: '#{name_filter}'").blue if options[:verbose]
+else
+  puts Rainbow("Processing all jobs (no name filter specified). Use -n <filter> to filter.").blue if options[:verbose]
+end
+
+log_file_path = fetch_log_content(run_id: run_id, name_filter: name_filter, verbose: options[:verbose])
+
+if log_file_path && File.exist?(log_file_path) && File.size?(log_file_path)
+  search_and_summarize_logs(log_file_path, verbose: options[:verbose])
+else
+  puts Rainbow("Log file #{log_file_path} is empty or could not be created.").yellow
+end
+
+puts Rainbow("\n✨ Done. Combined log file saved to: #{log_file_path}").green
