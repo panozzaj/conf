@@ -1,0 +1,210 @@
+#!./bin/rails runner
+
+# Script to find and open a localhost URL that likely renders a given Rails view or partial.
+# Supports recursive search for partials rendered by other partials.
+# Enhanced accuracy for relative path partial rendering.
+
+require 'pathname'
+require 'shellwords'
+require 'set'
+
+# --- Configuration ---
+LOCALHOST_BASE_URL = ENV.fetch('LOCALHOST_BASE_URL', "http://localhost:3000")
+DEFAULT_ID_PLACEHOLDER = ENV.fetch('DEFAULT_ID_PLACEHOLDER', "1")
+VIEW_EXTENSIONS_TO_SEARCH = ['*.html.erb', '*.html.haml', '*.html.slim']
+# --- End Configuration ---
+
+def find_renderers_and_urls(current_target_path, app_views_path, potential_urls, id_for_route, visited_paths, initial_target_path, depth = 0)
+  indent = "  " * depth
+  puts "#{indent}DEBUG: Analyzing target: #{current_target_path.relative_path_from(Rails.root)}, depth: #{depth}"
+
+  if visited_paths.include?(current_target_path)
+    puts "#{indent}DEBUG: Already visited #{current_target_path.relative_path_from(Rails.root)}, skipping."
+    return false
+  end
+  visited_paths.add(current_target_path)
+
+  unless current_target_path.basename.to_s.start_with?('_')
+    if current_target_path == initial_target_path
+        puts "#{indent}  Target is a view: #{current_target_path.relative_path_from(Rails.root)}"
+    else
+        puts "#{indent}    Found view: #{current_target_path.relative_path_from(Rails.root)}"
+    end
+    find_urls_for_view(current_target_path, app_views_path, potential_urls, id_for_route, indent)
+    return !potential_urls.empty?
+  end
+
+  if current_target_path == initial_target_path
+    puts "#{indent}  Target Partial: #{current_target_path.relative_path_from(Rails.root)}. Searching for its renderers..."
+  else
+    puts "#{indent}  Searching for renderers of intermediate partial: #{current_target_path.relative_path_from(Rails.root)}..."
+  end
+
+  files_to_search = VIEW_EXTENSIONS_TO_SEARCH.flat_map do |ext_pattern|
+    Dir.glob(app_views_path.join('**', ext_pattern))
+  end
+
+  found_a_renderer_that_led_to_url = false
+  renderers_found_for_current_partial = 0
+
+  # CORRECTED REGEX with NAMED CAPTURES:
+  # Looks for 'render' followed by optional keywords (like 'partial:'), then a quote, path, and matching closing quote.
+  render_call_capture_regex = /\brender\s*(?:\(\s*)?(?:collection:\s*|layout:\s*|template:\s*|file:\s*|partial:\s*)?\s*(?<quote>['"])(?<path_arg>[\w\s\/\.-]+)\k<quote>/
+
+  target_extname = current_target_path.extname
+
+  files_to_search.each do |renderer_file_path_str|
+    renderer_file_path = Pathname.new(renderer_file_path_str).expand_path(Rails.root)
+    next if renderer_file_path == current_target_path
+
+    content = File.read(renderer_file_path)
+    
+    # Use to_enum to iterate with Regexp.last_match available for full match string
+    content.to_enum(:scan, render_call_capture_regex).map { Regexp.last_match }.each do |match_object|
+      raw_rendered_string = match_object[:path_arg]
+      full_render_call_match = match_object[0].strip # The whole matched "render partial: '...'" string
+
+      # Heuristic to avoid non-path strings sometimes caught by the regex
+      if raw_rendered_string.match?(/\s|\(|\)|\[|\]|\{|\}|@|<%|%>/) || raw_rendered_string.start_with?(':')
+        # puts "#{indent}    DEBUG: Skipping potential non-path render argument: '#{raw_rendered_string}' in #{renderer_file_path.basename}"
+        next
+      end
+      
+      resolved_path_to_rendered_partial = nil
+      normalized_raw_basename = Pathname.new(raw_rendered_string).basename(".*").to_s
+
+      if raw_rendered_string.include?('/')
+        dir_part = Pathname.new(raw_rendered_string).dirname
+        resolved_path_to_rendered_partial = app_views_path.join(dir_part, "_#{normalized_raw_basename}#{target_extname}")
+      else
+        resolved_path_to_rendered_partial = renderer_file_path.dirname.join("_#{normalized_raw_basename}#{target_extname}")
+      end
+
+      # DEBUG Line to see what paths are being resolved and compared:
+      # puts "#{indent}    DEBUG: Renderer: #{renderer_file_path.basename}, Raw Render: '#{raw_rendered_string}', Resolved: '#{resolved_path_to_rendered_partial.relative_path_from(Rails.root)}', Target: '#{current_target_path.relative_path_from(Rails.root)}'"
+
+      if resolved_path_to_rendered_partial.expand_path == current_target_path.expand_path
+        puts "#{indent}    MATCH: '#{current_target_path.basename}' is rendered by call '#{full_render_call_match}' in: #{renderer_file_path.relative_path_from(Rails.root)}"
+        renderers_found_for_current_partial += 1
+        if find_renderers_and_urls(renderer_file_path, app_views_path, potential_urls, id_for_route, visited_paths, initial_target_path, depth + 1)
+          found_a_renderer_that_led_to_url = true
+        end
+        break # Found a valid render in this file for this target, move to next file
+      end
+    end
+  end
+
+  if renderers_found_for_current_partial == 0 && current_target_path == initial_target_path
+     puts "#{indent}  Could not find any files that definitively render the partial '#{current_target_path.basename}'."
+  elsif renderers_found_for_current_partial == 0 && depth > 0
+     puts "#{indent}  Warning: Intermediate partial '#{current_target_path.basename}' found no further renderers in this path."
+  end
+  found_a_renderer_that_led_to_url
+end
+
+def find_urls_for_view(view_path, app_views_path, urls_set, id_for_route, indent = "  ")
+  relative_view_path = view_path.relative_path_from(app_views_path)
+  parts = relative_view_path.to_s.split('/')
+  action_name = parts.pop.sub(/\..*$/, '')
+  controller_name = parts.join('/')
+
+  puts "#{indent}  Trying to find routes for view: #{controller_name}/#{action_name}.html..."
+
+  found_route_for_this_view = false
+  Rails.application.routes.routes.each do |route|
+    defaults = route.defaults
+    normalized_route_controller = defaults[:controller].to_s.gsub('::', '/')
+
+    if normalized_route_controller == controller_name && defaults[:action] == action_name
+      path_spec = route.path.spec.to_s
+      path_spec_no_format = path_spec.sub(/\(\.:format\)$/, '')
+      url_path = path_spec_no_format.gsub(/:([a-zA-Z_][a-zA-Z0-9_]*id|[a-zA-Z_]*key)/, id_for_route)
+      url_path = url_path.gsub(/:([a-zA-Z_][a-zA-Z0-9_]*)/, id_for_route)
+      url_path = "/#{url_path}" unless url_path.start_with?('/')
+      full_url = "#{LOCALHOST_BASE_URL}#{url_path}"
+      unless urls_set.include?(full_url)
+        urls_set.add(full_url)
+        puts "#{indent}    Found route: #{path_spec} -> #{full_url}"
+        found_route_for_this_view = true
+      end
+    end
+  end
+  unless found_route_for_this_view
+    puts "#{indent}    No direct route found for view: #{controller_name}##{action_name}"
+  end
+end
+
+def open_url(url)
+  escaped_url = Shellwords.escape(url)
+  command = case RbConfig::CONFIG['host_os']
+            when /darwin/ then "open #{escaped_url}"
+            when /linux/  then "xdg-open #{escaped_url}"
+            when /mswin|mingw|cygwin/ then "start \"\" #{escaped_url}"
+            else nil
+            end
+  if command
+    system(command)
+  else
+    puts "  Unsupported OS for automatic opening. Please open the URL manually: #{url}"
+  end
+end
+
+def main_script_logic(target_path_str, specific_id_str = nil)
+  unless target_path_str
+    puts "Usage: #{$0} <path_to_view_or_partial> [OPTIONAL_ID]"
+    puts "Example: #{$0} app/views/users/show.html.erb 123"
+    puts "Example: #{$0} app/views/users/_form.html.erb 456"
+    exit 1
+  end
+
+  target_path = Pathname.new(target_path_str)
+  unless target_path.absolute?
+    target_path = Rails.root.join(target_path_str)
+  end
+  target_path = target_path.expand_path
+
+  app_views_path = Rails.root.join('app', 'views')
+
+  unless target_path.to_s.start_with?(app_views_path.to_s)
+    puts "Error: Path must be within app/views."
+    puts "Provided: #{target_path_str} (resolved to #{target_path})"
+    exit 1
+  end
+
+  unless target_path.file?
+    puts "Error: File not found: #{target_path}"
+    exit 1
+  end
+
+  puts "🔍 Analyzing: #{target_path.relative_path_from(Rails.root)}"
+  id_for_route = specific_id_str || DEFAULT_ID_PLACEHOLDER
+  if specific_id_str
+    puts "  Desired ID for route: #{specific_id_str}"
+  else
+    puts "  Using default ID placeholder for route: #{DEFAULT_ID_PLACEHOLDER}"
+  end
+
+  potential_urls = Set.new
+  visited_paths = Set.new
+
+  puts "DEBUG: Initial call to find_renderers_and_urls with target: #{target_path.relative_path_from(Rails.root)}"
+  find_renderers_and_urls(target_path, app_views_path, potential_urls, id_for_route, visited_paths, target_path)
+
+  if potential_urls.empty?
+    puts "\n🚫 Could not automatically determine a URL for #{target_path.basename}."
+    puts "   Consider checking your routes and how this view/partial is used, or if it's part of a component not directly tied to a route."
+    exit 1
+  end
+
+  puts "\n✅ Found potential URLs:"
+  potential_urls_array = potential_urls.to_a
+  potential_urls_array.each_with_index do |url, index|
+    puts "  #{index + 1}. #{url}"
+  end
+
+  chosen_url = potential_urls_array.first
+  puts "\n🚀 Attempting to open: #{chosen_url}"
+  open_url(chosen_url)
+end
+
+main_script_logic(ARGV[0], ARGV[1])
