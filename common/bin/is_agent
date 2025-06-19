@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# return true if CURSOR_TRACE_ID is present
+if [ -n "$CURSOR_TRACE_ID" ]; then
+  exit 0 # 0 is true in bash
+else
+  exit 1 # 1 is false in bash
+fi

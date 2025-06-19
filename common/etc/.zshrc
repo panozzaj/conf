@@ -930,3 +930,11 @@ alias weather="curl 'https://wttr.in/Fishers?u'"
 # Was getting:
 # objc[75787]: +[__NSCFConstantString initialize] may have been in progress in another thread when fork() was called.#
 export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+
+if is_agent; then
+  echo "Running ZSH in an agentic context"
+
+  # Disable delta pager when AI agent is active
+  export GIT_PAGER="cat"
+  export GIT_INTERACTIVE_DIFF_FILTER=""
+fi
