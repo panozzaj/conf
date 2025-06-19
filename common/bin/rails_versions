@@ -1,238 +1,302 @@
 #!/usr/bin/env ruby
-#
-# rails_versions
-#
-# A script to fetch Rails release information from rubygems.org,
-# compare it against the locally installed version, and display
-# a sorted, color-coded list of releases.
-#
-# This script uses the 'nokogiri' gem to parse HTML.
-# Please install it if you haven't: gem install nokogiri
 
 require 'net/http'
-require 'rubygems' # Required for Gem::Version
 require 'date'
 require 'optparse'
 require 'set'
+require 'json'
+require 'tmpdir'
 
 begin
   require 'nokogiri'
 rescue LoadError
-  puts "This script requires the 'nokogiri' gem to parse the HTML from rubygems.org."
+  puts "This script requires the 'nokogiri' gem to parse HTML."
   puts "Please run: gem install nokogiri"
   exit 1
 end
 
-# --- Options Parsing ---
-options = {
-  show_all_in_series: false,
-  show_all_time: false,
-}
+class RailsVersionReporter
+  RELEASES_URL = "https://rubygems.org/gems/rails/versions"
+  EOL_API_URL = "https://endoflife.date/api/rails.json"
+  DEBUG = ENV['DEBUG'] == 'true'
 
-OptionParser.new do |opts|
-  opts.banner = "Usage: rails_versions [options]"
-
-  opts.on("-a", "--all-series", "Show all versions in each visible series (disables truncation).") do
-    options[:show_all_in_series] = true
+  class ::String
+    def green;  "\e[32m#{self}\e[0m" end
+    def yellow; "\e[1;33m#{self}\e[0m" end
+    def cyan;   "\e[36m#{self}\e[0m" end
+    def grey;   "\e[90m#{self}\e[0m" end
+    def red;    "\e[31m#{self}\e[0m" end
+    def b_white; "\e[1;37m#{self}\e[0m" end
   end
 
-  opts.on("-A", "--all-time", "Show all historical versions, ignoring the local version.") do
-    options[:show_all_time] = true
+  def initialize(options, io: $stdout)
+    @options = options
+    @io = io
   end
 
-  opts.on_tail("-h", "--help", "Show this message") do
-    puts opts
-    exit
+  def run
+    current_version_string = get_local_rails_version
+    return unless current_version_string
+
+    @current_version = Gem::Version.new(current_version_string)
+    @current_major_minor = Gem::Version.new(@current_version.segments[0..1].join('.'))
+    @io.puts "Checking your local Rails version... #{@current_version.to_s.cyan}"
+
+    eol_data, releases = fetch_all_data
+
+    unless eol_data
+      @io.puts "Warning: Could not fetch End-of-Life data. Proceeding without it.".yellow
+      eol_data = []
+    end
+
+    return unless releases
+
+    releases = filter_prereleases(releases)
+
+    if releases.empty?
+      @io.puts "\nCould not find any release information on the page."
+      return
+    end
+
+    eol_map = Hash[eol_data.map { |cycle| [cycle['cycle'], cycle['eol']] }]
+
+    report(releases, eol_map)
   end
-end.parse!
 
-# --- Configuration ---
-RELEASES_URL = "https://rubygems.org/gems/rails/versions"
+  private
 
-# --- Color Definitions ---
-class String
-  def green;  "\e[32m#{self}\e[0m" end
-  def yellow; "\e[1;33m#{self}\e[0m" end
-  def cyan;   "\e[36m#{self}\e[0m" end
-  def grey;   "\e[90m#{self}\e[0m" end
-  def red;    "\e[31m#{self}\e[0m" end
-end
+  def get_local_rails_version
+    raw_version_output = `rails --version`
+    exit_status = $?.exitstatus
 
-# --- Helper Methods ---
-def is_older?(release_version, current_version, current_major_minor)
-  release_major_minor = Gem::Version.new(release_version.segments[0..1].join('.'))
-  (release_major_minor < current_major_minor) ||
-  (release_major_minor == current_major_minor && release_version < current_version)
-end
+    unless exit_status == 0
+      @io.puts "Could not determine local Rails version. Failed to run 'rails --version'.".red
+      @io.puts "Please ensure Rails is installed and the 'rails' command is in your PATH."
+      return nil
+    end
 
-def print_release_line(release, is_latest_in_group:, current_version:, current_major_minor:)
+    version_string = raw_version_output.strip.split(' ').last
+    if version_string.nil?
+      @io.puts "Could not parse Rails version from output: '#{raw_version_output}'".red
+      return nil
+    end
+    version_string
+  rescue Errno::ENOENT
+    @io.puts "Could not determine local Rails version. The 'rails' command was not found.".red
+    @io.puts "Please ensure Rails is installed and your PATH is configured correctly."
+    nil
+  end
+
+  def fetch_all_data
+    eol_thread = Thread.new { fetch_json(EOL_API_URL, "EOL data") }
+    releases_thread = Thread.new { fetch_releases_html }
+
+    [eol_thread.value, releases_thread.value]
+  end
+
+  def fetch_json(url, data_name)
+    @io.puts "Fetching #{data_name} from #{url} ..."
+    uri = URI(url)
+    response = Net::HTTP.get_response(uri)
+
+    unless response.is_a?(Net::HTTPSuccess)
+      @io.puts "\nFailed to fetch #{data_name}. HTTP Status: #{response.code}".red
+      return nil
+    end
+
+    JSON.parse(response.body)
+  rescue JSON::ParserError
+    @io.puts "\nFailed to parse #{data_name} JSON response.".red
+    nil
+  end
+
+  def fetch_releases_html
+    @io.puts "Fetching release data from #{RELEASES_URL} ..."
+    uri = URI(RELEASES_URL)
+    response = Net::HTTP.get_response(uri)
+
+    unless response.is_a?(Net::HTTPSuccess)
+      @io.puts "\nFailed to fetch release data. HTTP Status: #{response.code}".red
+      return nil
+    end
+
+    if DEBUG
+      debug_file = File.join(Dir.tmpdir, "rails_versions_debug.html")
+      File.write(debug_file, response.body)
+      @io.puts "DEBUG: Wrote page content to #{debug_file}"
+    end
+    parse_releases(response.body)
+  end
+
+  def parse_releases(html_body)
+    releases = []
+    doc = Nokogiri::HTML(html_body)
+    doc.css('li.gem__version-wrap').each do |item|
+      version_text = item.at_css('a.t-list__item')&.text&.strip
+      date_text = item.at_css('small.gem__version__date')&.text&.strip
+
+      if version_text && date_text
+        iso_date = begin
+                     Date.parse(date_text).iso8601
+                   rescue Date::Error
+                     date_text
+                   end
+        releases << { version: Gem::Version.new(version_text), date: iso_date }
+      end
+    end
+    releases
+  end
+
+  def filter_prereleases(releases)
+    base_versions = releases.group_by { |r| r[:version].segments[0..2].join('.') }
+    base_versions.flat_map do |_, release_group|
+      has_final_release = release_group.any? { |r| !r[:version].prerelease? }
+      if has_final_release
+        release_group.reject { |r| r[:version].prerelease? }
+      else
+        release_group
+      end
+    end
+  end
+
+  def report(releases, eol_map)
+    grouped_releases = releases.group_by { |r| r[:version].segments[0..1].join('.') }
+    sorted_groups = grouped_releases.keys.sort_by { |v| Gem::Version.new(v) }.reverse
+
+    visible_groups = sorted_groups
+    unless @options[:show_all_time]
+      visible_groups = sorted_groups.select { |group_key| Gem::Version.new(group_key) >= @current_major_minor }
+    end
+
+    @io.puts ""
+    visible_groups.each do |group_key|
+      eol_date = eol_map[group_key]
+      eol_info = format_eol_info(eol_date)
+
+      header = "--- Rails #{group_key} Releases ---"
+      @io.puts "#{header.b_white}#{eol_info}"
+      display_group(grouped_releases[group_key])
+      @io.puts ""
+    end
+  end
+
+  def format_eol_info(eol_date)
+    return "" unless eol_date
+
+    begin
+      eol = Date.parse(eol_date.to_s)
+      today = Date.today
+      six_months_from_now = today >> 6
+
+      eol_str = " (EOL: #{eol.iso8601})"
+
+      if eol < today
+        eol_str.red
+      elsif eol < six_months_from_now
+        eol_str.yellow
+      else
+        eol_str.green
+      end
+    rescue Date::Error
+      " (EOL: #{eol_date})".grey
+    end
+  end
+
+  def display_group(group_releases)
+    sorted_versions = group_releases.sort_by { |r| r[:version] }.reverse
+    versions_to_display = build_display_list(sorted_versions)
+
+    versions_to_display.each_with_index do |item, list_index|
+      if item == :ellipsis
+        previous_release = versions_to_display[list_index - 1]
+        is_grey = is_older?(previous_release[:version])
+        @io.puts(is_grey ? "  ...".grey : "  ...")
+      else
+        print_release_line(item, is_latest_in_group: item == sorted_versions.first)
+      end
+    end
+  end
+
+  def build_display_list(sorted_versions)
+    truncate_output = sorted_versions.count > 10 && !@options[:show_all_in_series]
+    return sorted_versions unless truncate_output
+
+    indices_to_show = Set.new
+    (0..4).each { |i| indices_to_show.add(i) }
+    (sorted_versions.length - 5..sorted_versions.length - 1).each { |i| indices_to_show.add(i) }
+
+    current_version_index = sorted_versions.find_index { |r| r[:version] == @current_version }
+    indices_to_show.add(current_version_index) if current_version_index
+
+    display_list = []
+    last_shown_index = -1
+    indices_to_show.to_a.sort.each do |index|
+      if last_shown_index != -1 && index > last_shown_index + 1
+        display_list.push(:ellipsis)
+      end
+      display_list.push(sorted_versions[index])
+      last_shown_index = index
+    end
+    display_list
+  end
+
+  def is_older?(release_version)
+    release_major_minor = Gem::Version.new(release_version.segments[0..1].join('.'))
+    (release_major_minor < @current_major_minor) ||
+    (release_major_minor == @current_major_minor && release_version < @current_version)
+  end
+
+  def print_release_line(release, is_latest_in_group:)
     version_str = release[:version].to_s
     output_line = "  %-18s (Released: %s)" % [version_str, release[:date]]
 
-    is_current = release[:version] == current_version
-    is_old = is_older?(release[:version], current_version, current_major_minor)
+    is_current = release[:version] == @current_version
+    is_old = is_older?(release[:version])
 
-    # Apply highlighting and coloring based on precedence
-    if is_current
-      puts "#{output_line}  <-- You are here".green
-    elsif is_latest_in_group && is_old
-      puts "#{output_line}  <-- Latest".grey
-    elsif is_old
-      puts output_line.grey
-    elsif is_latest_in_group
-      puts "#{output_line}  <-- Latest".cyan
-    else
-      puts output_line
-    end
+    output = if is_current
+               "#{output_line}  <-- You are here".green
+             elsif is_latest_in_group && is_old
+               "#{output_line}  <-- Latest".grey
+             elsif is_old
+               output_line.grey
+             elsif is_latest_in_group
+               "#{output_line}  <-- Latest".cyan
+             else
+               output_line
+             end
+    @io.puts output
+  end
 end
 
-# --- Main Script Logic ---
+if $0 == __FILE__
+  options = {
+    show_all_in_series: false,
+    show_all_time: false
+  }
+  OptionParser.new do |opts|
+    opts.banner = "Usage: rails_versions [options]"
+    opts.on("-a", "--all-series", "Show all versions in the current series (no truncation)") do
+      options[:show_all_in_series] = true
+    end
+    opts.on("-A", "--all-time", "Show all historical Rails series, not just from your current version forward") do
+      options[:show_all_time] = true
+    end
+    opts.on("-h", "--help", "Prints this help") do
+      puts opts
+      exit
+    end
+  end.parse!
 
-# 1. Get the current Rails version by running `rails --version`.
-begin
-  raw_version_output = `rails --version`
-  exit_status = $?.exitstatus
-
-  unless exit_status == 0
-    puts "Could not determine local Rails version. Failed to run 'rails --version'.".red
-    puts "Please ensure Rails is installed and the 'rails' command is in your PATH."
+  begin
+    reporter = RailsVersionReporter.new(options)
+    reporter.run
+  rescue Interrupt
+    puts "\nInterrupted. Exiting."
+    exit 130
+  rescue => e
+    puts "\nAn unexpected error occurred:".red
+    puts e.message
+    puts e.backtrace.join("\n").grey if DEBUG
     exit 1
   end
-
-  # The output is typically "Rails X.Y.Z", so we extract the version number.
-  current_version_string = raw_version_output.strip.split(' ').last
-
-  if current_version_string.nil?
-      puts "Could not parse Rails version from output: '#{raw_version_output}'".red
-      exit 1
-  end
-
-  puts "Checking your local Rails version... #{current_version_string.cyan}"
-  current_version = Gem::Version.new(current_version_string)
-rescue Errno::ENOENT
-    puts "Could not determine local Rails version. The 'rails' command was not found.".red
-    puts "Please ensure Rails is installed and your PATH is configured correctly."
-    exit 1
-end
-
-current_major_minor = Gem::Version.new(current_version.segments[0..1].join('.'))
-
-# 2. Fetch release data from rubygems.org.
-puts "Fetching release data from #{RELEASES_URL} ..."
-uri = URI(RELEASES_URL)
-response = Net::HTTP.get_response(uri)
-
-unless response.is_a?(Net::HTTPSuccess)
-  puts "\nFailed to fetch release data. HTTP Status: #{response.code}"
-  exit 1
-end
-
-# 3. Parse the HTML and extract release information using Nokogiri.
-releases = []
-begin
-  doc = Nokogiri::HTML(response.body)
-  doc.css('li.gem__version-wrap').each do |item|
-    version_text = item.at_css('a.t-list__item')&.text&.strip
-    date_text = item.at_css('small.gem__version__date')&.text&.strip
-
-    if version_text && date_text
-      iso_date = begin
-                   Date.parse(date_text).iso8601
-                 rescue Date::Error
-                   date_text # Fallback to original text if parsing fails
-                 end
-      releases << {
-        version: Gem::Version.new(version_text),
-        date: iso_date
-      }
-    end
-  end
-rescue => e
-  puts "\nFailed to parse the HTML document. The page structure might have changed."
-  puts "Error: #{e.message}"
-  exit 1
-end
-
-# Filter out pre-releases if a final version for that patch exists.
-base_versions = releases.group_by { |r| r[:version].segments[0..2].join('.') }
-releases = base_versions.flat_map do |_, release_group|
-  has_final_release = release_group.any? { |r| !r[:version].prerelease? }
-  if has_final_release
-    release_group.select { |r| !r[:version].prerelease? }
-  else
-    release_group
-  end
-end
-
-if releases.empty?
-  puts "\nCould not find any release information on the page."
-  exit 1
-end
-
-# 4. Group releases by major.minor version and sort them.
-grouped_releases = releases.group_by { |r| r[:version].segments[0..1].join('.') }
-
-sorted_groups = grouped_releases.keys.sort_by { |v| Gem::Version.new(v) }.reverse
-
-# Filter to show only series that are current or newer.
-visible_groups = sorted_groups.select { |group_key| Gem::Version.new(group_key) >= current_major_minor }
-# If -A is passed, ignore the local version filtering and show everything.
-visible_groups = sorted_groups if options[:show_all_time]
-
-# 5. Iterate through the sorted groups and print the formatted output.
-puts "" # Add a blank line for spacing
-visible_groups.each do |group_key|
-  puts "--- Rails #{group_key} Releases ---".red
-
-  sorted_versions_in_group = grouped_releases[group_key].sort_by { |r| r[:version] }.reverse
-
-  # --- Build the list of items to display ---
-  versions_to_display = []
-  truncate_output = sorted_versions_in_group.count > 10 && !options[:show_all_in_series]
-
-  if truncate_output
-    indices_to_show = Set.new
-    # Add top 5 indices
-    (0..4).each { |i| indices_to_show.add(i) }
-    # Add bottom 5 indices
-    ((sorted_versions_in_group.length - 5)..(sorted_versions_in_group.length - 1)).each { |i| indices_to_show.add(i) }
-
-    # Ensure current version is always visible
-    current_version_index = sorted_versions_in_group.find_index { |r| r[:version] == current_version }
-    indices_to_show.add(current_version_index) if current_version_index
-
-    sorted_indices = indices_to_show.to_a.sort
-
-    last_shown_index = -1
-    sorted_indices.each do |index|
-      # If there's a gap between the last shown version and this one, add an ellipsis.
-      if last_shown_index != -1 && index > last_shown_index + 1
-        versions_to_display.push(:ellipsis)
-      end
-      versions_to_display.push(sorted_versions_in_group[index])
-      last_shown_index = index
-    end
-  else
-    versions_to_display = sorted_versions_in_group
-  end
-
-  # --- Render the display list ---
-  versions_to_display.each_with_index do |item, list_index|
-    if item == :ellipsis
-      previous_release = versions_to_display[list_index - 1]
-      is_grey = is_older?(previous_release[:version], current_version, current_major_minor)
-      puts(is_grey ? "  ...".grey : "  ...")
-    else
-      release = item
-      is_latest = (release == sorted_versions_in_group.first)
-      print_release_line(
-        release,
-        is_latest_in_group: is_latest,
-        current_version: current_version,
-        current_major_minor: current_major_minor
-      )
-    end
-  end
-
-  puts "" # Blank line between groups
 end
