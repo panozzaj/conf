@@ -14,6 +14,7 @@ require 'rubygems' # Required for Gem::Version
 require 'tmpdir'
 require 'date'
 require 'optparse'
+require 'set'
 
 begin
   require 'nokogiri'
@@ -184,41 +185,50 @@ puts "" # Add a blank line for spacing
 visible_groups.each do |group_key|
   puts "--- Ruby #{group_key} Releases ---".red
 
-  # Sort the releases within each group from newest to oldest.
   sorted_versions_in_group = grouped_releases[group_key].sort_by { |r| r[:version] }.reverse
 
-  truncate_output = sorted_versions_in_group.count > 10 && !options[:show_all_in_series] && !options[:show_all_time]
+  # --- Build the list of items to display ---
+  versions_to_display = []
+  truncate_output = sorted_versions_in_group.count > 10 && !options[:show_all_in_series]
 
   if truncate_output
-    latest_five = sorted_versions_in_group.first(5)
-    earliest_five = sorted_versions_in_group.last(5)
+    indices_to_show = Set.new
+    # Add top 5 indices
+    (0..4).each { |i| indices_to_show.add(i) }
+    # Add bottom 5 indices
+    ((sorted_versions_in_group.length - 5)..(sorted_versions_in_group.length - 1)).each { |i| indices_to_show.add(i) }
 
-    latest_five.each_with_index do |release, index|
-      print_release_line(
-        release,
-        is_latest_in_group: index == 0,
-        current_version: current_version,
-        current_major_minor: current_major_minor
-      )
-    end
+    # Ensure current version is always visible
+    current_version_index = sorted_versions_in_group.find_index { |r| r[:version] == current_version }
+    indices_to_show.add(current_version_index) if current_version_index
 
-    last_of_the_latest = latest_five.last
-    is_last_version_old = is_older?(last_of_the_latest[:version], current_version, current_major_minor)
-    puts(is_last_version_old ? "  ...".grey : "  ...")
+    sorted_indices = indices_to_show.to_a.sort
 
-    earliest_five.each do |release|
-      print_release_line(
-        release,
-        is_latest_in_group: false, # Never the latest in this context
-        current_version: current_version,
-        current_major_minor: current_major_minor
-      )
+    last_shown_index = -1
+    sorted_indices.each do |index|
+      # If there's a gap between the last shown version and this one, add an ellipsis.
+      if last_shown_index != -1 && index > last_shown_index + 1
+        versions_to_display.push(:ellipsis)
+      end
+      versions_to_display.push(sorted_versions_in_group[index])
+      last_shown_index = index
     end
   else
-    sorted_versions_in_group.each_with_index do |release, index|
+    versions_to_display = sorted_versions_in_group
+  end
+
+  # --- Render the display list ---
+  versions_to_display.each_with_index do |item, list_index|
+    if item == :ellipsis
+      previous_release = versions_to_display[list_index - 1]
+      is_grey = is_older?(previous_release[:version], current_version, current_major_minor)
+      puts(is_grey ? "  ...".grey : "  ...")
+    else
+      release = item
+      is_latest = (release == sorted_versions_in_group.first)
       print_release_line(
         release,
-        is_latest_in_group: index == 0,
+        is_latest_in_group: is_latest,
         current_version: current_version,
         current_major_minor: current_major_minor
       )
