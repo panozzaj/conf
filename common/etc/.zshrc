@@ -289,6 +289,10 @@ function catdm() {
   find db/migrate | sort -r | head -1 | xargs cat
 }
 
+function tailmig() {
+  find db/migrate | sort | tail -5
+}
+
 alias cr="checkruby HEAD"
 
 # gem
