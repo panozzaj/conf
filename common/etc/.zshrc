@@ -531,11 +531,6 @@ alias gbg="git bisect good"
 alias gbs="git bisect skip"
 alias gbr="git branch --remote"
 alias gc="git commit --verbose"
-# committerdate sorts by the last commit, so the ones that we have most
-# recently been working with will appear closer to the bottom of the list
-# http://stackoverflow.com/questions/5188320
-# mnemonic: git change branch
-alias gcb="git checkout \`git branch --sort=-committerdate | fzf\`"
 alias gcl="git clone"
 alias gcdf="git clean -df"
 alias gco="git checkout"
@@ -637,6 +632,20 @@ alias gsq="git commit -nm 'SQUASH ME'"
 alias gsquash="git commit -nm 'SQUASH ME'"
 alias squash="git commit -nm 'SQUASH ME'"
 alias squashme="git commit -nm 'SQUASH ME'"
+
+# mnemonic: git change branch
+function gcb() {
+  if [[ -z "$1" ]]; then
+    # Open interactive branch selection
+    # committerdate sorts by the last commit, so the ones that we have most
+    # recently been working with will appear closer to the bottom of the list
+    # http://stackoverflow.com/questions/5188320
+    git checkout `git branch --sort=-committerdate | fzf`
+  else
+    # Switch to the branch specified
+    git checkout $1
+  fi
+}
 
 function hpr {
   gh pr create
