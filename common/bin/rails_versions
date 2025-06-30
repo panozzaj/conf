@@ -7,16 +7,8 @@ require 'set'
 require 'json'
 require 'tmpdir'
 
-begin
-  require 'nokogiri'
-rescue LoadError
-  puts "This script requires the 'nokogiri' gem to parse HTML."
-  puts "Please run: gem install nokogiri"
-  exit 1
-end
-
 class RailsVersionReporter
-  RELEASES_URL = "https://rubygems.org/gems/rails/versions"
+  VERSIONS_JSON_URL = "https://rubygems.org/api/v1/versions/rails.json"
   EOL_API_URL = "https://endoflife.date/api/rails.json"
   DEBUG = ENV['DEBUG'] == 'true'
 
@@ -54,7 +46,7 @@ class RailsVersionReporter
     releases = filter_prereleases(releases)
 
     if releases.empty?
-      @io.puts "\nCould not find any release information on the page."
+      @io.puts "\nCould not find any release information."
       return
     end
 
@@ -89,7 +81,7 @@ class RailsVersionReporter
 
   def fetch_all_data
     eol_thread = Thread.new { fetch_json(EOL_API_URL, "EOL data") }
-    releases_thread = Thread.new { fetch_releases_html }
+    releases_thread = Thread.new { fetch_releases_json }
 
     [eol_thread.value, releases_thread.value]
   end
@@ -110,41 +102,38 @@ class RailsVersionReporter
     nil
   end
 
-  def fetch_releases_html
-    @io.puts "Fetching release data from #{RELEASES_URL} ..."
-    uri = URI(RELEASES_URL)
+  def fetch_releases_json
+    @io.puts "Fetching all Rails versions from #{VERSIONS_JSON_URL} ..."
+    uri = URI(VERSIONS_JSON_URL)
     response = Net::HTTP.get_response(uri)
 
     unless response.is_a?(Net::HTTPSuccess)
-      @io.puts "\nFailed to fetch release data. HTTP Status: #{response.code}".red
+      @io.puts "\nFailed to fetch releases. HTTP Status: #{response.code}".red
       return nil
     end
 
     if DEBUG
-      debug_file = File.join(Dir.tmpdir, "rails_versions_debug.html")
+      debug_file = File.join(Dir.tmpdir, "rails_versions_debug.json")
       File.write(debug_file, response.body)
-      @io.puts "DEBUG: Wrote page content to #{debug_file}"
+      @io.puts "DEBUG: Wrote JSON response to #{debug_file}"
     end
-    parse_releases(response.body)
-  end
 
-  def parse_releases(html_body)
-    releases = []
-    doc = Nokogiri::HTML(html_body)
-    doc.css('li.gem__version-wrap').each do |item|
-      version_text = item.at_css('a.t-list__item')&.text&.strip
-      date_text = item.at_css('small.gem__version__date')&.text&.strip
-
-      if version_text && date_text
-        iso_date = begin
-                     Date.parse(date_text).iso8601
-                   rescue Date::Error
-                     date_text
-                   end
-        releases << { version: Gem::Version.new(version_text), date: iso_date }
-      end
+    versions_data = JSON.parse(response.body)
+    releases = versions_data.map do |version_info|
+      {
+        version: Gem::Version.new(version_info['number']),
+        date: Date.parse(version_info['built_at']).iso8601
+      }
     end
+
+    @io.puts "Fetched #{releases.length} Rails versions."
     releases
+  rescue JSON::ParserError
+    @io.puts "\nFailed to parse releases JSON response.".red
+    nil
+  rescue Date::Error => e
+    @io.puts "\nFailed to parse release date: #{e.message}".red
+    nil
   end
 
   def filter_prereleases(releases)
@@ -175,8 +164,27 @@ class RailsVersionReporter
 
       header = "--- Rails #{group_key} Releases ---"
       @io.puts "#{header.b_white}#{eol_info}"
-      display_group(grouped_releases[group_key])
+      display_group(grouped_releases[group_key], eol_date: eol_date)
       @io.puts ""
+    end
+  end
+
+  def get_eol_status(eol_date)
+    return nil unless eol_date
+    begin
+      eol = Date.parse(eol_date.to_s)
+      today = Date.today
+      six_months_from_now = today >> 6
+
+      if eol < today
+        :red
+      elsif eol < six_months_from_now
+        :yellow
+      else
+        :green
+      end
+    rescue Date::Error
+      nil
     end
   end
 
@@ -184,25 +192,25 @@ class RailsVersionReporter
     return "" unless eol_date
 
     begin
-      eol = Date.parse(eol_date.to_s)
-      today = Date.today
-      six_months_from_now = today >> 6
+      eol_str = " (EOL: #{Date.parse(eol_date.to_s).iso8601})"
+      status = get_eol_status(eol_date)
 
-      eol_str = " (EOL: #{eol.iso8601})"
-
-      if eol < today
+      case status
+      when :red
         eol_str.red
-      elsif eol < six_months_from_now
+      when :yellow
         eol_str.yellow
-      else
+      when :green
         eol_str.green
+      else
+        " (EOL: #{eol_date})".grey
       end
     rescue Date::Error
       " (EOL: #{eol_date})".grey
     end
   end
 
-  def display_group(group_releases)
+  def display_group(group_releases, eol_date:)
     sorted_versions = group_releases.sort_by { |r| r[:version] }.reverse
     versions_to_display = build_display_list(sorted_versions)
 
@@ -212,7 +220,7 @@ class RailsVersionReporter
         is_grey = is_older?(previous_release[:version])
         @io.puts(is_grey ? "  ...".grey : "  ...")
       else
-        print_release_line(item, is_latest_in_group: item == sorted_versions.first)
+        print_release_line(item, is_latest_in_group: item == sorted_versions.first, eol_date: eol_date)
       end
     end
   end
@@ -246,25 +254,45 @@ class RailsVersionReporter
     (release_major_minor == @current_major_minor && release_version < @current_version)
   end
 
-  def print_release_line(release, is_latest_in_group:)
+  def print_release_line(release, is_latest_in_group:, eol_date:)
     version_str = release[:version].to_s
     output_line = "  %-18s (Released: %s)" % [version_str, release[:date]]
 
     is_current = release[:version] == @current_version
     is_old = is_older?(release[:version])
+    eol_status = get_eol_status(eol_date)
 
-    output = if is_current
-               "#{output_line}  <-- You are here".green
-             elsif is_latest_in_group && is_old
-               "#{output_line}  <-- Latest".grey
-             elsif is_old
-               output_line.grey
-             elsif is_latest_in_group
-               "#{output_line}  <-- Latest".cyan
-             else
-               output_line
-             end
-    @io.puts output
+    if is_current
+      # "you are here" line is colored by EOL status, and this takes precedence over "Latest"
+      full_line = "#{output_line}  <-- You are here"
+      line_color = eol_status || :green
+
+      output = case line_color
+               when :green then full_line.green
+               when :yellow then full_line.yellow
+               when :red then full_line.red
+               else full_line
+               end
+      @io.puts output
+    elsif is_latest_in_group
+      # Latest lines are white (or grey), but the tag is colored by EOL status.
+      tag_string = "  <-- Latest"
+      colored_tag = case eol_status
+                    when :green then tag_string.green
+                    when :yellow then tag_string.yellow
+                    when :red then tag_string.red
+                    else tag_string
+                    end
+
+      line_text = is_old ? output_line.grey : output_line
+      @io.puts "#{line_text}#{colored_tag}"
+    elsif is_old
+      # An old, non-latest line is all grey.
+      @io.puts output_line.grey
+    else
+      # A normal line is all white.
+      @io.puts output_line
+    end
   end
 end
 

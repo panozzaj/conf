@@ -149,8 +149,27 @@ class RubyVersionReporter
 
       header = "--- Ruby #{group_key} Releases ---"
       @io.puts "#{header.b_white}#{eol_info}"
-      display_group(grouped_releases[group_key])
+      display_group(grouped_releases[group_key], eol_date: eol_date)
       @io.puts ""
+    end
+  end
+
+  def get_eol_status(eol_date)
+    return nil unless eol_date
+    begin
+      eol = Date.parse(eol_date.to_s)
+      today = Date.today
+      six_months_from_now = today >> 6
+
+      if eol < today
+        :red
+      elsif eol < six_months_from_now
+        :yellow
+      else
+        :green
+      end
+    rescue Date::Error
+      nil
     end
   end
 
@@ -158,25 +177,25 @@ class RubyVersionReporter
     return "" unless eol_date
 
     begin
-      eol = Date.parse(eol_date.to_s)
-      today = Date.today
-      six_months_from_now = today >> 6
+      eol_str = " (EOL: #{Date.parse(eol_date.to_s).iso8601})"
+      status = get_eol_status(eol_date)
 
-      eol_str = " (EOL: #{eol.iso8601})"
-
-      if eol < today
+      case status
+      when :red
         eol_str.red
-      elsif eol < six_months_from_now
+      when :yellow
         eol_str.yellow
-      else
+      when :green
         eol_str.green
+      else
+        " (EOL: #{eol_date})".grey
       end
     rescue Date::Error
       " (EOL: #{eol_date})".grey
     end
   end
 
-  def display_group(group_releases)
+  def display_group(group_releases, eol_date:)
     sorted_versions = group_releases.sort_by { |r| r[:version] }.reverse
     versions_to_display = build_display_list(sorted_versions)
 
@@ -186,7 +205,7 @@ class RubyVersionReporter
         is_grey = is_older?(previous_release[:version])
         @io.puts(is_grey ? "  ...".grey : "  ...")
       else
-        print_release_line(item, is_latest_in_group: item == sorted_versions.first)
+        print_release_line(item, is_latest_in_group: item == sorted_versions.first, eol_date: eol_date)
       end
     end
   end
@@ -220,25 +239,45 @@ class RubyVersionReporter
     (release_major_minor == @current_major_minor && release_version < @current_version)
   end
 
-  def print_release_line(release, is_latest_in_group:)
+  def print_release_line(release, is_latest_in_group:, eol_date:)
     version_str = release[:version].to_s
     output_line = "  %-18s (Released: %s)" % [version_str, release[:date]]
 
     is_current = release[:version] == @current_version
     is_old = is_older?(release[:version])
+    eol_status = get_eol_status(eol_date)
 
-    output = if is_current
-               "#{output_line}  <-- You are here".green
-             elsif is_latest_in_group && is_old
-               "#{output_line}  <-- Latest".grey
-             elsif is_old
-               output_line.grey
-             elsif is_latest_in_group
-               "#{output_line}  <-- Latest".cyan
-             else
-               output_line
-             end
-    @io.puts output
+    if is_current
+      # "you are here" line is colored by EOL status, and this takes precedence over "Latest"
+      full_line = "#{output_line}  <-- You are here"
+      line_color = eol_status || :green
+
+      output = case line_color
+               when :green then full_line.green
+               when :yellow then full_line.yellow
+               when :red then full_line.red
+               else full_line
+               end
+      @io.puts output
+    elsif is_latest_in_group
+      # Latest lines are white (or grey), but the tag is colored by EOL status.
+      tag_string = "  <-- Latest"
+      colored_tag = case eol_status
+                    when :green then tag_string.green
+                    when :yellow then tag_string.yellow
+                    when :red then tag_string.red
+                    else tag_string
+                    end
+
+      line_text = is_old ? output_line.grey : output_line
+      @io.puts "#{line_text}#{colored_tag}"
+    elsif is_old
+      # An old, non-latest line is all grey.
+      @io.puts output_line.grey
+    else
+      # A normal line is all white.
+      @io.puts output_line
+    end
   end
 end
 
