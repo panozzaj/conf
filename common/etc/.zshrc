@@ -51,7 +51,7 @@ bindkey -e
 # usually overridden in host-specific .zshrc
 PROMPT="%F{cyan}%S[%T] %c%s%f ◊ "
 
-LS_COLORS='di=01;33'
+alias ls='command gls --color=auto --group-directories-first --classify --human-readable --show-control-chars --quoting-style=literal'
 
 setopt HIST_IGNORE_SPACE # don't add to ZSH history file any lines that start with a space
 setopt interactivecomments # ignore everything after pound signs in interactive prompt (comments)
