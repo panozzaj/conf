@@ -1,35 +1,169 @@
 #!/bin/sh
 
-set -e
+# Don't exit on errors - we want to continue even if some branches fail to delete
+# set -e
 
 main_branch=`git branch --list main master | sed -r 's/^[* ] //' | head -n 1`
 
 git fetch > /dev/null
 git checkout $main_branch > /dev/null 2>&1
 
-branches_to_remove=$(
+# Find traditionally merged branches
+merged_branches=$(
   git branch --merged $main_branch | \
     egrep -v " ($main_branch|production|staging|qa|ci)$" | \
-    sed 's/^[* ]*//'
+    sed 's/^[* +]*//' | \
+    grep -v '^$'
 )
+
+# Find branches that might be squash-merged or subtree-merged
+# Check if the branch has no commits that aren't in main
+potentially_merged_branches=$(
+  git for-each-ref --format='%(refname:short)' refs/heads/ | \
+    egrep -v "^($main_branch|production|staging|qa|ci)$" | \
+    while read branch; do
+      # Check if this branch has any commits not in main
+      if [ -z "$(git log $main_branch..$branch --oneline)" ]; then
+        echo "$branch"
+      fi
+    done
+)
+
+# Combine both lists and remove duplicates, filter out any invalid branch names
+all_candidates=$(
+  (echo "$merged_branches"; echo "$potentially_merged_branches") | \
+    sort | uniq | grep -v '^$' | grep -v '^[+*]'
+)
+
+# Get worktree and subtree information
+worktree_branches=$(git worktree list --porcelain 2>/dev/null | grep "^branch " | sed 's/^branch //' | sort | uniq || true)
+subtree_branches=$(git branch -v | grep "^\s*+" | sed 's/^[* +]*//' | cut -d' ' -f1 || true)
+
+# Filter out branches that are used by worktrees
+branches_to_remove=""
+for branch in $all_candidates; do
+  if [ -n "$branch" ] && ! echo "$worktree_branches" | grep -q "^$branch$"; then
+    if [ -z "$branches_to_remove" ]; then
+      branches_to_remove="$branch"
+    else
+      branches_to_remove="$branches_to_remove
+$branch"
+    fi
+  fi
+done
 
 if [[ -z "$branches_to_remove" ]]; then
   echo "No local branches to remove"
-  exit 0
+else
+  echo "Will remove local branches:"
+  # Create arrays to track which branches are merged vs squash-merged
+  merged_list=$(echo "$merged_branches" | sort | uniq | grep -v '^$')
+  potentially_merged_list=$(echo "$potentially_merged_branches" | sort | uniq | grep -v '^$')
+
+  echo "$branches_to_remove" | while read branch; do
+    if [ -n "$branch" ]; then
+      # Add visual indicators with color
+      if echo "$subtree_branches" | grep -q "^$branch$"; then
+        # Cyan color for subtree branches
+        printf "\033[36m+ %s\033[0m" "$branch"
+      else
+        printf "%s" "$branch"
+      fi
+
+      # Check if branch was traditionally merged or potentially squash/subtree merged
+      if echo "$merged_list" | grep -q "^$branch$"; then
+        echo " (merged)"
+      elif echo "$potentially_merged_list" | grep -q "^$branch$"; then
+        echo " (no unique commits vs $main_branch)"
+      fi
+    fi
+  done
+
+  # Show branches that are skipped due to worktrees
+  skipped_worktree_branches=""
+  for branch in $all_candidates; do
+    if [ -n "$branch" ] && echo "$worktree_branches" | grep -q "^$branch$"; then
+      if [ -z "$skipped_worktree_branches" ]; then
+        skipped_worktree_branches="$branch"
+      else
+        skipped_worktree_branches="$skipped_worktree_branches
+$branch"
+      fi
+    fi
+  done
+
+  if [ -n "$skipped_worktree_branches" ]; then
+    echo ""
+    echo "Skipped branches (used by worktrees):"
+    echo "$skipped_worktree_branches" | while read branch; do
+      if [ -n "$branch" ]; then
+        # Add color for skipped subtree branches too
+        if echo "$subtree_branches" | grep -q "^$branch$"; then
+          printf "\033[36m+ %s\033[0m\n" "$branch"
+        else
+          echo "$branch"
+        fi
+      fi
+    done
+  fi
+
+  while true; do
+      read -p "Delete these local branches? [yN] " yn
+      case $yn in
+          [Yy]* )
+            # Delete branches, using appropriate force level
+            # Track success/failure but don't exit on errors
+            deleted_count=0
+            failed_count=0
+            echo "$branches_to_remove" | while read branch; do
+              if [ -n "$branch" ]; then
+                # Try safe delete first
+                if git branch -d "$branch" 2>/dev/null; then
+                  echo "Deleted $branch (safe)"
+                  deleted_count=$((deleted_count + 1))
+                else
+                  # If safe delete fails, check if it's one of our "no unique commits" branches
+                  if [ -z "$(git log $main_branch..$branch --oneline)" ]; then
+                    echo "Force deleting $branch (no unique commits vs $main_branch)"
+                    if git branch -D "$branch" 2>/dev/null; then
+                      deleted_count=$((deleted_count + 1))
+                    else
+                      # Check specific reasons for failure
+                      if echo "$worktree_branches" | grep -q "^$branch$"; then
+                        echo "ERROR: Cannot delete $branch - used by worktree"
+                      elif echo "$subtree_branches" | grep -q "^$branch$"; then
+                        echo "ERROR: Cannot delete $branch - appears to be a subtree branch"
+                      else
+                        echo "ERROR: Failed to delete $branch (unknown reason)"
+                      fi
+                      failed_count=$((failed_count + 1))
+                    fi
+                  else
+                    echo "WARNING: Skipping $branch - has unmerged commits and not integrated via squash/subtree"
+                    echo "  Use 'git branch -D $branch' manually if you're sure"
+                    failed_count=$((failed_count + 1))
+                  fi
+                fi
+              fi
+            done
+
+            # Summary
+            if [ $failed_count -gt 0 ]; then
+              echo ""
+              echo "Local cleanup completed with $failed_count failures"
+            else
+              echo ""
+              echo "Local cleanup completed successfully"
+            fi
+            break;;
+          * )
+            echo "Skipping local branch cleanup"
+            break;;
+      esac
+  done
 fi
 
-echo "Will remove local branches:"
-for branch_to_remove in "${branches_to_remove[@]}"
-do
-  echo "$branch_to_remove"
-done
+echo "Continuing with remote cleanup..."
 
-while true; do
-    read -p "Are you sure? [yN] " yn
-    case $yn in
-        [Yy]* ) break;;
-        * ) exit 1;;
-    esac
-done
-
-git branch -d $branches_to_remove
+# Always exit with success so remote cleanup can proceed
+exit 0

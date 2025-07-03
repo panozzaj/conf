@@ -1,6 +1,7 @@
 #!/bin/sh
 
-set -e
+# Don't exit on errors - we want to continue even if some branches fail to delete
+# set -e
 
 main_branch=`git branch --list main master | sed -r 's/^[* ] //' | head -n 1`
 
@@ -8,11 +9,36 @@ git fetch > /dev/null
 git checkout $main_branch > /dev/null 2>&1
 git remote prune origin
 
-branches_to_remove=$(
+# Find traditionally merged remote branches
+merged_branches=$(
   git branch -r --merged | \
-    grep origin | \
-    egrep -v "/($main_branch|production|staging|qa|ci)$" | \
-    sed 's/origin\///'
+    grep "origin/" | \
+    egrep -v "origin/($main_branch|production|staging|qa|ci)$" | \
+    sed 's/^[* ]*origin\///' | \
+    grep -v '^$'
+)
+
+# Find remote branches that might be squash-merged or subtree-merged
+potentially_merged_branches=$(
+  git for-each-ref --format='%(refname:short)' refs/remotes/origin/ | \
+    egrep -v "^origin/($main_branch|production|staging|qa|ci)$" | \
+    sed 's/^origin\///' | \
+    while read branch; do
+      # Skip if branch is empty or invalid
+      if [ -z "$branch" ] || [ "$branch" = "origin" ]; then
+        continue
+      fi
+      # Check if this remote branch has any commits not in main
+      if [ -z "$(git log $main_branch..origin/$branch --oneline 2>/dev/null)" ]; then
+        echo "$branch"
+      fi
+    done
+)
+
+# Combine both lists and remove duplicates, filter out invalid names
+branches_to_remove=$(
+  (echo "$merged_branches"; echo "$potentially_merged_branches") | \
+    sort | uniq | grep -v '^$' | grep -v '^origin$'
 )
 
 if [[ -z "$branches_to_remove" ]]; then
@@ -21,9 +47,19 @@ if [[ -z "$branches_to_remove" ]]; then
 fi
 
 echo "Will remove remote branches:"
-for branch_to_remove in "${branches_to_remove[@]}"
-do
-  echo "$branch_to_remove"
+# Create arrays to track which branches are merged vs squash-merged
+merged_list=$(echo "$merged_branches" | sort | uniq | grep -v '^$')
+potentially_merged_list=$(echo "$potentially_merged_branches" | sort | uniq | grep -v '^$')
+
+echo "$branches_to_remove" | while read branch; do
+  if [ -n "$branch" ]; then
+    # Check if branch was traditionally merged or potentially squash/subtree merged
+    if echo "$merged_list" | grep -q "^$branch$"; then
+      echo "$branch (merged)"
+    elif echo "$potentially_merged_list" | grep -q "^$branch$"; then
+      echo "$branch (no unique commits vs $main_branch)"
+    fi
+  fi
 done
 
 while true; do
@@ -34,4 +70,28 @@ while true; do
     esac
 done
 
-echo $branches_to_remove | xargs -n 1 git push --no-verify --delete origin
+# Delete remote branches, tracking success/failure
+deleted_count=0
+failed_count=0
+echo "$branches_to_remove" | while read branch; do
+  if [ -n "$branch" ] && [ "$branch" != "origin" ]; then
+    if git push --no-verify --delete origin "$branch" 2>/dev/null; then
+      echo "Deleted remote branch: $branch"
+      deleted_count=$((deleted_count + 1))
+    else
+      echo "ERROR: Failed to delete remote branch: $branch"
+      failed_count=$((failed_count + 1))
+    fi
+  fi
+done
+
+# Summary
+if [ $failed_count -gt 0 ]; then
+  echo ""
+  echo "Remote cleanup completed with $failed_count failures"
+else
+  echo ""
+  echo "Remote cleanup completed successfully"
+fi
+
+exit 0
