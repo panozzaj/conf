@@ -10,7 +10,13 @@ if [ -f bin/rspec ]; then
 elif [ -S .zeus.sock ]; then
   echo "Running tests with Zeus"
   zeus test $args
-else
-  #echo 'Running with naked `rspec`'
+elif [ -f bin/bundle ]; then
+  echo 'Running `./bin/bundle rspec`'
+  bundle exec rspec $args
+elif [ -f rspec ]; then
+  echo 'Running `rspec`'
   rspec $args
+else
+  echo "No rspec executable found. Please ensure you have RSpec installed."
+  exit 1
 fi
