@@ -260,17 +260,22 @@ class RubyVersionReporter
                end
       @io.puts output
     elsif is_latest_in_group
-      # Latest lines are white (or grey), but the tag is colored by EOL status.
+      # Latest lines: if old, make both line and tag grey; otherwise use EOL status for tag coloring
       tag_string = "  <-- Latest"
-      colored_tag = case eol_status
-                    when :green then tag_string.green
-                    when :yellow then tag_string.yellow
-                    when :red then tag_string.red
-                    else tag_string
-                    end
 
-      line_text = is_old ? output_line.grey : output_line
-      @io.puts "#{line_text}#{colored_tag}"
+      if is_old
+        # For old versions, make both line and tag grey
+        @io.puts "#{output_line.grey}#{tag_string.grey}"
+      else
+        # For current/newer versions, color tag by EOL status
+        colored_tag = case eol_status
+                      when :green then tag_string.green
+                      when :yellow then tag_string.yellow
+                      when :red then tag_string.red
+                      else tag_string
+                      end
+        @io.puts "#{output_line}#{colored_tag}"
+      end
     elsif is_old
       # An old, non-latest line is all grey.
       @io.puts output_line.grey
