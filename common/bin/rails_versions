@@ -34,6 +34,9 @@ class RailsVersionReporter
     @current_major_minor = Gem::Version.new(@current_version.segments[0..1].join('.'))
     @io.puts "Checking your local Rails version... #{@current_version.to_s.cyan}"
 
+    # Check for config.load_defaults version
+    @load_defaults_version = get_load_defaults_version
+
     eol_data, releases = fetch_all_data
 
     unless eol_data
@@ -152,18 +155,36 @@ class RailsVersionReporter
     grouped_releases = releases.group_by { |r| r[:version].segments[0..1].join('.') }
     sorted_groups = grouped_releases.keys.sort_by { |v| Gem::Version.new(v) }.reverse
 
-    visible_groups = sorted_groups
+        visible_groups = sorted_groups
     unless @options[:show_all_time]
       visible_groups = sorted_groups.select { |group_key| Gem::Version.new(group_key) >= @current_major_minor }
+
+      # If we have a load_defaults version, include it and all versions between it and current
+      if @load_defaults_version
+        load_defaults_major_minor = Gem::Version.new(@load_defaults_version.segments[0..1].join('.'))
+        current_major_minor_version = @current_major_minor
+
+        # Add all groups between load_defaults and current (inclusive)
+        additional_groups = sorted_groups.select do |group_key|
+          group_version = Gem::Version.new(group_key)
+          group_version >= load_defaults_major_minor && group_version <= current_major_minor_version
+        end
+
+        visible_groups.concat(additional_groups)
+        visible_groups.uniq!
+        visible_groups.sort_by! { |v| Gem::Version.new(v) }
+        visible_groups.reverse!
+      end
     end
 
     @io.puts ""
     visible_groups.each do |group_key|
       eol_date = eol_map[group_key]
       eol_info = format_eol_info(eol_date)
+      config_info = get_config_load_defaults_info(group_key)
 
       header = "--- Rails #{group_key} Releases ---"
-      @io.puts "#{header.b_white}#{eol_info}"
+      @io.puts "#{header.b_white}#{eol_info}#{config_info}"
       display_group(grouped_releases[group_key], eol_date: eol_date)
       @io.puts ""
     end
@@ -254,7 +275,7 @@ class RailsVersionReporter
     (release_major_minor == @current_major_minor && release_version < @current_version)
   end
 
-  def print_release_line(release, is_latest_in_group:, eol_date:)
+    def print_release_line(release, is_latest_in_group:, eol_date:)
     version_str = release[:version].to_s
     output_line = "  %-18s (Released: %s)" % [version_str, release[:date]]
 
@@ -275,23 +296,78 @@ class RailsVersionReporter
                end
       @io.puts output
     elsif is_latest_in_group
-      # Latest lines are white (or grey), but the tag is colored by EOL status.
+      # Latest lines: if old, make everything grey; otherwise use EOL status for tag coloring
       tag_string = "  <-- Latest"
-      colored_tag = case eol_status
-                    when :green then tag_string.green
-                    when :yellow then tag_string.yellow
-                    when :red then tag_string.red
-                    else tag_string
-                    end
 
-      line_text = is_old ? output_line.grey : output_line
-      @io.puts "#{line_text}#{colored_tag}"
+      if is_old
+        # For old versions, make both line and tag grey
+        @io.puts "#{output_line.grey}#{tag_string.grey}"
+      else
+        # For current/newer versions, color tag by EOL status
+        colored_tag = case eol_status
+                      when :green then tag_string.green
+                      when :yellow then tag_string.yellow
+                      when :red then tag_string.red
+                      else tag_string
+                      end
+        @io.puts "#{output_line}#{colored_tag}"
+      end
     elsif is_old
       # An old, non-latest line is all grey.
       @io.puts output_line.grey
     else
       # A normal line is all white.
       @io.puts output_line
+    end
+  end
+
+  def get_load_defaults_version
+    config_file = 'config/application.rb'
+    return nil unless File.exist?(config_file)
+
+    begin
+      content = File.read(config_file)
+      # Look for config.load_defaults followed by a version number
+      match = content.match(/config\.load_defaults\s+(['"]?)([0-9]+\.[0-9]+(?:\.[0-9]+)?)\1/)
+      if match
+        version_string = match[2]
+        return Gem::Version.new(version_string)
+      end
+    rescue => e
+      if DEBUG
+        @io.puts "DEBUG: Error reading config/application.rb: #{e.message}"
+      end
+    end
+
+    nil
+  end
+
+    def matches_load_defaults?(version)
+    return false unless @load_defaults_version
+
+    # Match on major.minor version
+    version_major_minor = Gem::Version.new(version.segments[0..1].join('.'))
+    load_defaults_major_minor = Gem::Version.new(@load_defaults_version.segments[0..1].join('.'))
+
+    version_major_minor == load_defaults_major_minor
+  end
+
+  def get_config_load_defaults_info(group_key)
+    return "" unless @load_defaults_version
+
+    load_defaults_major_minor = @load_defaults_version.segments[0..1].join('.')
+    return "" unless group_key == load_defaults_major_minor
+
+    # Check if this is an old version compared to current Rails
+    group_version = Gem::Version.new(group_key)
+    is_old = group_version < @current_major_minor
+
+    config_str = " (App config.load_defaults)"
+
+    if is_old
+      config_str.yellow
+    else
+      config_str.green
     end
   end
 end
