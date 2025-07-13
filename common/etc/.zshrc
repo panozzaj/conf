@@ -373,13 +373,7 @@ function gdomcuc() {
 function gspec() {
   echo 'Finding spec files that have changed since the last commit.'
 
-  files=$(modified_files | \
-    grep spec/ | \
-    grep -v spec/spec_helper.rb | \
-    grep -v spec/factories | \
-    grep -v spec/fixtures/ | \
-    grep -v spec/support/
-  )
+  files=$(modified_files | grep _spec.rb)
 
   if [ -z "$files" ]; then
     echo "No spec files changed."
