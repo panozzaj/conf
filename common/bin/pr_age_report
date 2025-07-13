@@ -1,0 +1,92 @@
+#!/bin/bash
+
+set -e
+
+# Script to analyze open PRs and calculate how many days each has been open
+# Usage: pr_age_report
+
+# Check if gh CLI is installed
+if ! command -v gh &> /dev/null; then
+    echo "Error: GitHub CLI (gh) is not installed or not in PATH"
+    echo "Please install it from: https://cli.github.com/"
+    exit 1
+fi
+
+# Check if we're in a git repository
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    echo "Error: Not in a git repository"
+    exit 1
+fi
+
+# Check if we can authenticate with GitHub
+if ! gh auth status &> /dev/null; then
+    echo "Error: Not authenticated with GitHub CLI"
+    echo "Please run: gh auth login"
+    exit 1
+fi
+
+echo "Analyzing open PRs..."
+echo "====================="
+echo
+
+# Get open PRs with creation date and other info
+# Format: number, title, created_at, author
+prs=$(gh pr list --state open --json number,title,createdAt,author --jq '.[] | "\(.number)|\(.title)|\(.createdAt)|\(.author.login)"')
+
+if [ -z "$prs" ]; then
+    echo "No open PRs found in this repository."
+    exit 0
+fi
+
+total_days=0
+pr_count=0
+current_date=$(date +%s)
+
+echo "Open PRs and their age:"
+echo "-----------------------"
+
+while IFS='|' read -r number title created_at author; do
+    # Convert GitHub date format to Unix timestamp
+    # GitHub returns dates in ISO 8601 format like "2023-12-01T10:30:00Z"
+    if command -v gdate &> /dev/null; then
+        # Use gdate on macOS (if gnu-date is installed via brew)
+        created_timestamp=$(gdate -d "$created_at" +%s)
+    else
+        # Use date on Linux or standard macOS date
+        created_timestamp=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$created_at" +%s 2>/dev/null || date -d "$created_at" +%s 2>/dev/null)
+    fi
+
+    if [ $? -ne 0 ]; then
+        echo "Warning: Could not parse date for PR #$number, skipping..."
+        continue
+    fi
+
+    # Calculate days difference
+    days_diff=$(( (current_date - created_timestamp) / 86400 ))
+
+    # Format the output
+    printf "PR #%-4s | %-50s | %3d days | @%s\n" "$number" "${title:0:50}" "$days_diff" "$author"
+
+    total_days=$((total_days + days_diff))
+    pr_count=$((pr_count + 1))
+done <<< "$prs"
+
+echo
+echo "Summary:"
+echo "--------"
+echo "Total open PRs: $pr_count"
+echo "Total days score: $total_days days"
+
+if [ $pr_count -gt 0 ]; then
+    average_days=$((total_days / pr_count))
+    echo "Average age: $average_days days per PR"
+fi
+
+echo
+if [ $total_days -gt 100 ]; then
+    echo "⚠️  High total age detected! Consider reviewing and merging older PRs."
+elif [ $total_days -gt 50 ]; then
+    echo "⚠️  Moderate total age. Some PRs may need attention."
+else
+    echo "✅ Reasonable total age for open PRs."
+fi
