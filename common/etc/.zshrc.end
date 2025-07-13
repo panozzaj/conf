@@ -1,2 +1,3 @@
 alias e="$EDITOR"
 alias e.="$EDITOR ."
+source $conf/common/open_source/zummoner/zummoner.zsh

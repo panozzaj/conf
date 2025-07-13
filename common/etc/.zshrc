@@ -39,8 +39,6 @@ autoload run-help-git
 
 # End of lines added by compinstall
 
-source $conf/common/open_source/zummoner/zummoner.zsh
-
 # Lines configured by zsh-newuser-install
 HISTFILE=~/.histfile
 HISTSIZE=50000
