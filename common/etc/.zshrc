@@ -411,6 +411,12 @@ function gdomspec() {
   echo $files | xargs best_rspec
 }
 
+function rspec_paste_join() {
+  # this is useful for pasting into a terminal that doesn't support
+  # multi-line pastes, like iTerm2
+  pbpaste | cut -d ' ' -f 2 | sort | tr '\n' ' ' | sed 's/ $/\n/'
+}
+
 # returns the list of filenames from rspec output format
 function rspec_paste() {
   pbpaste | cut -d ' ' -f 2 | sort
