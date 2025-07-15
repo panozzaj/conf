@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+
+input_path = ARGV[0]
+
+unless input_path && File.exist?(input_path)
+  puts "Usage: clean_webvtt path/to/file.vtt"
+  exit 1
+end
+
+output_path = input_path.sub(/\.vtt$/, '') + '_cleaned.txt'
+
+lines = File.readlines(input_path, chomp: true)
+
+# Remove metadata and timestamp lines
+content_lines = lines.reject { |line| 
+  line.strip.empty? ||
+  line.start_with?('WEBVTT') ||
+  line.start_with?('Kind:') ||
+  line.start_with?('Language:') ||
+  line =~ /^\d{2}:\d{2}:\d{2}\./
+}
+
+# Remove embedded tags like <00:00:01.560><c>
+cleaned_lines = content_lines.map { |line|
+  line.gsub(/<[^>]+>/, '').strip
+}
+
+# Deduplicate consecutive identical lines
+final_lines = []
+last_line = nil
+
+cleaned_lines.each do |line|
+  unless line == last_line
+    final_lines << line
+    last_line = line
+  end
+end
+
+File.write(output_path, final_lines.join("\n"))
+
+puts "Cleaned captions written to #{output_path}"
