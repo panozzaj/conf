@@ -73,6 +73,7 @@ bindkey "\e[3~" delete-char
 #alias r='echo "Nerfed r command"'
 alias r='time best_rspec'
 alias rff='time best_rspec --fail-fast'
+alias rodff='time best_rspec --order defined --fail-fast'
 
 alias t='time ./bin/test'
 
