@@ -1,9 +1,15 @@
-#!/bin/sh
+#!/bin/bash
 
 # Don't exit on errors - we want to continue even if some branches fail to delete
 # set -e
 
-main_branch=`git branch --list main master | sed -r 's/^[* ] //' | head -n 1`
+main_branch=$(main_branch)
+
+# Verify we got a valid branch name
+if [ -z "$main_branch" ]; then
+  echo "ERROR: Could not determine main branch"
+  exit 1
+fi
 
 git fetch > /dev/null
 git checkout $main_branch > /dev/null 2>&1
@@ -73,7 +79,7 @@ done
 # Delete remote branches, tracking success/failure
 deleted_count=0
 failed_count=0
-echo "$branches_to_remove" | while read branch; do
+for branch in $branches_to_remove; do
   if [ -n "$branch" ] && [ "$branch" != "origin" ]; then
     if git push --no-verify --delete origin "$branch" 2>/dev/null; then
       echo "Deleted remote branch: $branch"

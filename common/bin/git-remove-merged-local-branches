@@ -1,9 +1,15 @@
-#!/bin/sh
+#!/bin/bash
 
 # Don't exit on errors - we want to continue even if some branches fail to delete
 # set -e
 
-main_branch=`git branch --list main master | sed -r 's/^[* ] //' | head -n 1`
+main_branch=$(main_branch)
+
+# Verify we got a valid branch name
+if [ -z "$main_branch" ]; then
+  echo "ERROR: Could not determine main branch"
+  exit 1
+fi
 
 git fetch > /dev/null
 git checkout $main_branch > /dev/null 2>&1
@@ -37,7 +43,7 @@ all_candidates=$(
 
 # Get worktree and subtree information
 worktree_branches=$(git worktree list --porcelain 2>/dev/null | grep "^branch " | sed 's/^branch //' | sort | uniq || true)
-subtree_branches=$(git branch -v | grep "^\s*+" | sed 's/^[* +]*//' | cut -d' ' -f1 || true)
+subtree_branches=$(git branch -v | grep "^[[:space:]]*+" | sed 's/^[* +]*//' | cut -d' ' -f1 || true)
 
 # Filter out branches that are used by worktrees
 branches_to_remove=""
@@ -115,11 +121,12 @@ $branch"
             # Track success/failure but don't exit on errors
             deleted_count=0
             failed_count=0
-            echo "$branches_to_remove" | while read branch; do
+            # Use a for loop instead of while read to avoid subshell issues
+            for branch in $branches_to_remove; do
               if [ -n "$branch" ]; then
                 # Try safe delete first
                 if git branch -d "$branch" 2>/dev/null; then
-                  echo "Deleted $branch (safe)"
+                  #echo "Deleted $branch (safe)"
                   deleted_count=$((deleted_count + 1))
                 else
                   # If safe delete fails, check if it's one of our "no unique commits" branches

@@ -1,2 +1,12 @@
 #!/bin/sh
-git branch --list main master develop | sed -r 's/^[* ] //' | head -n 1
+# Check for existence of branches and return the first one found
+# This works regardless of which branch we're currently on
+for branch in main master develop; do
+  if git show-ref --verify --quiet refs/heads/$branch; then
+    echo $branch
+    exit 0
+  fi
+done
+
+# If none found, return empty
+exit 1
