@@ -1,192 +1,445 @@
-#!/bin/bash
+#!/usr/bin/env ruby
 
-set -e
+require 'json'
+require 'optparse'
+require 'shellwords'
 
-# Script to rebase dependabot PRs that have merge conflicts
-# Usage: dependabot_rebase [--dry-run] [--execute]
+# Script to rebase dependabot PRs that have merge conflicts or test failures
+# Now checks for existing dependabot comments to avoid redundant requests
 
-show_usage() {
-    cat << EOF
-Usage: dependabot_rebase [OPTIONS]
+class DependabotRebaseManager
+  def initialize
+    @options = {
+      dry_run: true,
+      include_test_failures: true,  # Default to checking tests
+      force_rebase: false,
+      interactive: false
+    }
+    @results = { successful: 0, failed: 0, skipped: 0 }
+  end
 
-Finds open dependabot PRs with merge conflicts in the current repository
-and triggers a rebase by commenting "@dependabot rebase" on them.
+  def run(args)
+    parse_options(args)
+    validate_environment
 
-OPTIONS:
-    --dry-run     Show what would be done without actually commenting (default)
-    --execute     Actually post the rebase comments to GitHub
-    --help        Show this help message
+    puts "🔍 Searching for open dependabot PRs with issues..."
+    puts "=" * 61
+    puts
 
-EXAMPLES:
-    dependabot_rebase                    # Dry run (default)
-    dependabot_rebase --dry-run          # Explicit dry run
-    dependabot_rebase --execute          # Actually post comments
+    repo = get_repository_info
+    puts "Repository: #{repo}"
+    print_options
+    puts
 
-REQUIREMENTS:
-    - Must be run from within a git repository
-    - GitHub CLI (gh) must be installed and authenticated
-    - Repository must have dependabot PRs with merge conflicts
+    prs = find_dependabot_prs
+    return success_exit("No open dependabot PRs found!") if prs.empty?
 
-EOF
-}
+    problematic_prs = analyze_prs(prs)
+    return success_exit("No dependabot PRs with issues found!") if problematic_prs.empty?
 
-# Default to dry run
-DRY_RUN=true
+    display_summary(problematic_prs)
+    return dry_run_exit(problematic_prs) if @options[:dry_run]
 
-# Parse command line arguments
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        --dry-run)
-            DRY_RUN=true
-            shift
-            ;;
-        --execute)
-            DRY_RUN=false
-            shift
-            ;;
-        --help|-h)
-            show_usage
-            exit 0
-            ;;
-        *)
-            echo "Error: Unknown option $1"
-            show_usage
-            exit 1
-            ;;
-    esac
-done
+    process_prs(problematic_prs)
+    display_final_results
+  end
 
-# Check if gh CLI is installed
-if ! command -v gh &> /dev/null; then
-    echo "Error: GitHub CLI (gh) is not installed or not in PATH"
-    echo "Please install it from: https://cli.github.com/"
-    exit 1
-fi
+  private
 
-# Check if we're in a git repository
-if ! git rev-parse --git-dir > /dev/null 2>&1; then
-    echo "Error: Not in a git repository"
-    echo "Please run this script from within a git repository"
-    exit 1
-fi
+  def parse_options(args)
+    OptionParser.new do |opts|
+      opts.banner = <<~BANNER
+        Usage: dependabot_rebase [OPTIONS]
 
-# Check if we can authenticate with GitHub
-if ! gh auth status &> /dev/null; then
-    echo "Error: Not authenticated with GitHub CLI"
-    echo "Please run: gh auth login"
-    exit 1
-fi
+        Finds open dependabot PRs with merge conflicts or test failures in the current repository
+        and triggers a rebase by commenting "@dependabot rebase" on them.
 
-echo "🔍 Searching for open dependabot PRs with merge conflicts..."
-echo "============================================================="
-echo
+        OPTIONS:
+      BANNER
 
-# Get the current repository (owner/repo format)
-REPO=$(gh repo view --json owner,name --jq '.owner.login + "/" + .name')
-echo "Repository: $REPO"
-echo
+      opts.on("--dry-run", "Show what would be done without actually commenting (default)") do
+        @options[:dry_run] = true
+      end
 
-# Find all open dependabot PRs
-echo "📋 Finding open dependabot PRs..."
-ALL_DEPENDABOT_PRS=$(gh search prs \
-    --repo "$REPO" \
-    --state open \
-    --author "app/dependabot" \
-    --limit 200 \
-    --json "number,title,url")
+      opts.on("--execute", "Actually post the rebase comments to GitHub") do
+        @options[:dry_run] = false
+      end
 
-if [ -z "$ALL_DEPENDABOT_PRS" ] || [ "$ALL_DEPENDABOT_PRS" = "[]" ]; then
-    echo "✅ No open dependabot PRs found!"
+      opts.on("--include-test-failures", "Also rebase PRs with failing tests (default: true)") do
+        @options[:include_test_failures] = true
+      end
+
+      opts.on("--skip-test-failures", "Skip PRs with failing tests, only handle merge conflicts") do
+        @options[:include_test_failures] = false
+      end
+
+      opts.on("--force", "Rebase even when tests are failing without prompting") do
+        @options[:force_rebase] = true
+      end
+
+      opts.on("--interactive", "Prompt before rebasing each PR (can be combined with other options)") do
+        @options[:interactive] = true
+      end
+
+      opts.on("-h", "--help", "Show this help message") do
+        puts opts
+        puts
+        puts "EXAMPLES:"
+        puts "  dependabot_rebase                                            # Dry run for merge conflicts and test failures (default)"
+        puts "  dependabot_rebase --execute                                  # Rebase PRs with merge conflicts and test failures"
+        puts "  dependabot_rebase --execute --skip-test-failures             # Only handle merge conflicts, skip test failures"
+        puts "  dependabot_rebase --execute --interactive                    # Interactively handle PRs with conflicts or test failures"
+        puts "  dependabot_rebase --execute --force                          # Force rebase all problematic PRs"
+        puts
+        puts "REQUIREMENTS:"
+        puts "  - Must be run from within a git repository"
+        puts "  - GitHub CLI (gh) must be installed and authenticated"
+        puts "  - Repository must have dependabot PRs with merge conflicts or test failures"
+        exit 0
+      end
+    end.parse!(args)
+  end
+
+  def validate_environment
+    unless system('which gh > /dev/null 2>&1')
+      error_exit("GitHub CLI (gh) is not installed or not in PATH\nPlease install it from: https://cli.github.com/")
+    end
+
+    unless system('git rev-parse --git-dir > /dev/null 2>&1')
+      error_exit("Not in a git repository\nPlease run this script from within a git repository")
+    end
+
+    unless system('gh auth status > /dev/null 2>&1')
+      error_exit("Not authenticated with GitHub CLI\nPlease run: gh auth login")
+    end
+  end
+
+  def get_repository_info
+    output = `gh repo view --json owner,name`
+    repo_data = JSON.parse(output)
+    "#{repo_data['owner']['login']}/#{repo_data['name']}"
+  rescue => e
+    error_exit("Failed to get repository information: #{e.message}")
+  end
+
+  def find_dependabot_prs
+    output = `gh search prs --repo "$(gh repo view --json owner,name --jq '.owner.login + "/" + .name')" --state open --author "app/dependabot" --limit 200 --json "number,title,url"`
+    JSON.parse(output)
+  rescue => e
+    error_exit("Failed to fetch dependabot PRs: #{e.message}")
+  end
+
+  def analyze_prs(prs)
+    puts "🔍 Checking status for each PR..."
+
+    problematic_prs = []
+
+    prs.each do |pr|
+      pr_number = pr['number']
+      pr_title = pr['title']
+      pr_url = pr['url']
+
+            puts "  Checking PR ##{pr_number}: #{pr_title}"
+
+      # Check dependabot comments
+      comment_info = check_dependabot_comments(pr_number)
+
+      if comment_info[:skip]
+        puts "    ℹ️  Skipping - Dependabot already commented recently (won't rebase)"
+        next
+      end
+
+      issues = check_pr_issues(pr_number)
+
+      if issues.any?
+        issue_description = issues.join(" and ")
+        puts "    ⚠️  Issues found: #{issue_description}"
+
+        # Add recreate suggestion if applicable
+        recreate_option = comment_info[:suggest_recreate] ? "recreate" : "rebase"
+
+        problematic_prs << {
+          number: pr_number,
+          title: pr_title,
+          url: pr_url,
+          issues: issues,
+          issue_description: issue_description,
+          suggest_recreate: comment_info[:suggest_recreate],
+          action: recreate_option
+        }
+      else
+        puts "    ✅ No issues found"
+      end
+    end
+
+    problematic_prs
+  end
+
+    def check_dependabot_comments(pr_number)
+    output = `gh pr view #{pr_number} --json comments`
+    comments_data = JSON.parse(output)
+
+    return { skip: false, suggest_recreate: false } unless comments_data['comments']
+
+    # Check for recent dependabot comments (within last 24 hours)
+    one_day_ago = Time.now - (24 * 60 * 60)
+
+    skip_rebase = false
+    suggest_recreate = false
+
+    comments_data['comments'].each do |comment|
+      next unless comment['author']['login'] == 'dependabot[bot]'
+
+      comment_time = Time.parse(comment['createdAt'])
+      next unless comment_time > one_day_ago
+
+      body = comment['body'].downcase
+
+      # Check for messages that indicate dependabot won't act
+      if body.include?('already up-to-date') ||
+         body.include?("won't") ||
+         body.include?('cannot rebase')
+        skip_rebase = true
+      end
+
+      # Check if recreate is suggested
+      if body.include?('recreate')
+        suggest_recreate = true
+      end
+    end
+
+    { skip: skip_rebase, suggest_recreate: suggest_recreate }
+  rescue => e
+    puts "    ⚠️  Warning: Could not check comments (#{e.message})"
+    { skip: false, suggest_recreate: false }
+  end
+
+  def check_pr_issues(pr_number)
+    issues = []
+
+    # Check merge conflicts
+    merge_status = get_mergeable_status(pr_number)
+    issues << "merge conflicts" if merge_status == "CONFLICTING"
+
+    # Check test failures if requested
+    if @options[:include_test_failures]
+      test_status = get_test_status(pr_number)
+      case test_status[:state]
+      when "FAILING"
+        issues << "failing tests"
+        puts "    ❌ Tests are failing"
+        test_status[:details].each { |detail| puts "      #{detail}" }
+      when "PASSING"
+        puts "    ✅ Tests are passing"
+      when "PENDING"
+        puts "    🟡 Tests are pending"
+      when "UNKNOWN"
+        puts "    ❓ Test status unknown"
+      end
+    end
+
+    issues
+  end
+
+  def get_mergeable_status(pr_number)
+    output = `gh pr view #{pr_number} --json mergeable`
+    JSON.parse(output)['mergeable']
+  rescue
+    "UNKNOWN"
+  end
+
+    def get_test_status(pr_number)
+    output = `gh pr view #{pr_number} --json statusCheckRollup`
+    status_data = JSON.parse(output)
+
+    checks = status_data['statusCheckRollup']
+    return { state: "UNKNOWN", details: [] } unless checks && checks.is_a?(Array)
+
+    # Analyze all checks to determine overall state
+    has_failures = false
+    has_pending = false
+    has_success = false
+    details = []
+
+    checks.each do |check|
+      case check['conclusion'] || check['state']
+      when 'FAILURE', 'ERROR'
+        has_failures = true
+        name = check['name'] || check['context']
+        details << "❌ #{name}: Failed"
+      when 'SUCCESS'
+        has_success = true
+      when 'PENDING', 'EXPECTED', nil
+        # If status is COMPLETED but conclusion is nil, it might be pending
+        if check['status'] != 'COMPLETED'
+          has_pending = true
+        end
+      end
+    end
+
+    # Determine overall state
+    state = if has_failures
+              'FAILING'
+            elsif has_pending
+              'PENDING'
+            elsif has_success
+              'PASSING'
+            else
+              'UNKNOWN'
+            end
+
+    # If failing but no details captured, add a generic message
+    if state == 'FAILING' && details.empty?
+      details = ["❌ Tests are failing (details unavailable)"]
+    end
+
+    { state: state, details: details }
+  rescue => e
+    { state: "UNKNOWN", details: ["Error checking status: #{e.message}"] }
+  end
+
+    def display_summary(problematic_prs)
+    puts "⚠️  Found #{problematic_prs.length} dependabot PR(s) with issues:"
+    puts
+
+    problematic_prs.each do |pr|
+      puts "  PR ##{pr[:number]}: #{pr[:title]}"
+      puts "    Issue: #{pr[:issue_description]}"
+      puts "    Action: @dependabot #{pr[:action]}"
+      puts "    URL: #{pr[:url]}"
+      puts
+    end
+  end
+
+      def dry_run_exit(problematic_prs)
+    puts "🔥 DRY RUN MODE - Would post dependabot comments to:"
+    puts
+
+    problematic_prs.each do |pr|
+      puts "  → PR ##{pr[:number]}: #{pr[:title]} (#{pr[:issue_description]}) - @dependabot #{pr[:action]}"
+    end
+
+    puts
+    puts "💡 To actually post the comments, run with --execute"
     exit 0
-fi
+  end
 
-echo "🔍 Checking merge status for each PR..."
+  def process_prs(problematic_prs)
+    puts "🚀 EXECUTE MODE - Processing rebase requests..."
+    puts
 
-# Create temp file for conflicted PRs
-TEMP_FILE=$(mktemp)
+    problematic_prs.each do |pr|
+      if should_skip_pr?(pr)
+        puts "  ⚠️  Skipping PR ##{pr[:number]} (has failing tests, use --force or --interactive to override)"
+        @results[:skipped] += 1
+        next
+      end
 
-# Parse each PR and check for conflicts
-echo "$ALL_DEPENDABOT_PRS" | jq -r '.[] | "\(.number)|\(.title)|\(.url)"' | while IFS='|' read -r pr_number pr_title pr_url; do
-    echo "  Checking PR #$pr_number: $pr_title"
-    MERGEABLE_STATE=$(gh pr view "$pr_number" --json mergeable --jq '.mergeable')
+      if @options[:interactive] && !prompt_user(pr)
+        puts "  ⏭️  Skipping PR ##{pr[:number]}"
+        @results[:skipped] += 1
+        next
+      end
 
-    if [ "$MERGEABLE_STATE" = "CONFLICTING" ]; then
-        echo "    ⚠️  Has merge conflicts"
-        echo "$pr_number|$pr_title|$pr_url" >> "$TEMP_FILE"
+      rebase_pr(pr)
+    end
+  end
+
+  def should_skip_pr?(pr)
+    pr[:issues].include?("failing tests") &&
+    !@options[:force_rebase] &&
+    !@options[:interactive]
+  end
+
+    def prompt_user(pr)
+    puts
+    puts "PR ##{pr[:number]}: #{pr[:title]}"
+    puts "Issue: #{pr[:issue_description]}"
+    puts "Suggested action: @dependabot #{pr[:action]}"
+
+    if pr[:issues].include?("failing tests")
+      test_status = get_test_status(pr[:number])
+      test_status[:details].each { |detail| puts "  #{detail}" }
+    end
+
+    puts
+    print "#{pr[:action].capitalize} this PR? [y/N/q]: "
+
+    response = STDIN.gets.chomp.downcase
+    case response
+    when 'y', 'yes'
+      true
+    when 'q', 'quit'
+      puts "Quitting..."
+      exit 0
     else
-        echo "    ✅ No conflicts"
-    fi
-done
+      false
+    end
+  end
 
-# Read the conflicted PRs from the temp file
-PR_NUMBERS=()
-PR_TITLES=()
-PR_URLS=()
+    def rebase_pr(pr)
+    action = pr[:action]
+    puts "  → Commenting '@dependabot #{action}' on PR ##{pr[:number]}..."
 
-if [ -s "$TEMP_FILE" ]; then
-    while IFS='|' read -r pr_number pr_title pr_url; do
-        PR_NUMBERS+=("$pr_number")
-        PR_TITLES+=("$pr_title")
-        PR_URLS+=("$pr_url")
-    done < "$TEMP_FILE"
-fi
+    command = "gh pr comment #{pr[:number]} --body '@dependabot #{action}'"
+    success = system("#{command} 2>/dev/null")
 
-rm -f "$TEMP_FILE"
+    if success
+      puts "    ✅ Success"
+      @results[:successful] += 1
+    else
+      puts "    ❌ Failed"
+      @results[:failed] += 1
+    end
+  end
 
-if [ ${#PR_NUMBERS[@]} -eq 0 ]; then
-    echo "✅ No dependabot PRs with merge conflicts found!"
+  def display_final_results
+    puts
+    puts "📊 Results:"
+    puts "  ✅ Successful: #{@results[:successful]}"
+    puts "  ❌ Failed: #{@results[:failed]}"
+    puts "  ⏭️  Skipped: #{@results[:skipped]}"
+
+    if @results[:failed] > 0
+      puts
+      puts "⚠️  Some comments failed to post. This might be due to:"
+      puts "  - Network issues"
+      puts "  - Insufficient permissions"
+      puts "  - PR already being processed"
+    end
+
+    if @results[:skipped] > 0
+      puts
+      puts "💡 To handle skipped PRs with failing tests:"
+      puts "  - Use --force to rebase without prompting"
+      puts "  - Use --interactive to decide case by case"
+    end
+  end
+
+  def print_options
+    puts "Options:"
+    puts "  - Include test failures: #{@options[:include_test_failures]}"
+    puts "  - Force rebase: #{@options[:force_rebase]}"
+    puts "  - Interactive mode: #{@options[:interactive]}"
+    puts "  - Dry run: #{@options[:dry_run]}"
+  end
+
+  def success_exit(message)
+    puts "✅ #{message}"
     exit 0
-fi
+  end
 
-echo "⚠️  Found ${#PR_NUMBERS[@]} dependabot PR(s) with merge conflicts:"
-echo
+  def error_exit(message)
+    puts "Error: #{message}"
+    exit 1
+  end
+end
 
-for i in "${!PR_NUMBERS[@]}"; do
-    echo "  PR #${PR_NUMBERS[$i]}: ${PR_TITLES[$i]}"
-    echo "    URL: ${PR_URLS[$i]}"
-    echo
-done
+# Run the script
+if __FILE__ == $0
+  manager = DependabotRebaseManager.new
+  manager.run(ARGV)
 
-if [ "$DRY_RUN" = true ]; then
-    echo "🔥 DRY RUN MODE - Would post '@dependabot rebase' comments to:"
-    echo
-    for i in "${!PR_NUMBERS[@]}"; do
-        echo "  → PR #${PR_NUMBERS[$i]}: ${PR_TITLES[$i]}"
-    done
-    echo
-    echo "💡 To actually post the comments, run: dependabot_rebase --execute"
-else
-    echo "🚀 EXECUTE MODE - Posting '@dependabot rebase' comments..."
-    echo
-
-    SUCCESSFUL=0
-    FAILED=0
-
-    for i in "${!PR_NUMBERS[@]}"; do
-        echo "  → Commenting on PR #${PR_NUMBERS[$i]}..."
-
-        if gh pr comment "${PR_NUMBERS[$i]}" --body "@dependabot rebase" 2>/dev/null; then
-            echo "    ✅ Success"
-            ((SUCCESSFUL++))
-        else
-            echo "    ❌ Failed"
-            ((FAILED++))
-        fi
-    done
-
-    echo
-    echo "📊 Results:"
-    echo "  ✅ Successful: $SUCCESSFUL"
-    echo "  ❌ Failed: $FAILED"
-
-    if [ $FAILED -gt 0 ]; then
-        echo
-        echo "⚠️  Some comments failed to post. This might be due to:"
-        echo "  - Network issues"
-        echo "  - Insufficient permissions"
-        echo "  - PR already being processed"
-    fi
-fi
-
-echo
-echo "✨ Done!"
+  puts
+  puts "✨ Done!"
+end
