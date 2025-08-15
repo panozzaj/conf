@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Sometimes when you're rebasing you run into an issue where
+# the Gemfile.lock conflicts, and we just want to clear
+# Gemfile.lock changes and try to `bundle` again.
+
+git restore --staged Gemfile.lock
+git checkout Gemfile.lock
+bundle install
