@@ -408,7 +408,13 @@ function gdomspec() {
 
   echo -n "best_rspec "
   echo $files | xargs echo
-  echo $files | xargs best_rspec
+  echo $files | xargs best_rspec $@
+}
+
+function extract_rspec_failures() {
+  # this is useful for pasting into a terminal that doesn't support
+  # multi-line pastes, like iTerm2
+  pbpaste | grep -e '^rspec' | cut -d ' ' -f 2 | sort | tr '\n' ' \\\n'
 }
 
 function rspec_paste_join() {
@@ -527,6 +533,7 @@ alias gb="git branch"
 alias gba="git branch --all"
 alias gbb="git bisect bad"
 alias gbg="git bisect good"
+alias gblame="git blame"
 alias gbs="git bisect skip"
 alias gbr="git branch --remote"
 alias gc="git commit --verbose"
@@ -770,6 +777,10 @@ if [[ ! "$PATH" =~ "$HOME/.docker/bin" ]]; then
   PATH="$HOME/.docker/bin:$PATH"
 fi
 
+if [[ ! "$PATH" =~ "~/.local/bin" ]]; then
+  PATH=~/.local/bin:$PATH
+fi
+
 # set this after /usr/local/bin setting to get latest git
 setopt prompt_subst
 autoload -Uz vcs_info
@@ -885,6 +896,8 @@ function echo_path {
   echo $PATH | tr ':' '\n'
 }
 
+alias CLAUDE='claude --dangerously-skip-permissions'
+
 function gem_summary {
   if [[ -n $(git diff --cached Gemfile Gemfile.lock) ]]; then
     echo "Staged changes detected:"
@@ -895,7 +908,7 @@ function gem_summary {
 
   git diff --cached Gemfile Gemfile.lock
 
-  summary_prompt="output the primary gem that was updated in this format: gems: (Upgrade|Downgrade) <gemname> <version1> -> <version2>. If the gem was added, just say 'gems: Added <gemname>'. If the gem was removed, just say 'gems: Removed <gemname>'."
+  summary_prompt="output the primary gem that was updated in this format: gems: (Upgrade|Downgrade) <gemname> <version1> -> <version2>. If the gem was added, just say 'gems: Add <gemname>'. If the gem was removed, just say 'gems: Remove <gemname>'."
   summary=$(git diff --cached -U0 Gemfile Gemfile.lock | llm $summary_prompt)
 
   echo $summary
