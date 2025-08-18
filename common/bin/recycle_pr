@@ -1,0 +1,1842 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'optparse'
+require 'open3'
+require 'cgi'
+require 'io/console'
+require 'tempfile'
+require 'time'
+require 'shellwords'
+
+class PRCommentReviewer
+  COLORS = {
+    reset: "\e[0m",
+    bold: "\e[1m",
+    dim: "\e[2m",
+    red: "\e[31m",
+    green: "\e[32m",
+    yellow: "\e[33m",
+    blue: "\e[34m",
+    magenta: "\e[35m",
+    cyan: "\e[36m",
+    white: "\e[37m",
+    bg_red: "\e[41m",
+    bg_green: "\e[42m",
+    bg_yellow: "\e[43m",
+    bg_blue: "\e[44m"
+  }
+
+  def initialize(pr_url: nil, skip_auto_generated: true, skip_own: true, debug: false)
+    @pr_url = pr_url
+    @skip_auto_generated = skip_auto_generated
+    @skip_own = skip_own
+    @debug = debug
+    @current_user = nil
+    @comments = []
+    @current_index = 0
+    @dismissed_locally = []  # Keep for compatibility
+    @dismissed_thread_last_comments = {}  # thread_id => last_comment_id
+    @dismissal_file = File.join(Dir.home, '.pr_comment_dismissals.json')
+  end
+
+  def run
+    # Extract repo and PR number from URL if provided
+    if @pr_url
+      if @pr_url =~ %r{github\.com/([^/]+/[^/]+)/pull/(\d+)}
+        @repo = $1
+        @pr_number = $2
+      else
+        puts "Invalid PR URL format"
+        exit 1
+      end
+    else
+      # Get current repo and PR from git context
+      @repo = get_current_repo
+      @pr_number = get_current_pr_number
+      
+      unless @repo && @pr_number
+        puts "Could not determine PR context. Please provide a PR URL."
+        exit 1
+      end
+    end
+
+    # Get current user
+    @current_user = get_current_user if @skip_own
+
+    # Load previously dismissed comments
+    load_dismissed_comments
+
+    # Fetch all comments
+    fetch_all_comments
+    
+    if @debug
+      # In debug mode, show all comments with filtering status
+      debug_display
+      return
+    end
+    
+    # Build thread structure first, before filtering
+    build_thread_structure
+    
+    # Filter comments while preserving thread context
+    filter_comments_with_thread_context!
+    
+    if @comments.empty?
+      puts "No comments to review (after filtering)."
+      exit 0
+    end
+    
+    # Rebuild thread structure after filtering
+    build_thread_structure
+    
+    # Get organized comments for display
+    @display_comments = get_organized_comments
+    
+    if @display_comments.empty?
+      puts "No comments to review (after filtering and threading)."
+      exit 0
+    end
+    
+    # Initialize thread navigation
+    @current_thread_index = 0
+    @current_comment_in_thread = 0
+    @scroll_offset = 0  # For line-by-line scrolling
+    @sidebar_width = 40  # Width of sidebar in characters
+    @use_sidebar = true  # Enable sidebar by default
+    
+    # Start interactive review
+    interactive_review
+  end
+
+  private
+
+  def get_current_user
+    stdout, _, status = Open3.capture3("gh api user --jq .login")
+    return stdout.strip if status.success?
+    nil
+  end
+
+  def get_current_repo
+    stdout, _, status = Open3.capture3("gh repo view --json nameWithOwner --jq .nameWithOwner")
+    return stdout.strip if status.success?
+    nil
+  end
+
+  def get_current_pr_number
+    stdout, _, status = Open3.capture3("gh pr view --json number --jq .number")
+    return stdout.strip if status.success?
+    nil
+  end
+
+  def load_dismissed_comments
+    return unless File.exist?(@dismissal_file)
+    
+    begin
+      data = JSON.parse(File.read(@dismissal_file))
+      pr_key = "#{@repo}##{@pr_number}"
+      @dismissed_thread_last_comments = data[pr_key] || {}
+      puts "Loaded #{@dismissed_thread_last_comments.length} dismissed threads for this PR" if @dismissed_thread_last_comments.any?
+    rescue JSON::ParserError, StandardError => e
+      puts "Warning: Could not load dismissal file: #{e.message}"
+      @dismissed_thread_last_comments = {}
+    end
+  end
+
+  def save_dismissed_comments
+    begin
+      # Load existing data or create new
+      data = {}
+      if File.exist?(@dismissal_file)
+        data = JSON.parse(File.read(@dismissal_file)) rescue {}
+      end
+      
+      # Update data for this PR
+      pr_key = "#{@repo}##{@pr_number}"
+      data[pr_key] = @dismissed_thread_last_comments
+      
+      # Clean up old entries (keep only last 10 PRs to avoid file bloat)
+      if data.keys.length > 10
+        data = data.to_a.last(10).to_h
+      end
+      
+      # Write back to file
+      File.write(@dismissal_file, JSON.pretty_generate(data))
+      puts "#{COLORS[:green]}Saved dismissals to #{@dismissal_file}#{COLORS[:reset]}"
+    rescue StandardError => e
+      puts "#{COLORS[:red]}Warning: Could not save dismissals: #{e.message}#{COLORS[:reset]}"
+    end
+  end
+
+  def fetch_all_comments
+    puts "Fetching comments for #{@repo}##{@pr_number}..."
+    
+    # Fetch issue comments
+    issue_comments = fetch_api_endpoint("repos/#{@repo}/issues/#{@pr_number}/comments")
+    puts "  Found #{issue_comments.length} issue comments"
+    
+    # Fetch review comments
+    review_comments = fetch_api_endpoint("repos/#{@repo}/pulls/#{@pr_number}/comments")
+    puts "  Found #{review_comments.length} review comments"
+    
+    # Fetch reviews (for review summary comments)
+    reviews = fetch_api_endpoint("repos/#{@repo}/pulls/#{@pr_number}/reviews")
+    puts "  Found #{reviews.length} reviews"
+    
+    # Process and organize all comments
+    @comments = []
+    @comment_threads = {}
+    
+    # Add issue comments
+    issue_comments.each do |comment|
+      comment['comment_type'] = 'issue'
+      comment['thread_id'] = "issue_#{comment['id']}"
+      @comments << comment
+    end
+    
+    # Add review comments and organize into threads
+    review_comments.each do |comment|
+      comment['comment_type'] = 'review_comment'
+      
+      if comment['in_reply_to_id']
+        # This is a reply to another comment
+        comment['thread_id'] = find_thread_id(comment['in_reply_to_id'])
+      else
+        # This starts a new thread
+        comment['thread_id'] = "thread_#{comment['id']}"
+      end
+      
+      @comments << comment
+    end
+    
+    # Add reviews with content
+    reviews.each do |review|
+      if review['body'] && !review['body'].empty?
+        review['comment_type'] = 'review'
+        review['created_at'] = review['submitted_at']
+        review['thread_id'] = "review_#{review['id']}"
+        @comments << review
+      end
+    end
+    
+    # Sort by creation time
+    @comments.sort_by! { |c| c['created_at'] || '' }
+    
+    # Build thread structure
+    build_thread_structure
+    
+    puts "  Total: #{@comments.length} comments after processing"
+  end
+
+  def fetch_api_endpoint(endpoint)
+    stdout, stderr, status = Open3.capture3("gh api #{endpoint} --paginate")
+    
+    unless status.success?
+      puts "Error fetching #{endpoint}: #{stderr}"
+      return []
+    end
+    
+    JSON.parse(stdout)
+  rescue JSON::ParserError => e
+    puts "Error parsing JSON from #{endpoint}: #{e.message}"
+    []
+  end
+
+  def find_thread_id(reply_to_id)
+    # Find the comment this is replying to and get its thread_id
+    parent = @comments.find { |c| c['id'] == reply_to_id }
+    if parent && parent['thread_id']
+      parent['thread_id']
+    else
+      # If we can't find the parent, create a new thread
+      "thread_#{reply_to_id}"
+    end
+  end
+
+  def build_thread_structure
+    @comment_threads = {}
+    
+    @comments.each do |comment|
+      thread_id = comment['thread_id']
+      @comment_threads[thread_id] ||= []
+      @comment_threads[thread_id] << comment
+    end
+    
+    # Sort comments within each thread by creation time
+    @comment_threads.each do |thread_id, comments|
+      comments.sort_by! { |c| c['created_at'] || '' }
+    end
+  end
+
+  def get_organized_comments
+    # Return comments organized by threads for thread-based navigation
+    @organized_threads = []
+    
+    @comment_threads.keys.sort.each do |thread_id|
+      thread_comments = @comment_threads[thread_id]
+      thread_comments.each_with_index do |comment, index|
+        comment['is_thread_start'] = (index == 0)
+        comment['thread_position'] = index
+        comment['thread_size'] = thread_comments.length
+        comment['prev_in_thread'] = index > 0 ? thread_comments[index - 1] : nil
+      end
+      
+      @organized_threads << {
+        'thread_id' => thread_id,
+        'comments' => thread_comments,
+        'file_path' => thread_comments.first['path'],
+        'line_number' => thread_comments.first['line'] || thread_comments.first['original_line']
+      }
+    end
+    
+    # Return flat list for compatibility, but we'll use @organized_threads for navigation
+    @organized_threads.flat_map { |t| t['comments'] }
+  end
+
+  def debug_display
+    puts "\n" + "="*80
+    puts "DEBUG MODE: All Comments for #{@repo}##{@pr_number}"
+    puts "="*80 + "\n"
+    
+    # Build thread structure first
+    build_thread_structure
+    
+    # Use the new thread-aware filtering logic
+    filter_comments_with_thread_context!
+    
+    # Rebuild after filtering
+    build_thread_structure
+    organized = get_organized_comments
+    
+    puts "Total comments: #{@comments.length}"
+    puts "Shown after thread-aware filtering: #{@comments.length}"
+    puts "\n"
+    
+    organized.each_with_index do |comment, index|
+      display_debug_comment_simple(comment, index + 1)
+    end
+  end
+
+  def would_filter_comment(comment)
+    body = comment['body'] || ''
+    user = comment['user'] ? comment['user']['login'] : ''
+    
+    # Check auto-generated filtering
+    auto_filtered = false
+    if @skip_auto_generated
+      if body.match?(/^<!-- .* -->$/m)
+        auto_filtered = true
+      elsif body.include?('## Simplecov Report')
+        auto_filtered = true
+      elsif user == 'coderabbitai[bot]'
+        # Temporarily disable all CodeRabbit filtering to test
+        auto_filtered = false
+      elsif body.include?('<!-- This is an auto-generated comment')
+        auto_filtered = true
+      end
+    end
+    
+    # Check own comment filtering (keep threaded responses)
+    own_filtered = false
+    if @skip_own && @current_user
+      user_login = comment['user'] && comment['user']['login']
+      if user_login == @current_user
+        # Keep your comments if they're in a thread responding to someone else
+        thread_id = comment['thread_id']
+        thread_comments = @comments.select { |c| c['thread_id'] == thread_id }
+        
+        # Filter if: single comment thread OR no other commenters in thread
+        if thread_comments.length > 1
+          other_commenters = thread_comments.any? do |tc| 
+            tc_user = tc['user'] && tc['user']['login']
+            tc_user && tc_user != @current_user
+          end
+          own_filtered = !other_commenters  # Filter if no other commenters
+        else
+          own_filtered = true  # Filter single-comment threads from you
+        end
+      end
+    end
+    
+    auto_filtered || own_filtered
+  end
+
+  def display_debug_comment_simple(comment, number)
+    user = comment['user'] ? comment['user']['login'] : 'Unknown'
+    created_at = format_time(comment['created_at'] || comment['submitted_at'])
+    
+    # Thread info
+    thread_info = ""
+    if comment['thread_size'] > 1
+      if comment['is_thread_start']
+        thread_info = " 🧵"
+      else
+        thread_info = " ↳#{comment['thread_position']}"
+      end
+    end
+    
+    # Comment type
+    type_badge = case comment['comment_type']
+                when 'review' then "[REVIEW]"
+                when 'review_comment' then "[CODE]"
+                when 'issue' then "[GENERAL]"
+                else "[UNKNOWN]"
+                end
+    
+    # File info
+    file_info = ""
+    if comment['path']
+      file_info = " #{comment['path']}"
+      if comment['line'] || comment['original_line']
+        file_info += ":#{comment['line'] || comment['original_line']}"
+      end
+    end
+    
+    puts "[SHOWN] #{number}. @#{user} #{type_badge}#{thread_info} (#{created_at})#{file_info}"
+    
+    # Show truncated body
+    body = comment['body'] || ''
+    clean_body = body.gsub(/<!--.*?-->/m, '').gsub(/<[^>]+>/, '').strip
+    preview = clean_body.length > 100 ? "#{clean_body[0..100]}..." : clean_body
+    preview_lines = preview.split("\n").first(2).join(" ")
+    
+    puts "    #{preview_lines}"
+    puts ""
+  end
+
+  def display_debug_comment(comment, number)
+    user = comment['user'] ? comment['user']['login'] : 'Unknown'
+    created_at = format_time(comment['created_at'] || comment['submitted_at'])
+    
+    # Determine styling based on filter status
+    if comment['would_filter']
+      style = "#{COLORS[:dim]}"
+      reset = "#{COLORS[:reset]}"
+      prefix = "#{COLORS[:dim]}[FILTERED]#{COLORS[:reset]} "
+      
+      # For debugging: show why CodeRabbit comments are filtered
+      if user == 'coderabbitai[bot]'
+        body = comment['body'] || ''
+        debug_reason = ""
+        if body.include?('## Summary')
+          debug_reason = " (Summary)"
+        elsif body.include?('## Walkthrough') 
+          debug_reason = " (Walkthrough)"
+        elsif body.include?('**Actionable comments posted:')
+          debug_reason = " (Actionable count)"
+        else
+          debug_reason = " (Unknown reason)"
+        end
+        prefix += debug_reason
+      end
+    else
+      style = ""
+      reset = ""
+      prefix = "[SHOWN] "
+    end
+    
+    # Thread info
+    thread_info = ""
+    if comment['thread_size'] > 1
+      if comment['is_thread_start']
+        thread_info = " 🧵"
+      else
+        thread_info = " ↳#{comment['thread_position']}"
+      end
+    end
+    
+    # Comment type
+    type_badge = case comment['comment_type']
+                when 'review' then "[REVIEW]"
+                when 'review_comment' then "[CODE]"
+                when 'issue' then "[GENERAL]"
+                else "[UNKNOWN]"
+                end
+    
+    # File info
+    file_info = ""
+    if comment['path']
+      file_info = " #{comment['path']}"
+      if comment['line'] || comment['original_line']
+        file_info += ":#{comment['line'] || comment['original_line']}"
+      end
+    end
+    
+    puts "#{prefix}#{style}#{number}. @#{user} #{type_badge}#{thread_info} (#{created_at})#{file_info}#{reset}"
+    
+    # Show truncated body
+    body = comment['body'] || ''
+    # Clean up body for preview
+    clean_body = body.gsub(/<!--.*?-->/m, '').gsub(/<[^>]+>/, '').strip
+    preview = clean_body.length > 100 ? "#{clean_body[0..100]}..." : clean_body
+    preview_lines = preview.split("\n").first(2).join(" ")
+    
+    puts "#{style}    #{preview_lines}#{reset}"
+    puts ""
+  end
+
+  def filter_comments_with_thread_context!
+    initial_count = @comments.length
+    
+    # Mark comments for filtering but don't remove them yet
+    @comments.each do |comment|
+      comment['should_filter'] = should_filter_comment(comment)
+    end
+    
+    # Check dismissed threads and filter entire threads if no new comments
+    @comment_threads.each do |thread_id, thread_comments|
+      if @dismissed_thread_last_comments[thread_id]
+        last_dismissed_id = @dismissed_thread_last_comments[thread_id]
+        
+        # Check if there are any comments after the last dismissed one
+        has_new_comments = thread_comments.any? do |comment|
+          comment['id'] > last_dismissed_id
+        end
+        
+        unless has_new_comments
+          # No new comments, filter entire thread
+          thread_comments.each { |c| c['should_filter'] = true }
+          next
+        end
+      end
+      
+      # If any comment in thread should be kept, keep all that provide context
+      has_keeper = thread_comments.any? { |c| !c['should_filter'] }
+      
+      if has_keeper
+        # Keep all comments in the thread for context
+        thread_comments.each { |c| c['should_filter'] = false }
+      end
+    end
+    
+    # Now actually filter based on final decision
+    @comments.reject! { |c| c['should_filter'] }
+    
+    puts "  Final: #{@comments.length} comments (from #{initial_count} total) with thread context preserved"
+  end
+
+  def should_filter_comment(comment)
+    body = comment['body'] || ''
+    user = comment['user'] ? comment['user']['login'] : ''
+    
+    # Check auto-generated filtering
+    auto_filtered = false
+    if @skip_auto_generated
+      if body.match?(/^<!-- .* -->$/m)
+        auto_filtered = true
+      elsif body.include?('## Simplecov Report')
+        auto_filtered = true
+      elsif user == 'coderabbitai[bot]'
+        # Only filter the most obvious summaries
+        auto_filtered = body.include?('## Summary') ||
+                       body.include?('## Walkthrough') ||
+                       body.include?('**Actionable comments posted:')
+      elsif body.include?('<!-- This is an auto-generated comment')
+        auto_filtered = true
+      end
+    end
+    
+    # Check own comment filtering (keep threaded responses)
+    own_filtered = false
+    if @skip_own && @current_user
+      user_login = comment['user'] && comment['user']['login']
+      if user_login == @current_user
+        thread_id = comment['thread_id']
+        thread_comments = @comments.select { |c| c['thread_id'] == thread_id }
+        
+        # Filter if: single comment thread OR no other commenters in thread
+        if thread_comments.length > 1
+          other_commenters = thread_comments.any? do |tc| 
+            tc_user = tc['user'] && tc['user']['login']
+            tc_user && tc_user != @current_user
+          end
+          own_filtered = !other_commenters
+        else
+          own_filtered = true
+        end
+      end
+    end
+    
+    auto_filtered || own_filtered
+  end
+
+  def filter_comments!
+    initial_count = @comments.length
+    
+    if @skip_auto_generated
+      before_auto = @comments.length
+      @comments.reject! do |comment|
+        body = comment['body'] || ''
+        user = comment['user'] ? comment['user']['login'] : ''
+        
+        # Skip HTML-only comments
+        if body.match?(/^<!-- .* -->$/m)
+          true
+        # Skip Simplecov reports
+        elsif body.include?('## Simplecov Report')
+          true
+        # Skip CodeRabbit summary/analysis comments but keep substantive ones
+        elsif user == 'coderabbitai[bot]'
+          # Temporarily disable all CodeRabbit filtering to test
+          false
+        # Skip other obvious auto-generated patterns
+        elsif body.include?('<!-- This is an auto-generated comment')
+          true
+        else
+          false
+        end
+      end
+      puts "  Filtered out #{before_auto - @comments.length} auto-generated/summary comments"
+    end
+    
+    if @skip_own && @current_user
+      before_own = @comments.length
+      @comments.reject! do |comment|
+        user_login = comment['user'] && comment['user']['login']
+        if user_login == @current_user
+          # Keep your comments if they're in a thread responding to someone else
+          thread_id = comment['thread_id']
+          thread_comments = @comments.select { |c| c['thread_id'] == thread_id }
+          
+          # Keep if: there are multiple comments in thread AND there's a non-you commenter
+          if thread_comments.length > 1
+            other_commenters = thread_comments.any? do |tc| 
+              tc_user = tc['user'] && tc['user']['login']
+              tc_user && tc_user != @current_user
+            end
+            !other_commenters  # Keep (don't filter) if there are other commenters
+          else
+            true  # Filter out single-comment threads from you
+          end
+        else
+          false  # Don't filter non-you comments
+        end
+      end
+      puts "  Filtered out #{before_own - @comments.length} solo own comments (@#{@current_user})"
+    end
+    
+    # Remove locally dismissed comments
+    @comments.reject! { |c| @dismissed_locally.include?(c['id']) }
+    
+    puts "  Final: #{@comments.length} comments (from #{initial_count} total)"
+  end
+
+  def interactive_review
+    clear_screen
+    
+    # Initialize cache variables
+    @cached_content_lines = nil
+    @cached_thread_index = nil
+    @cached_comment_index = nil
+    @cached_sidebar_thread_index = nil
+    @cached_sidebar_lines = nil
+    @dismissal_message = nil
+    @dismissal_message_time = nil
+    @expanded_sections = {} # Track expanded code blocks/details (default collapsed)
+    
+    begin
+      loop do
+        if @use_sidebar
+          display_with_sidebar
+        else
+          display_current_thread_with_context
+        end
+        display_thread_navigation_bar
+        
+        case get_user_input
+        when 'j', "\e[B" # scroll down line by line
+          moved = scroll_down
+          # Only redraw if we actually moved
+          next unless moved
+        when 'k', "\e[A" # scroll up line by line
+          moved = scroll_up
+          # Only redraw if we actually moved
+          next unless moved
+        when 'd', "\u0004" # scroll half page down (d or Ctrl-D)
+          scroll_half_down
+        when 'u', "\u0015" # scroll half page up (u or Ctrl-U)
+          scroll_half_up
+        when 'J' # next comment in thread
+          move_to_next_comment_in_thread
+        when 'K' # previous comment in thread  
+          move_to_previous_comment_in_thread
+        when 'n' # next thread
+          move_to_next_thread
+        when 'p' # previous thread
+          move_to_previous_thread
+        when 'D' # dismiss current thread locally
+          dismiss_current_thread_with_feedback
+        when 'v' # view on GitHub
+          open_current_comment_on_github
+        when 'r' # reply to current comment
+          reply_to_current_comment
+        when 'c' # send to Claude Code
+          send_to_claude_code
+        when 'R' # resolve in GitHub
+          resolve_current_thread
+        when 's' # toggle sidebar
+          @use_sidebar = !@use_sidebar
+          invalidate_cache
+        when '>' # expand section
+          expand_current_section
+        when '<' # collapse section
+          collapse_current_section
+        when '?' # help
+          show_thread_help
+        when 'q' # quit
+          break
+        end
+      end
+    ensure
+      restore_screen
+    end
+    
+    puts "\nGoodbye!"
+  end
+
+  def clear_screen
+    # Use alternate screen buffer to reduce flicker
+    print "\e[?1049h\e[H" 
+  end
+  
+  def restore_screen
+    # Restore original screen buffer
+    print "\e[?1049l"
+  end
+
+  def display_current_thread_with_context
+    return if @organized_threads.empty?
+    
+    current_thread = @organized_threads[@current_thread_index]
+    comments = current_thread['comments']
+    
+    # Calculate available screen height (leaving room for navigation at bottom)
+    screen_height = terminal_height - 3
+    
+    # Build the full content to display (cached to avoid rebuilding on every scroll)
+    unless @cached_content_lines && @cached_thread_index == @current_thread_index && @cached_comment_index == @current_comment_in_thread
+      @cached_content_lines = []
+      
+      # Add thread header with file context
+      @cached_content_lines << "#{COLORS[:bg_blue]}#{COLORS[:white]}#{COLORS[:bold]} Thread #{@current_thread_index + 1}/#{@organized_threads.length} #{COLORS[:reset]}"
+      
+      # Add dismissal message if recent
+      if @dismissal_message && @dismissal_message_time && (Time.now - @dismissal_message_time) < 2
+        @cached_content_lines << "#{COLORS[:bg_green]}#{COLORS[:white]} ✓ #{@dismissal_message} #{COLORS[:reset]}"
+      end
+      
+      @cached_content_lines << ""
+      
+      # Add file context with diff if available
+      if current_thread['file_path']
+        @cached_content_lines.concat(get_file_context(current_thread['file_path'], current_thread['line_number']))
+        @cached_content_lines << ""
+        @cached_content_lines << "#{COLORS[:dim]}─" * terminal_width + COLORS[:reset]
+        @cached_content_lines << ""
+      end
+      
+      # Add all comments in thread
+      comments.each_with_index do |comment, index|
+        # Highlight current comment
+        if index == @current_comment_in_thread
+          @cached_content_lines << "#{COLORS[:bg_cyan]}#{COLORS[:black]} ► CURRENT COMMENT #{COLORS[:reset]}"
+        end
+        
+        @cached_content_lines.concat(format_comment_for_display(comment, index))
+        @cached_content_lines << ""
+        
+        # Add separator between comments
+        if index < comments.length - 1
+          @cached_content_lines << "#{COLORS[:dim]}┄" * terminal_width + COLORS[:reset]
+          @cached_content_lines << ""
+        end
+      end
+      
+      @cached_thread_index = @current_thread_index
+      @cached_comment_index = @current_comment_in_thread
+    end
+    
+    # Use cursor positioning instead of clearing entire screen
+    print "\e[H" # Move cursor to top-left
+    
+    # Apply scrolling offset and display
+    visible_lines = @cached_content_lines[@scroll_offset, screen_height] || []
+    visible_lines.each_with_index do |line, idx|
+      print "\e[#{idx + 1};1H" # Position cursor
+      print "\e[K" # Clear line
+      puts line
+    end
+    
+    # Clear remaining lines
+    (visible_lines.length + 1..screen_height).each do |line_num|
+      print "\e[#{line_num};1H\e[K"
+    end
+  end
+
+  def get_file_context(file_path, line_number)
+    return ["#{COLORS[:yellow]}📁 #{file_path}#{COLORS[:reset]}"] unless line_number
+    
+    context_lines = []
+    context_lines << "#{COLORS[:yellow]}📁 #{file_path}:#{line_number}#{COLORS[:reset]}"
+    
+    # Try to fetch file content around the line
+    begin
+      if File.exist?(file_path)
+        file_lines = File.readlines(file_path)
+        start_line = [line_number.to_i - 3, 0].max
+        end_line = [line_number.to_i + 2, file_lines.length - 1].min
+        
+        context_lines << "#{COLORS[:dim]}Code context:#{COLORS[:reset]}"
+        (start_line..end_line).each do |i|
+          line_content = file_lines[i]&.chomp || ""
+          line_num = i + 1
+          
+          if line_num == line_number.to_i
+            # Highlight the target line
+            context_lines << "#{COLORS[:bg_red]}#{COLORS[:yellow]}#{line_num.to_s.rjust(4)}: #{line_content}#{COLORS[:reset]}"
+          else
+            context_lines << "#{COLORS[:dim]}#{line_num.to_s.rjust(4)}: #{line_content}#{COLORS[:reset]}"
+          end
+        end
+      else
+        context_lines << "#{COLORS[:dim]}(File not found in current directory)#{COLORS[:reset]}"
+      end
+    rescue StandardError => e
+      context_lines << "#{COLORS[:dim]}(Could not load file context: #{e.message})#{COLORS[:reset]}"
+    end
+    
+    context_lines
+  end
+
+  def format_comment_for_display(comment, index, width = nil)
+    lines = []
+    user = comment['user'] ? comment['user']['login'] : 'Unknown'
+    created_at = format_time(comment['created_at'] || comment['submitted_at'])
+    display_width = width || (terminal_width - 4)
+    
+    # Comment header - compact format
+    position_info = comment['thread_size'] > 1 ? " (#{index + 1}/#{comment['thread_size']})" : ""
+    type_badge = case comment['comment_type']
+                when 'review' then "[REVIEW]"
+                when 'review_comment' then "[CODE]"
+                when 'issue' then "[GENERAL]"
+                else "[UNKNOWN]"
+                end
+    lines << "#{COLORS[:cyan]}#{COLORS[:bold]}@#{user}#{COLORS[:reset]}#{position_info} #{type_badge} - #{created_at}"
+    
+    lines << ""
+    
+    # Format comment body
+    body = comment['body'] || ''
+    formatted_body = format_comment_body_for_display(body, display_width, comment)
+    lines.concat(formatted_body.split("\n"))
+    
+    lines
+  end
+
+  def format_comment_body_for_display(body, width = nil, comment = nil)
+    # Similar to existing format but optimized for scrolling display
+    display_width = width || (terminal_width - 4)
+    body = body.gsub(/<!--.*?-->/m, '')
+    
+    # Check if this comment has collapsed sections
+    thread_key = nil
+    if comment
+      current_thread = @organized_threads[@current_thread_index] if @organized_threads
+      thread_key = "#{current_thread['thread_id']}_#{@current_comment_in_thread}" if current_thread
+    end
+    
+    # Process details/summary tags
+    body = body.gsub(%r{<details[^>]*>\s*<summary[^>]*>(.*?)</summary>(.*?)</details>}mi) do
+      summary = CGI.unescapeHTML($1.strip)
+      content = CGI.unescapeHTML($2.strip)
+      # Check if this section should be expanded (default: collapsed)
+      is_expanded = thread_key && @expanded_sections && @expanded_sections[thread_key]
+      
+      if is_expanded
+        "#{COLORS[:yellow]}▼ #{summary}#{COLORS[:reset]} #{COLORS[:dim]}[press < to collapse]#{COLORS[:reset]}\n#{COLORS[:dim]}───────────────────#{COLORS[:reset]}\n#{content.strip}"
+      else
+        "#{COLORS[:yellow]}▶ #{summary}#{COLORS[:reset]} #{COLORS[:dim]}[collapsed - press > to expand]#{COLORS[:reset]}"
+      end
+    end
+    
+    # Process code blocks with syntax highlighting
+    body = body.gsub(/```(\w*)\n?(.*?)```/m) do
+      lang = $1.empty? ? '' : "#{COLORS[:green]}[#{$1}]#{COLORS[:reset]}"
+      code = $2.strip # Remove leading/trailing whitespace
+      highlighted = syntax_highlight(code, $1)
+      "#{COLORS[:dim]}───────────────────#{COLORS[:reset]}\n#{lang}\n#{highlighted}\n#{COLORS[:dim]}───────────────────#{COLORS[:reset]}"
+    end
+    
+    # Process inline code
+    body = body.gsub(/`([^`]+)`/) do
+      "#{COLORS[:cyan]}#{$1}#{COLORS[:reset]}"
+    end
+    
+    # Process suggestions
+    body = body.gsub(/```suggestion(.*?)```/m) do
+      "#{COLORS[:green]}+ Suggested change:#{COLORS[:reset]}\n#{COLORS[:green]}#{$1}#{COLORS[:reset]}"
+    end
+    
+    # Clean HTML tags and decode entities
+    body = body.gsub(%r{</?[^>]+>}, '')
+    body = CGI.unescapeHTML(body)
+    
+    # Remove excessive newlines (more than 2 consecutive)
+    body = body.gsub(/\n{3,}/, "\n\n")
+    
+    # Word wrap
+    word_wrap(body.strip, display_width)
+  end
+
+  def terminal_height
+    IO.console&.winsize&.[](0) || 24
+  end
+
+  # Navigation methods
+  def scroll_down
+    return false unless @cached_content_lines
+    
+    screen_height = terminal_height - 3
+    max_offset = [@cached_content_lines.length - screen_height, 0].max
+    new_offset = [@scroll_offset + 1, max_offset].min
+    
+    # Only update if we actually moved
+    if new_offset != @scroll_offset
+      @scroll_offset = new_offset
+      return true # Indicate we moved
+    end
+    false # Indicate we didn't move
+  end
+
+  def scroll_up
+    new_offset = [@scroll_offset - 1, 0].max
+    
+    # Only update if we actually moved
+    if new_offset != @scroll_offset
+      @scroll_offset = new_offset
+      return true # Indicate we moved
+    end
+    false # Indicate we didn't move
+  end
+  
+  def scroll_half_down
+    return unless @cached_content_lines
+    
+    screen_height = terminal_height - 3
+    half_screen = screen_height / 2
+    max_offset = [@cached_content_lines.length - screen_height, 0].max
+    @scroll_offset = [@scroll_offset + half_screen, max_offset].min
+  end
+  
+  def scroll_half_up
+    screen_height = terminal_height - 3
+    half_screen = screen_height / 2
+    @scroll_offset = [@scroll_offset - half_screen, 0].max
+  end
+  
+  def invalidate_cache
+    @cached_content_lines = nil
+    @cached_thread_index = nil
+    @cached_comment_index = nil
+    @cached_sidebar_thread_index = nil
+    @cached_sidebar_lines = nil
+  end
+
+  def move_to_next_comment_in_thread
+    return if @organized_threads.empty?
+    
+    current_thread = @organized_threads[@current_thread_index]
+    if @current_comment_in_thread < current_thread['comments'].length - 1
+      @current_comment_in_thread += 1
+      @scroll_offset = 0  # Reset scroll when changing comments
+      invalidate_cache
+    end
+  end
+
+  def move_to_previous_comment_in_thread
+    if @current_comment_in_thread > 0
+      @current_comment_in_thread -= 1
+      @scroll_offset = 0  # Reset scroll when changing comments
+      invalidate_cache
+    end
+  end
+
+  def move_to_next_thread
+    if @current_thread_index < @organized_threads.length - 1
+      @current_thread_index += 1
+      @current_comment_in_thread = 0
+      @scroll_offset = 0  # Reset scroll when changing threads
+      reset_expanded_sections # Collapse all sections in new thread
+      invalidate_cache
+    end
+  end
+
+  def move_to_previous_thread
+    if @current_thread_index > 0
+      @current_thread_index -= 1
+      @current_comment_in_thread = 0
+      @scroll_offset = 0  # Reset scroll when changing threads
+      reset_expanded_sections # Collapse all sections in new thread
+      invalidate_cache
+    end
+  end
+  
+  def reset_expanded_sections
+    # Clear all expanded sections when changing threads
+    @expanded_sections = {}
+  end
+
+  def display_current_comment
+    return if @display_comments.empty?
+    
+    comment = @display_comments[@current_index]
+    user = comment['user'] ? comment['user']['login'] : 'Unknown'
+    created_at = format_time(comment['created_at'] || comment['submitted_at'])
+    
+    # Header
+    puts "#{COLORS[:bg_blue]}#{COLORS[:white]}#{COLORS[:bold]} PR ##{@pr_number} - Comment #{@current_index + 1} of #{@display_comments.length} #{COLORS[:reset]}"
+    puts ""
+    
+    # Thread info
+    if comment['thread_size'] > 1
+      thread_indicator = comment['is_thread_start'] ? "🧵 Thread start" : "↳ Reply #{comment['thread_position']}"
+      puts "#{COLORS[:magenta]}#{thread_indicator} (#{comment['thread_size']} comments in thread)#{COLORS[:reset]}"
+    end
+    
+    # Comment metadata
+    indent = comment['is_thread_start'] ? "" : "  "
+    puts "#{indent}#{COLORS[:cyan]}#{COLORS[:bold]}@#{user}#{COLORS[:reset]} commented #{created_at}"
+    
+    # File/line info for review comments
+    if comment['path']
+      puts "#{indent}#{COLORS[:yellow]}📁 #{comment['path']}"
+      if comment['line'] || comment['original_line']
+        puts "#{indent}#{COLORS[:yellow]}📍 Line #{comment['line'] || comment['original_line']}#{COLORS[:reset]}"
+      end
+    end
+    
+    # Comment type badge
+    case comment['comment_type']
+    when 'review'
+      puts "#{indent}#{COLORS[:bg_yellow]}#{COLORS[:white]} REVIEW #{COLORS[:reset]}"
+    when 'review_comment'
+      puts "#{indent}#{COLORS[:bg_green]}#{COLORS[:white]} CODE COMMENT #{COLORS[:reset]}"
+    when 'issue'
+      puts "#{indent}#{COLORS[:bg_blue]}#{COLORS[:white]} GENERAL #{COLORS[:reset]}"
+    end
+    
+    puts "#{COLORS[:dim]}─" * terminal_width + COLORS[:reset]
+    puts ""
+    
+    # Format and display body with indent for replies
+    body_indent = comment['is_thread_start'] ? "" : "  "
+    display_formatted_body(comment['body'] || '', body_indent)
+  end
+
+  def display_formatted_body(body, indent = "")
+    # Remove HTML comments
+    body = body.gsub(/<!--.*?-->/m, '')
+    
+    # Process details/summary tags
+    body = body.gsub(%r{<details[^>]*>\s*<summary[^>]*>(.*?)</summary>(.*?)</details>}mi) do
+      summary = CGI.unescapeHTML($1.strip)
+      content = CGI.unescapeHTML($2.strip)
+      
+      "#{COLORS[:yellow]}▼ #{summary}#{COLORS[:reset]}\n#{COLORS[:dim]}#{content}#{COLORS[:reset]}"
+    end
+    
+    # Process code blocks
+    body = body.gsub(/```(\w*)\n?(.*?)```/m) do
+      lang = $1.empty? ? '' : "#{COLORS[:green]}[#{$1}]#{COLORS[:reset]} "
+      code = $2
+      
+      # Syntax highlight based on language
+      highlighted = syntax_highlight(code, $1)
+      
+      "#{COLORS[:dim]}───────────────────#{COLORS[:reset]}\n#{lang}\n#{highlighted}\n#{COLORS[:dim]}───────────────────#{COLORS[:reset]}"
+    end
+    
+    # Process inline code
+    body = body.gsub(/`([^`]+)`/) do
+      "#{COLORS[:cyan]}#{$1}#{COLORS[:reset]}"
+    end
+    
+    # Process suggestions
+    body = body.gsub(/```suggestion(.*?)```/m) do
+      "#{COLORS[:green]}+ Suggested change:#{COLORS[:reset]}\n#{COLORS[:green]}#{$1}#{COLORS[:reset]}"
+    end
+    
+    # Clean HTML tags
+    body = body.gsub(%r{</?[^>]+>}, '')
+    
+    # Decode HTML entities
+    body = CGI.unescapeHTML(body)
+    
+    # Word wrap and add indent
+    wrapped = word_wrap(body, terminal_width - 4 - indent.length)
+    
+    # Add indent to each line
+    if indent.length > 0
+      wrapped = wrapped.split("\n").map { |line| "#{indent}#{line}" }.join("\n")
+    end
+    
+    puts wrapped
+  end
+
+  def syntax_highlight(code, language)
+    # Basic syntax highlighting
+    case language.downcase
+    when 'ruby', 'rb'
+      code = code.gsub(/\b(def|end|class|module|if|else|elsif|unless|case|when|while|for|do|return|yield|break|next|require|include)\b/) do
+        "#{COLORS[:magenta]}#{$1}#{COLORS[:reset]}"
+      end
+      code = code.gsub(/(#.*)$/) do
+        "#{COLORS[:dim]}#{$1}#{COLORS[:reset]}"
+      end
+      code = code.gsub(/(['"])([^'"]*)\1/) do
+        "#{COLORS[:green]}#{$1}#{$2}#{$1}#{COLORS[:reset]}"
+      end
+    when 'diff'
+      code = code.gsub(/^(\+.*)$/) do
+        "#{COLORS[:green]}#{$1}#{COLORS[:reset]}"
+      end
+      code = code.gsub(/^(-.*)$/) do
+        "#{COLORS[:red]}#{$1}#{COLORS[:reset]}"
+      end
+      code = code.gsub(/^(@@.*)$/) do
+        "#{COLORS[:cyan]}#{$1}#{COLORS[:reset]}"
+      end
+    end
+    
+    code
+  end
+
+  def word_wrap(text, width)
+    text.split("\n").map do |line|
+      if line.length <= width
+        line
+      else
+        line.scan(/.{1,#{width}}(?:\s|$)/).join("\n")
+      end
+    end.join("\n")
+  end
+
+  def display_thread_navigation_bar
+    return if @organized_threads.empty?
+    
+    current_thread = @organized_threads[@current_thread_index]
+    current_comment = current_thread['comments'][@current_comment_in_thread]
+    
+    screen_height = terminal_height
+    
+    # Position navigation at bottom of screen
+    print "\e[#{screen_height - 2};1H\e[K" # Move to bottom lines and clear
+    puts "#{COLORS[:dim]}─" * terminal_width + COLORS[:reset]
+    
+    print "\e[#{screen_height - 1};1H\e[K"
+    puts "#{COLORS[:bold]}[j/k]#{COLORS[:reset]} Scroll  " \
+         "#{COLORS[:bold]}[J/K]#{COLORS[:reset]} Comment  " \
+         "#{COLORS[:bold]}[n/p]#{COLORS[:reset]} Thread  " \
+         "#{COLORS[:bold]}[d]#{COLORS[:reset]} Dismiss  " \
+         "#{COLORS[:bold]}[v]#{COLORS[:reset]} GitHub  " \
+         "#{COLORS[:bold]}[r]#{COLORS[:reset]} Reply  " \
+         "#{COLORS[:bold]}[c]#{COLORS[:reset]} Claude  " \
+         "#{COLORS[:bold]}[s]#{COLORS[:reset]} Sidebar  " \
+         "#{COLORS[:bold]}[>/<]#{COLORS[:reset]} Expand/Collapse  " \
+         "#{COLORS[:bold]}[?]#{COLORS[:reset]} Help  " \
+         "#{COLORS[:bold]}[q]#{COLORS[:reset]} Quit"
+    
+    # Show current position at very bottom
+    print "\e[#{screen_height};1H\e[K"
+    comment_pos = "Comment #{@current_comment_in_thread + 1}/#{current_thread['comments'].length}"
+    thread_pos = "Thread #{@current_thread_index + 1}/#{@organized_threads.length}"
+    puts "#{COLORS[:dim]}#{comment_pos} • #{thread_pos}#{COLORS[:reset]}"
+  end
+
+  def display_navigation_bar
+    puts ""
+    puts "#{COLORS[:dim]}─" * terminal_width + COLORS[:reset]
+    puts "#{COLORS[:bold]}[j/n/↓]#{COLORS[:reset]} Next  " \
+         "#{COLORS[:bold]}[k/p/↑]#{COLORS[:reset]} Previous  " \
+         "#{COLORS[:bold]}[d]#{COLORS[:reset]} Dismiss  " \
+         "#{COLORS[:bold]}[v]#{COLORS[:reset]} View on GitHub  " \
+         "#{COLORS[:bold]}[r]#{COLORS[:reset]} Reply  " \
+         "#{COLORS[:bold]}[?]#{COLORS[:reset]} Help  " \
+         "#{COLORS[:bold]}[q]#{COLORS[:reset]} Quit"
+  end
+
+  def get_user_input
+    begin
+      if STDIN.tty? && !ENV['CI']
+        STDIN.raw do |io|
+          io.echo = false
+          input = io.getc
+          
+          # Handle escape sequences for arrow keys
+          if input == "\e"
+            additional = io.read_nonblock(2) rescue nil
+            input += additional if additional
+          end
+          
+          input
+        end
+      else
+        raise NotImplementedError # Force fallback
+      end
+    rescue Errno::ENODEV, NotImplementedError, Errno::EINVAL
+      # Fallback for environments that don't support raw mode
+      print "\nEnter command (j/n=next, k/p=prev, d=dismiss, v=view, r=reply, q=quit): "
+      input = STDIN.gets
+      return 'q' unless input
+      input.strip.downcase
+    end
+  end
+
+  def dismiss_current_thread
+    return if @organized_threads.empty?
+    
+    current_thread = @organized_threads[@current_thread_index]
+    thread_id = current_thread['thread_id']
+    
+    # Save the last comment ID for this thread
+    last_comment = current_thread['comments'].last
+    @dismissed_thread_last_comments[thread_id] = last_comment['id'] if last_comment
+    
+    # Save dismissals to file
+    save_dismissed_comments
+    
+    # Remove the thread
+    @organized_threads.delete_at(@current_thread_index)
+    
+    if @organized_threads.empty?
+      puts "\n#{COLORS[:green]}All threads reviewed!#{COLORS[:reset]}"
+      exit 0
+    end
+    
+    # Move to next thread, or stay at same index if we're at the end
+    if @current_thread_index >= @organized_threads.length
+      @current_thread_index = @organized_threads.length - 1
+    end
+    # If we deleted the last thread, go to previous
+    # Otherwise stay at same index (which now points to next thread)
+    
+    @current_comment_in_thread = 0
+    @scroll_offset = 0
+    invalidate_cache
+  end
+  
+  def dismiss_current_thread_with_feedback
+    return if @organized_threads.empty?
+    
+    current_thread = @organized_threads[@current_thread_index]
+    thread_id = current_thread['thread_id']
+    
+    # Save the last comment ID for this thread
+    last_comment = current_thread['comments'].last
+    @dismissed_thread_last_comments[thread_id] = last_comment['id'] if last_comment
+    
+    # Save dismissals to file
+    save_dismissed_comments
+    
+    # Store dismissal message for display
+    @dismissal_message = "Thread dismissed"
+    @dismissal_message_time = Time.now
+    
+    # Remove the thread
+    @organized_threads.delete_at(@current_thread_index)
+    
+    if @organized_threads.empty?
+      puts "\n#{COLORS[:green]}All threads reviewed!#{COLORS[:reset]}"
+      exit 0
+    end
+    
+    # Move to next thread, or stay at same index if we're at the end
+    if @current_thread_index >= @organized_threads.length
+      @current_thread_index = @organized_threads.length - 1
+    end
+    
+    @current_comment_in_thread = 0
+    @scroll_offset = 0
+    invalidate_cache
+  end
+
+  def open_current_comment_on_github
+    return if @organized_threads.empty?
+    
+    current_thread = @organized_threads[@current_thread_index]
+    current_comment = current_thread['comments'][@current_comment_in_thread]
+    url = current_comment['html_url']
+    
+    if url
+      system("open '#{url}' 2>/dev/null || xdg-open '#{url}' 2>/dev/null")
+    end
+  end
+
+  def reply_to_current_comment
+    return if @organized_threads.empty?
+    
+    current_thread = @organized_threads[@current_thread_index]
+    current_comment = current_thread['comments'][@current_comment_in_thread]
+    
+    puts "\n#{COLORS[:cyan]}Reply (press Ctrl+D when done):#{COLORS[:reset]}"
+    reply = STDIN.read
+    
+    if reply && !reply.strip.empty?
+      # Create reply via GitHub API (similar to existing implementation)
+      if current_comment['comment_type'] == 'review_comment'
+        endpoint = "repos/#{@repo}/pulls/#{@pr_number}/comments/#{current_comment['id']}/replies"
+      else
+        endpoint = "repos/#{@repo}/issues/#{@pr_number}/comments"
+      end
+      
+      require 'tempfile'
+      Tempfile.create(['reply', '.json']) do |f|
+        f.write(JSON.generate({ body: reply }))
+        f.flush
+        
+        stdout, stderr, status = Open3.capture3("gh api #{endpoint} --method POST --input #{f.path}")
+        
+        if status.success?
+          puts "#{COLORS[:green]}Reply posted!#{COLORS[:reset]}"
+        else
+          puts "#{COLORS[:red]}Failed to post reply: #{stderr}#{COLORS[:reset]}"
+        end
+      end
+    end
+    
+    sleep 2
+  end
+
+  def send_to_claude_code
+    return if @organized_threads.empty?
+    
+    current_thread = @organized_threads[@current_thread_index]
+    current_comment = current_thread['comments'][@current_comment_in_thread]
+    
+    # Build context for Claude
+    context_lines = []
+    context_lines << "# PR Comment from #{@repo}##{@pr_number}"
+    context_lines << ""
+    
+    # Add file context if available
+    if current_thread['file_path']
+      context_lines << "File: #{current_thread['file_path']}"
+      if current_thread['line_number']
+        context_lines << "Line: #{current_thread['line_number']}"
+      end
+      context_lines << ""
+    end
+    
+    # Add all comments in thread
+    current_thread['comments'].each_with_index do |comment, index|
+      user = comment['user'] ? comment['user']['login'] : 'Unknown'
+      created_at = format_time(comment['created_at'] || comment['submitted_at'])
+      
+      context_lines << "## Comment #{index + 1} by @#{user} (#{created_at})"
+      context_lines << ""
+      
+      # Clean up the comment body
+      body = comment['body'] || ''
+      body = body.gsub(/<!--.*?-->/m, '')
+      body = CGI.unescapeHTML(body)
+      
+      context_lines << body
+      context_lines << ""
+    end
+    
+    # Create an interactive prompt template
+    interactive_prompt = <<~PROMPT
+      #{context_lines.join("\n")}
+      
+      ---
+      
+      I'm reviewing this PR comment thread. You can help me:
+      
+      1. **Analyze the discussion**: What are the key points and concerns?
+      2. **Suggest improvements**: How should the code be changed?
+      3. **Draft responses**: Help me write thoughtful replies
+      4. **Generate code**: Create implementation based on the feedback
+      
+      What would you like to focus on? (You can edit this prompt and press Enter)
+    PROMPT
+    
+    # Write to persistent file for new iTerm window
+    temp_dir = File.join(Dir.home, '.pr_comment_cache')
+    Dir.mkdir(temp_dir) unless Dir.exist?(temp_dir)
+    
+    timestamp = Time.now.strftime('%Y%m%d_%H%M%S')
+    filename = "pr_#{@repo.gsub('/', '_')}_#{@pr_number}_thread_#{@current_thread_index + 1}_#{timestamp}.md"
+    filepath = File.join(temp_dir, filename)
+    
+    File.write(filepath, interactive_prompt)
+    
+    # Try to open in new iTerm window with Claude Code
+    applescript = <<~SCRIPT
+      tell application "iTerm"
+        create window with default profile
+        tell current session of current window
+          write text "cd #{Dir.pwd} && claude #{filepath}"
+        end tell
+      end tell
+    SCRIPT
+    
+    stdout, stderr, status = Open3.capture3('osascript', '-e', applescript)
+    
+    if status.success?
+      puts "\n#{COLORS[:green]}Opened in new iTerm window with Claude Code!#{COLORS[:reset]}"
+      puts "#{COLORS[:dim]}Context saved to: #{filepath}#{COLORS[:reset]}"
+      puts "#{COLORS[:dim]}You can edit the prompt and ask questions directly#{COLORS[:reset]}"
+    else
+      # Fallback: just run claude in current terminal
+      puts "\n#{COLORS[:cyan]}Opening with Claude Code...#{COLORS[:reset]}"
+      puts "#{COLORS[:dim]}Context saved to: #{filepath}#{COLORS[:reset]}"
+      system("claude #{filepath}")
+    end
+    
+    # Clean up old context files (keep only last 10)
+    old_files = Dir.glob(File.join(temp_dir, 'pr_*.md')).sort_by { |f| File.mtime(f) }
+    if old_files.length > 10
+      old_files[0...-10].each { |f| File.delete(f) rescue nil }
+    end
+    
+    sleep 2
+  end
+
+  def resolve_current_thread
+    return if @organized_threads.empty?
+    
+    current_thread = @organized_threads[@current_thread_index]
+    current_comment = current_thread['comments'][@current_comment_in_thread]
+    
+    # Show confirmation prompt
+    clear_screen
+    puts "#{COLORS[:yellow]}#{COLORS[:bold]}Resolve Thread in GitHub?#{COLORS[:reset]}"
+    puts ""
+    puts "This will mark the conversation as resolved in GitHub."
+    puts "Thread: #{current_thread['comments'].length} comment(s)"
+    if current_thread['file_path']
+      puts "File: #{current_thread['file_path']}:#{current_thread['line_number']}"
+    end
+    puts ""
+    puts "#{COLORS[:red]}[y]#{COLORS[:reset]} Yes, resolve  #{COLORS[:dim]}[any other key]#{COLORS[:reset]} Cancel"
+    
+    input = get_user_input
+    
+    if input.downcase == 'y'
+      # Try to resolve the conversation
+      # GitHub's API requires the conversation ID, which is different from comment ID
+      # We'll need to use the review comment's pull_request_review_id if available
+      
+      first_comment = current_thread['comments'].first
+      if first_comment['comment_type'] == 'review_comment' && first_comment['pull_request_review_id']
+        # Try to resolve via the review API
+        review_id = first_comment['pull_request_review_id']
+        
+        require 'tempfile'
+        Tempfile.create(['resolve', '.json']) do |f|
+          f.write(JSON.generate({ event: 'APPROVE', body: 'Resolved via PR Comment Reviewer' }))
+          f.flush
+          
+          stdout, stderr, status = Open3.capture3("gh api repos/#{@repo}/pulls/#{@pr_number}/reviews/#{review_id} --method PUT --input #{f.path}")
+          
+          if status.success?
+            @dismissal_message = "Thread resolved in GitHub"
+            @dismissal_message_time = Time.now
+            
+            # Also dismiss locally
+            thread_id = current_thread['thread_id']
+            last_comment = current_thread['comments'].last
+            @dismissed_thread_last_comments[thread_id] = last_comment['id'] if last_comment
+            save_dismissed_comments
+            
+            # Remove the thread
+            @organized_threads.delete_at(@current_thread_index)
+            
+            if @organized_threads.empty?
+              puts "\n#{COLORS[:green]}All threads reviewed!#{COLORS[:reset]}"
+              exit 0
+            end
+            
+            # Move to next thread
+            if @current_thread_index >= @organized_threads.length
+              @current_thread_index = @organized_threads.length - 1
+            end
+            
+            @current_comment_in_thread = 0
+            @scroll_offset = 0
+            invalidate_cache
+          else
+            puts "#{COLORS[:red]}Failed to resolve in GitHub: #{stderr}#{COLORS[:reset]}"
+            sleep 2
+          end
+        end
+      else
+        puts "#{COLORS[:yellow]}Cannot resolve: Not a review comment thread#{COLORS[:reset]}"
+        sleep 2
+      end
+    end
+    
+    invalidate_cache # Force refresh regardless
+  end
+  
+  def expand_current_section
+    # Find the current collapsible section and expand it
+    current_thread = @organized_threads[@current_thread_index]
+    thread_key = "#{current_thread['thread_id']}_#{@current_comment_in_thread}"
+    
+    # Mark section as expanded
+    @expanded_sections[thread_key] = true
+    invalidate_cache
+    # Note: No scroll adjustment needed for expansion since content grows downward
+  end
+  
+  def collapse_current_section
+    # Find the current expandable section and collapse it (remove from expanded list)
+    current_thread = @organized_threads[@current_thread_index]
+    thread_key = "#{current_thread['thread_id']}_#{@current_comment_in_thread}"
+    
+    # Remove from expanded sections (back to default collapsed)
+    @expanded_sections.delete(thread_key)
+    invalidate_cache
+    
+    # Force rebuild of cached content to get new height
+    if @use_sidebar
+      screen_height = terminal_height - 3
+      content_width = terminal_width - @sidebar_width - 3
+      build_main_content(content_width, screen_height)
+    else
+      display_current_thread_with_context if @organized_threads
+    end
+    
+    adjust_scroll_after_collapse
+  end
+  
+  def adjust_scroll_after_collapse
+    return unless @cached_content_lines
+    
+    screen_height = terminal_height - 3
+    max_offset = [@cached_content_lines.length - screen_height, 0].max
+    
+    # If current scroll position would show empty space, adjust it
+    if @scroll_offset > max_offset
+      @scroll_offset = max_offset
+    end
+  end
+
+  def display_with_sidebar
+    return if @organized_threads.empty?
+    
+    screen_height = terminal_height - 3
+    screen_width = terminal_width
+    content_width = screen_width - @sidebar_width - 3
+    
+    # Always redraw everything for now to fix scrolling issues
+    print "\e[H" # Move cursor to top-left
+    
+    # Build sidebar and content
+    sidebar_lines = build_sidebar_content(screen_height)
+    content_lines = build_main_content(content_width, screen_height)
+    
+    # Draw each row with sidebar + separator + content
+    (0...screen_height).each do |row|
+      print "\e[#{row + 1};1H\e[K" # Position cursor and clear line
+      
+      # Draw sidebar content (fixed, doesn't scroll)
+      sidebar_line = sidebar_lines[row] || ""
+      sidebar_line = sidebar_line.ljust(@sidebar_width)[0...@sidebar_width]
+      print "#{COLORS[:bg_blue]}#{COLORS[:white]}#{sidebar_line}#{COLORS[:reset]}"
+      
+      # Draw separator
+      print "#{COLORS[:dim]}| #{COLORS[:reset]}"
+      
+      # Draw main content (this scrolls with j/k)
+      content_line = content_lines[row] || ""
+      print content_line
+    end
+  end
+  
+  def build_sidebar_content(height)
+    lines = []
+    
+    # Header
+    lines << " PR ##{@pr_number} (#{@organized_threads.length} threads)"
+    lines << ""
+    
+    # Thread list
+    @organized_threads.each_with_index do |thread, index|
+      indicator = index == @current_thread_index ? "►" : " "
+      thread_num = "#{index + 1}".rjust(2)
+      comment_count = "(#{thread['comments'].length})"
+      
+      # Get thread summary
+      first_comment = thread['comments'].first
+      author = first_comment['user'] ? first_comment['user']['login'] : 'Unknown'
+      author = author[0...12] # Truncate long usernames
+      
+      # File info
+      file_info = ""
+      if thread['file_path']
+        filename = File.basename(thread['file_path'])
+        line_num = thread['line_number']
+        file_info = " #{filename}"
+        if line_num
+          file_info += ":#{line_num}"
+        end
+        file_info = file_info[0...15] # Truncate long paths
+      end
+      
+      line = "#{indicator}#{thread_num} @#{author} #{comment_count}"
+      lines << line[0...@sidebar_width]
+      
+      if file_info.length > 0
+        lines << "   #{file_info}"[0...@sidebar_width]
+      end
+    end
+    
+    # Pad to height
+    while lines.length < height
+      lines << ""
+    end
+    
+    lines[0...height]
+  end
+  
+  def build_main_content(width, height)
+    # Build main content similar to existing display but with adjusted width
+    unless @cached_content_lines && @cached_thread_index == @current_thread_index && @cached_comment_index == @current_comment_in_thread
+      @cached_content_lines = []
+      
+      current_thread = @organized_threads[@current_thread_index]
+      comments = current_thread['comments']
+      
+      # Add thread header
+      @cached_content_lines << "Thread #{@current_thread_index + 1}/#{@organized_threads.length}"
+      
+      # Add dismissal message if recent
+      if @dismissal_message && @dismissal_message_time && (Time.now - @dismissal_message_time) < 2
+        @cached_content_lines << "#{COLORS[:bg_green]}#{COLORS[:black]} ✓ #{@dismissal_message} #{COLORS[:reset]}"
+      end
+      
+      @cached_content_lines << ""
+      
+      # Add file context
+      if current_thread['file_path']
+        @cached_content_lines.concat(get_file_context(current_thread['file_path'], current_thread['line_number']))
+        @cached_content_lines << ""
+        @cached_content_lines << "#{COLORS[:dim]}─" * [width, 60].min + COLORS[:reset]
+        @cached_content_lines << ""
+      end
+      
+      # Add comments
+      comments.each_with_index do |comment, index|
+        if index == @current_comment_in_thread
+          @cached_content_lines << "#{COLORS[:bg_cyan]}#{COLORS[:black]} ► CURRENT COMMENT #{COLORS[:reset]}"
+        end
+        
+        @cached_content_lines.concat(format_comment_for_display(comment, index, width))
+        @cached_content_lines << ""
+        
+        if index < comments.length - 1
+          @cached_content_lines << "#{COLORS[:dim]}┄" * [width, 60].min + COLORS[:reset]
+          @cached_content_lines << ""
+        end
+      end
+      
+      @cached_thread_index = @current_thread_index
+      @cached_comment_index = @current_comment_in_thread
+    end
+    
+    # Apply scrolling and word wrap for narrower width
+    visible_lines = @cached_content_lines[@scroll_offset, height] || []
+    visible_lines.map { |line| word_wrap_line(line, width - 2) }
+  end
+  
+  def word_wrap_line(line, width)
+    # Simple word wrap for a single line
+    return line if line.length <= width
+    line[0...width]
+  end
+
+  def show_thread_help
+    clear_screen
+    puts "#{COLORS[:bold]}PR Comment Reviewer - Thread Navigation Help#{COLORS[:reset]}"
+    puts "#{COLORS[:dim]}─" * terminal_width + COLORS[:reset]
+    puts ""
+    puts "#{COLORS[:cyan]}Line-by-line scrolling:#{COLORS[:reset]}"
+    puts "  j/↓        - Scroll down one line"
+    puts "  k/↑        - Scroll up one line"
+    puts ""
+    puts "#{COLORS[:cyan]}Comment navigation (within thread):#{COLORS[:reset]}"
+    puts "  J          - Next comment in thread"
+    puts "  K          - Previous comment in thread"
+    puts ""
+    puts "#{COLORS[:cyan]}Thread navigation:#{COLORS[:reset]}"
+    puts "  n          - Next thread"
+    puts "  p          - Previous thread"
+    puts ""
+    puts "#{COLORS[:cyan]}Actions:#{COLORS[:reset]}"
+    puts "  d          - Dismiss entire thread (local only)"
+    puts "  v          - Open current comment on GitHub"
+    puts "  r          - Reply to current comment"
+    puts "  q          - Quit"
+    puts ""
+    puts "#{COLORS[:cyan]}Display:#{COLORS[:reset]}"
+    puts "  • Each thread shows file context and code diff"
+    puts "  • All comments in thread are shown together"
+    puts "  • Current comment is highlighted with ► marker"
+    puts "  • Thread starts are always visible at the top"
+    puts ""
+    puts "Press any key to continue..."
+    get_user_input
+  end
+
+  def dismiss_current_comment
+    return if @display_comments.empty?
+    
+    comment = @display_comments[@current_index]
+    @dismissed_locally << comment['id']
+    @display_comments.delete_at(@current_index)
+    
+    if @display_comments.empty?
+      puts "\n#{COLORS[:green]}All comments reviewed!#{COLORS[:reset]}"
+      exit 0
+    end
+    
+    @current_index = [@current_index, @display_comments.length - 1].min
+  end
+
+  def open_on_github
+    return if @display_comments.empty?
+    
+    comment = @display_comments[@current_index]
+    url = comment['html_url']
+    
+    if url
+      system("open '#{url}' 2>/dev/null || xdg-open '#{url}' 2>/dev/null")
+    end
+  end
+
+  def reply_to_comment
+    return if @display_comments.empty?
+    
+    comment = @display_comments[@current_index]
+    
+    puts "\n#{COLORS[:cyan]}Reply (press Ctrl+D when done):#{COLORS[:reset]}"
+    reply = STDIN.read
+    
+    if reply && !reply.strip.empty?
+      # Create reply via GitHub API
+      if comment['comment_type'] == 'review_comment'
+        endpoint = "repos/#{@repo}/pulls/#{@pr_number}/comments/#{comment['id']}/replies"
+      else
+        endpoint = "repos/#{@repo}/issues/#{@pr_number}/comments"
+      end
+      
+      Tempfile.create(['reply', '.json']) do |f|
+        f.write(JSON.generate({ body: reply }))
+        f.flush
+        
+        stdout, stderr, status = Open3.capture3("gh api #{endpoint} --method POST --input #{f.path}")
+        
+        if status.success?
+          puts "#{COLORS[:green]}Reply posted!#{COLORS[:reset]}"
+        else
+          puts "#{COLORS[:red]}Failed to post reply: #{stderr}#{COLORS[:reset]}"
+        end
+      end
+    end
+    
+    sleep 2
+  end
+
+  def show_help
+    clear_screen
+    puts "#{COLORS[:bold]}PR Comment Reviewer - Help#{COLORS[:reset]}"
+    puts "#{COLORS[:dim]}─" * terminal_width + COLORS[:reset]
+    puts ""
+    puts "#{COLORS[:cyan]}Navigation:#{COLORS[:reset]}"
+    puts "  j/n/Space/↓  - Next comment"
+    puts "  k/p/↑        - Previous comment"
+    puts "  1-9          - Jump to comment number"
+    puts ""
+    puts "#{COLORS[:cyan]}Actions:#{COLORS[:reset]}"
+    puts "  d            - Dismiss comment (local only)"
+    puts "  v            - Open comment on GitHub"
+    puts "  r            - Reply to comment"
+    puts "  q            - Quit"
+    puts ""
+    puts "#{COLORS[:cyan]}Filters (command line):#{COLORS[:reset]}"
+    puts "  -a           - Include auto-generated comments"
+    puts "  -o           - Include your own comments"
+    puts ""
+    puts "Press any key to continue..."
+    get_user_input
+  end
+
+  def format_time(timestamp)
+    return 'Unknown time' unless timestamp
+    
+    time = Time.parse(timestamp)
+    now = Time.now
+    diff = now - time
+    
+    case diff
+    when 0..59
+      "just now"
+    when 60..3599
+      "#{(diff / 60).to_i} minutes ago"
+    when 3600..86399
+      "#{(diff / 3600).to_i} hours ago"
+    when 86400..604799
+      "#{(diff / 86400).to_i} days ago"
+    else
+      time.strftime("%b %d, %Y")
+    end
+  end
+
+  def terminal_width
+    IO.console&.winsize&.[](1) || 80
+  end
+end
+
+# Parse command line options
+options = {
+  skip_auto_generated: true,
+  skip_own: true,
+  debug: false
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: review_pr_comments.rb [options] [PR_URL]"
+  
+  opts.on("-a", "--include-auto", "Include auto-generated comments") do
+    options[:skip_auto_generated] = false
+  end
+  
+  opts.on("-o", "--include-own", "Include your own comments") do
+    options[:skip_own] = false
+  end
+  
+  opts.on("-d", "--debug", "Debug mode: show all comments with filtering status") do
+    options[:debug] = true
+  end
+  
+  opts.on("-h", "--help", "Show this help message") do
+    puts opts
+    exit
+  end
+end.parse!
+
+# Get PR URL from arguments if provided
+pr_url = ARGV[0]
+
+# Run the reviewer
+reviewer = PRCommentReviewer.new(
+  pr_url: pr_url,
+  skip_auto_generated: options[:skip_auto_generated],
+  skip_own: options[:skip_own],
+  debug: options[:debug]
+)
+
+reviewer.run
