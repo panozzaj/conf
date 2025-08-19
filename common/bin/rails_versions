@@ -123,9 +123,13 @@ class RailsVersionReporter
 
     versions_data = JSON.parse(response.body)
     releases = versions_data.map do |version_info|
+      # Use created_at date consistently to avoid issues with placeholder dates
+      # Extract just the date portion (not the time)
+      release_date = Date.parse(version_info['created_at']).iso8601
+      
       {
         version: Gem::Version.new(version_info['number']),
-        date: Date.parse(version_info['built_at']).iso8601
+        date: release_date
       }
     end
 
