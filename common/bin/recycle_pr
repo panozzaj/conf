@@ -104,6 +104,7 @@ class PRCommentReviewer
     @scroll_offset = 0  # For line-by-line scrolling
     @sidebar_width = 40  # Width of sidebar in characters
     @use_sidebar = true  # Enable sidebar by default
+    @sidebar_scroll_offset = 0  # For sidebar scrolling
     
     # Start interactive review
     interactive_review
@@ -162,7 +163,6 @@ class PRCommentReviewer
       
       # Write back to file
       File.write(@dismissal_file, JSON.pretty_generate(data))
-      puts "#{COLORS[:green]}Saved dismissals to #{@dismissal_file}#{COLORS[:reset]}"
     rescue StandardError => e
       puts "#{COLORS[:red]}Warning: Could not save dismissals: #{e.message}#{COLORS[:reset]}"
     end
@@ -660,14 +660,16 @@ class PRCommentReviewer
           move_to_next_comment_in_thread
         when 'K' # previous comment in thread  
           move_to_previous_comment_in_thread
-        when 'n' # next thread
+        when 'n', "\e[C" # next thread (n or right arrow)
           move_to_next_thread
-        when 'p' # previous thread
+        when 'p', "\e[D" # previous thread (p or left arrow)
           move_to_previous_thread
         when 'D' # dismiss current thread locally
           dismiss_current_thread_with_feedback
-        when 'v' # view on GitHub
+        when 'o' # open on GitHub
           open_current_comment_on_github
+        when 'v' # open file in vim
+          open_current_file_in_vim
         when 'r' # reply to current comment
           reply_to_current_comment
         when 'c' # send to Claude Code
@@ -681,6 +683,10 @@ class PRCommentReviewer
           expand_current_section
         when '<' # collapse section
           collapse_current_section
+        when '[' # scroll sidebar up
+          scroll_sidebar_up
+        when ']' # scroll sidebar down
+          scroll_sidebar_down
         when '?' # help
           show_thread_help
         when 'q' # quit
@@ -935,6 +941,24 @@ class PRCommentReviewer
     @scroll_offset = [@scroll_offset - half_screen, 0].max
   end
   
+  def scroll_sidebar_up
+    return unless @use_sidebar
+    @sidebar_scroll_offset = [@sidebar_scroll_offset - 3, 0].max
+    invalidate_cache
+  end
+  
+  def scroll_sidebar_down
+    return unless @use_sidebar
+    
+    # Calculate max scroll based on content
+    screen_height = terminal_height - 3
+    total_lines = 2 + (@organized_threads.length * 2) # header + threads (with file info lines)
+    max_scroll = [total_lines - screen_height, 0].max
+    
+    @sidebar_scroll_offset = [@sidebar_scroll_offset + 3, max_scroll].min
+    invalidate_cache
+  end
+  
   def invalidate_cache
     @cached_content_lines = nil
     @cached_thread_index = nil
@@ -968,6 +992,7 @@ class PRCommentReviewer
       @current_comment_in_thread = 0
       @scroll_offset = 0  # Reset scroll when changing threads
       reset_expanded_sections # Collapse all sections in new thread
+      ensure_current_thread_visible
       invalidate_cache
     end
   end
@@ -978,6 +1003,7 @@ class PRCommentReviewer
       @current_comment_in_thread = 0
       @scroll_offset = 0  # Reset scroll when changing threads
       reset_expanded_sections # Collapse all sections in new thread
+      ensure_current_thread_visible
       invalidate_cache
     end
   end
@@ -985,6 +1011,26 @@ class PRCommentReviewer
   def reset_expanded_sections
     # Clear all expanded sections when changing threads
     @expanded_sections = {}
+  end
+  
+  def ensure_current_thread_visible
+    return unless @use_sidebar
+    
+    # Calculate which line the current thread appears on in sidebar
+    # Header takes 2 lines, each thread takes ~2 lines (thread + file info)
+    current_thread_line = 2 + (@current_thread_index * 2)
+    
+    screen_height = terminal_height - 3
+    
+    # If current thread is above visible area, scroll up
+    if current_thread_line < @sidebar_scroll_offset
+      @sidebar_scroll_offset = [current_thread_line - 1, 0].max
+    end
+    
+    # If current thread is below visible area, scroll down
+    if current_thread_line >= @sidebar_scroll_offset + screen_height
+      @sidebar_scroll_offset = current_thread_line - screen_height + 3
+    end
   end
 
   def display_current_comment
@@ -1137,12 +1183,14 @@ class PRCommentReviewer
     print "\e[#{screen_height - 1};1H\e[K"
     puts "#{COLORS[:bold]}[j/k]#{COLORS[:reset]} Scroll  " \
          "#{COLORS[:bold]}[J/K]#{COLORS[:reset]} Comment  " \
-         "#{COLORS[:bold]}[n/p]#{COLORS[:reset]} Thread  " \
-         "#{COLORS[:bold]}[d]#{COLORS[:reset]} Dismiss  " \
-         "#{COLORS[:bold]}[v]#{COLORS[:reset]} GitHub  " \
+         "#{COLORS[:bold]}[n/p/←→]#{COLORS[:reset]} Thread  " \
+         "#{COLORS[:bold]}[D]#{COLORS[:reset]} Dismiss  " \
+         "#{COLORS[:bold]}[o]#{COLORS[:reset]} GitHub  " \
+         "#{COLORS[:bold]}[v]#{COLORS[:reset]} Vim  " \
          "#{COLORS[:bold]}[r]#{COLORS[:reset]} Reply  " \
          "#{COLORS[:bold]}[c]#{COLORS[:reset]} Claude  " \
          "#{COLORS[:bold]}[s]#{COLORS[:reset]} Sidebar  " \
+         "#{COLORS[:bold]}[\\[/\\]]#{COLORS[:reset]} Scroll sidebar  " \
          "#{COLORS[:bold]}[>/<]#{COLORS[:reset]} Expand/Collapse  " \
          "#{COLORS[:bold]}[?]#{COLORS[:reset]} Help  " \
          "#{COLORS[:bold]}[q]#{COLORS[:reset]} Quit"
@@ -1159,8 +1207,9 @@ class PRCommentReviewer
     puts "#{COLORS[:dim]}─" * terminal_width + COLORS[:reset]
     puts "#{COLORS[:bold]}[j/n/↓]#{COLORS[:reset]} Next  " \
          "#{COLORS[:bold]}[k/p/↑]#{COLORS[:reset]} Previous  " \
-         "#{COLORS[:bold]}[d]#{COLORS[:reset]} Dismiss  " \
-         "#{COLORS[:bold]}[v]#{COLORS[:reset]} View on GitHub  " \
+         "#{COLORS[:bold]}[D]#{COLORS[:reset]} Dismiss  " \
+         "#{COLORS[:bold]}[o]#{COLORS[:reset]} Open on GitHub  " \
+         "#{COLORS[:bold]}[v]#{COLORS[:reset]} Open file in vim  " \
          "#{COLORS[:bold]}[r]#{COLORS[:reset]} Reply  " \
          "#{COLORS[:bold]}[?]#{COLORS[:reset]} Help  " \
          "#{COLORS[:bold]}[q]#{COLORS[:reset]} Quit"
@@ -1270,6 +1319,28 @@ class PRCommentReviewer
     
     if url
       system("open '#{url}' 2>/dev/null || xdg-open '#{url}' 2>/dev/null")
+    end
+  end
+
+  def open_current_file_in_vim
+    return if @organized_threads.empty?
+    
+    current_thread = @organized_threads[@current_thread_index]
+    file_path = current_thread['file_path']
+    line_number = current_thread['line_number']
+    
+    if file_path && File.exist?(file_path)
+      if line_number
+        # Open file at specific line number
+        system("vim +#{line_number} '#{file_path}'")
+      else
+        # Open file without line number
+        system("vim '#{file_path}'")
+      end
+    else
+      # Show error message briefly
+      puts "\n#{COLORS[:red]}No file to open or file not found#{COLORS[:reset]}"
+      sleep 1
     end
   end
 
@@ -1557,49 +1628,95 @@ class PRCommentReviewer
   end
   
   def build_sidebar_content(height)
-    lines = []
+    all_lines = []
     
-    # Header
-    lines << " PR ##{@pr_number} (#{@organized_threads.length} threads)"
-    lines << ""
+    # Header with scroll indicators
+    header_line = " PR ##{@pr_number} (#{@organized_threads.length} threads)"
+    if @sidebar_scroll_offset > 0
+      header_line += " ↑"
+    end
+    all_lines << header_line
+    all_lines << ""
     
-    # Thread list
+    # Build full thread list
     @organized_threads.each_with_index do |thread, index|
       indicator = index == @current_thread_index ? "►" : " "
       thread_num = "#{index + 1}".rjust(2)
-      comment_count = "(#{thread['comments'].length})"
+      comment_count = thread['comments'].length
       
       # Get thread summary
       first_comment = thread['comments'].first
       author = first_comment['user'] ? first_comment['user']['login'] : 'Unknown'
-      author = author[0...12] # Truncate long usernames
       
-      # File info
-      file_info = ""
+      # Create main line with better spacing
+      # Format: "►12 @username                    (3)"
+      username_part = "@#{author}"
+      count_part = "(#{comment_count})"
+      
+      # Calculate available space for username
+      prefix_length = 4  # "►12 "
+      suffix_length = count_part.length + 1  # "(3) "
+      available_for_username = @sidebar_width - prefix_length - suffix_length
+      
+      # Truncate username only if necessary
+      if username_part.length > available_for_username
+        username_part = username_part[0...(available_for_username - 1)] + "…"
+      end
+      
+      # Build line with right-aligned comment count
+      left_part = "#{indicator}#{thread_num} #{username_part}"
+      spaces_needed = @sidebar_width - left_part.length - count_part.length
+      spaces_needed = [spaces_needed, 1].max  # At least 1 space
+      
+      line = "#{left_part}#{' ' * spaces_needed}#{count_part}"
+      all_lines << line[0...@sidebar_width]
+      
+      # File info line with more space
       if thread['file_path']
         filename = File.basename(thread['file_path'])
         line_num = thread['line_number']
-        file_info = " #{filename}"
+        
+        # Show more of the filename
+        file_display = filename
         if line_num
-          file_info += ":#{line_num}"
+          line_suffix = ":#{line_num}"
+          max_filename_length = @sidebar_width - 3 - line_suffix.length  # "   " prefix
+          if file_display.length > max_filename_length
+            file_display = "…#{file_display[-(max_filename_length-1)..-1]}"
+          end
+          file_display += line_suffix
+        else
+          max_filename_length = @sidebar_width - 3
+          if file_display.length > max_filename_length
+            file_display = "…#{file_display[-(max_filename_length-1)..-1]}"
+          end
         end
-        file_info = file_info[0...15] # Truncate long paths
+        
+        all_lines << "   #{file_display}"[0...@sidebar_width]
       end
-      
-      line = "#{indicator}#{thread_num} @#{author} #{comment_count}"
-      lines << line[0...@sidebar_width]
-      
-      if file_info.length > 0
-        lines << "   #{file_info}"[0...@sidebar_width]
+    end
+    
+    # Calculate available space for threads (minus header)
+    thread_display_height = height - 2
+    
+    # Apply scrolling offset
+    start_index = @sidebar_scroll_offset
+    visible_lines = all_lines[start_index, height] || []
+    
+    # Show scroll down indicator if there's more content
+    if start_index + height < all_lines.length
+      # Replace last line with scroll indicator if we have content
+      if visible_lines.length == height && visible_lines.last && !visible_lines.last.empty?
+        visible_lines[-1] = " " * (@sidebar_width - 1) + "↓"
       end
     end
     
     # Pad to height
-    while lines.length < height
-      lines << ""
+    while visible_lines.length < height
+      visible_lines << ""
     end
     
-    lines[0...height]
+    visible_lines[0...height]
   end
   
   def build_main_content(width, height)
@@ -1672,12 +1789,13 @@ class PRCommentReviewer
     puts "  K          - Previous comment in thread"
     puts ""
     puts "#{COLORS[:cyan]}Thread navigation:#{COLORS[:reset]}"
-    puts "  n          - Next thread"
-    puts "  p          - Previous thread"
+    puts "  n/→        - Next thread"
+    puts "  p/←        - Previous thread"
     puts ""
     puts "#{COLORS[:cyan]}Actions:#{COLORS[:reset]}"
-    puts "  d          - Dismiss entire thread (local only)"
-    puts "  v          - Open current comment on GitHub"
+    puts "  D          - Dismiss entire thread (local only)"
+    puts "  o          - Open current comment on GitHub"
+    puts "  v          - Open file in vim"
     puts "  r          - Reply to current comment"
     puts "  q          - Quit"
     puts ""
