@@ -896,6 +896,8 @@ function echo_path {
   echo $PATH | tr ':' '\n'
 }
 
+alias cl='claude'
+alias CL='claude --dangerously-skip-permissions'
 alias CLAUDE='claude --dangerously-skip-permissions'
 
 function gem_summary {
