@@ -96,3 +96,5 @@
 
 [merge]
     conflictstyle = zdiff3
+[rebase]
+	autosquash = true
