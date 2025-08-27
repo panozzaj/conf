@@ -1,7 +1,19 @@
 #!/usr/bin/env ruby
 
 def print_usage_and_exit
-  abort 'Please provide table names to print as arguments'
+  abort 'Please provide table names or model names to print as arguments'
+end
+
+def model_name_to_table_name(name)
+  # Convert CamelCase to snake_case and pluralize
+  table_name = name
+    .gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2')
+    .gsub(/([a-z\d])([A-Z])/,'\1_\2')
+    .downcase
+  
+  # Simple pluralization - add 's' if it doesn't end with 's'
+  table_name += 's' unless table_name.end_with?('s')
+  table_name
 end
 
 def print_table schema, table_name
@@ -52,8 +64,19 @@ def print_table schema, table_name
 end
 
 
-table_names = ARGV
-print_usage_and_exit if table_names.empty?
+input_names = ARGV
+print_usage_and_exit if input_names.empty?
+
+# Convert model names to table names if they look like model names (CamelCase)
+table_names = input_names.map do |name|
+  if name =~ /^[A-Z]/
+    # Looks like a model name (starts with capital letter)
+    model_name_to_table_name(name)
+  else
+    # Already a table name
+    name
+  end
+end
 
 schema_filename = './db/schema.rb'
 structure_filename = './db/structure.sql'
