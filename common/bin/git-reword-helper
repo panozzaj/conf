@@ -35,6 +35,9 @@ cleanup_temporary_files() {
 # Set a trap to clean up the temporary files when this script exits (normally or on error/interrupt).
 trap cleanup_temporary_files EXIT
 
+# Print what the script is doing when it starts
+echo "Starting git reword helper for: git rebase -i $*"
+
 # Execute the actual git rebase command with all arguments passed to this script
 git rebase -i "$@"
 

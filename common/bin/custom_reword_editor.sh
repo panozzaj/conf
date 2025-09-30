@@ -31,9 +31,8 @@ if [[ "$(basename "$1")" == "git-rebase-todo" ]]; then
 
         read -r cmd hash_val rest_of_line <<<"$line"
 
-        # --- MODIFIED CONDITION TO INCLUDE 'r' ---
         if [[ ( "$cmd" == "reword" || "$cmd" == "r" ) && -n "$hash_val" ]]; then
-        # --- END MODIFIED CONDITION ---
+            # Special handling for reword commands - store message and replace with original
             printf "%s|%s\n" "$current_reword_output_index" "$rest_of_line" >> "$MAPPINGS_FILE"
             ((current_reword_output_index++))
 
@@ -43,10 +42,9 @@ if [[ "$(basename "$1")" == "git-rebase-todo" ]]; then
                 original_msg_fragment="${original_pick_line#pick }"
                 original_msg_fragment="${original_msg_fragment#* }"
             fi
-            # Write back the command the user actually typed (r or reword) or normalize to 'reword'
-            # Git accepts both. Using $cmd ensures we respect the user's choice from the todo.
             processed_todo_content+="$cmd $hash_val $original_msg_fragment"$'\n'
         else
+            # Pass through all other commands unchanged (fixup, squash, pick, edit, etc.)
             processed_todo_content+="$line"$'\n'
         fi
     done < "$1"
