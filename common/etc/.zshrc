@@ -300,7 +300,6 @@ alias sgu="sudo gem update"
 alias gi="gem install"
 alias gu="gem uninstall"
 
-alias c="time best_cucumber"
 alias cuc="time best_cucumber"
 alias -g PIPE="|"
 
