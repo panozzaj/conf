@@ -513,6 +513,7 @@ fun! TrimWhitespace()
     call winrestview(l:save)
 endfun
 command! TrimWhitespace call TrimWhitespace()
+nnoremap <leader>S :TrimWhitespace<CR>
 
 " Otherwise I get duplicate entries in netrw when combined with vim-vinegar
 " See https://github.com/tpope/vim-vinegar/issues/27
