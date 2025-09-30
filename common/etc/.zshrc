@@ -905,12 +905,7 @@ function gcob_gh_issue {
     return 1
   fi
 
-  issue_number_or_url=$1
-  issue_number=$(echo $issue_number_or_url | sed -E 's#.*/([0-9]+)$#\1#')
-  issue_titl=$(gh issue view $issue_number --json title --template '{{.title}}')
-  llm_prompt="Generate a concise, lowercase, hyphen-separated git branch name for the following GitHub issue. Start with 'issue-${issue_number}' followed by a short description of the issue. Only use letters, numbers, and hyphens. Do not include any other characters. Example: issue-${issue_number}-fix-the-thing\n\n$issue_text"
-  #echo $llm_prompt
-  branch_name=$(echo "$llm_prompt" | llm)
+  branch_name=$(git-issue-branch-name "$1")
   echo "Generated branch name: $branch_name"
   read "response?Create and switch to this branch? (y/n) "
   if [[ "$response" == "y" || "$response" == "Y" ]]; then
