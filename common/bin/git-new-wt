@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -e
+
+if [ -z "$1" ]; then
+  echo "Usage: $(basename "$0") <branch-name>"
+  exit 1
+fi
+
+# Check if argument is all numbers (issue number)
+if [[ "$1" =~ ^[0-9]+$ ]]; then
+  echo "Detected issue number, generating branch name..."
+  branch_name=$(git-issue-branch-name "$1")
+  echo "Using branch name: $branch_name"
+else
+  branch_name="$1"
+fi
+
+current_dir_name=$(basename "$PWD")
+parent_dir=$(dirname "$PWD")
+worktree_dir="$parent_dir/${current_dir_name}-${branch_name}"
+
+# Detect main branch
+main_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo "master")
+
+# Check if branch exists
+if git show-ref --verify --quiet "refs/heads/$branch_name"; then
+  # Branch exists, check it out
+  git worktree add "$worktree_dir" "$branch_name"
+else
+  # Branch doesn't exist, create it from main branch
+  git worktree add -b "$branch_name" "$worktree_dir" "$main_branch"
+fi
+
+# Run setup script if it exists
+if [ -f "$worktree_dir/bin/worktree-setup" ]; then
+  (cd "$worktree_dir" && ./bin/worktree-setup)
+fi
+
+echo ""
+echo "Worktree created at: $worktree_dir"
+# Output path for wrapper function to use
+echo "WORKTREE_DIR=$worktree_dir"

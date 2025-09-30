@@ -916,6 +916,15 @@ function gcob_gh_issue {
   fi
 }
 
+function git-new-wt {
+  output=$(command git-new-wt "$@")
+  echo "$output" | grep -v "^WORKTREE_DIR="
+  worktree_dir=$(echo "$output" | grep "^WORKTREE_DIR=" | cut -d= -f2)
+  if [[ -n "$worktree_dir" ]]; then
+    cd "$worktree_dir"
+  fi
+}
+
 function gem_summary {
   if [[ -n $(git diff --cached Gemfile Gemfile.lock) ]]; then
     echo "Staged changes detected:"
