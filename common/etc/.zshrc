@@ -308,7 +308,7 @@ alias -g PIPE="|"
 # R  spec/1_spec.rb -> features/2_spec.rb
 function modified_files() {
   git status --porcelain | \
-    grep -v -e '^[ ]*D' | \
+    grep -v -e '^.D' -e '^D' | \
     awk 'match($1, ""){print $2}' | \
     sort | \
     uniq
