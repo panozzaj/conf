@@ -899,6 +899,28 @@ alias cl='claude'
 alias CL='claude --dangerously-skip-permissions'
 alias CLAUDE='claude --dangerously-skip-permissions'
 
+function gcob_gh_issue {
+  if [[ -z "$1" ]]; then
+    echo "Usage: gco_branch_name_from_issue <issue-number-or-url>"
+    return 1
+  fi
+
+  issue_number_or_url=$1
+  issue_number=$(echo $issue_number_or_url | sed -E 's#.*/([0-9]+)$#\1#')
+  issue_titl=$(gh issue view $issue_number --json title --template '{{.title}}')
+  llm_prompt="Generate a concise, lowercase, hyphen-separated git branch name for the following GitHub issue. Start with 'issue-${issue_number}' followed by a short description of the issue. Only use letters, numbers, and hyphens. Do not include any other characters. Example: issue-${issue_number}-fix-the-thing\n\n$issue_text"
+  #echo $llm_prompt
+  branch_name=$(echo "$llm_prompt" | llm)
+  echo "Generated branch name: $branch_name"
+  read "response?Create and switch to this branch? (y/n) "
+  if [[ "$response" == "y" || "$response" == "Y" ]]; then
+    git checkout -b $branch_name
+    echo "Created and switched to branch: $branch_name"
+  else
+    echo "Aborted."
+  fi
+}
+
 function gem_summary {
   if [[ -n $(git diff --cached Gemfile Gemfile.lock) ]]; then
     echo "Staged changes detected:"
