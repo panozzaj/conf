@@ -457,15 +457,24 @@ function recuc() {
 alias psr="powify server stop; powify server start"
 
 # Heroku
+DISABLE_SENTRY=1
 alias hr="heroku whoami && heroku run"
-alias hrc="heroku whoami && heroku run rails console"
+function hrc {
+  # If an argument is provided and it doesn't contain a dash or underscore,
+  # use --remote= format for git remote name
+  if [[ -n "$1" ]] && [[ ! "$1" =~ [-_] ]]; then
+    heroku whoami && heroku run rails console "--remote=$1"
+  else
+    # Otherwise, pass all arguments as-is
+    heroku whoami && heroku run rails console "$@"
+  fi
+}
 alias hrrc="heroku whoami && heroku run rails console"
 alias hrdb="heroku whoami && heroku pg:psql"
 alias hrsql="heroku whoami && heroku pg:psql"
 alias hrdm="heroku whoami && heroku run rake db:migrate"
 alias hrr="heroku whoami && echo heroku run rake '<your command>'; heroku run rake"
 alias hrrr="heroku whoami && echo heroku run rails runner '<your command>'; heroku run rails runner"
-alias hero="heroku"
 alias her="heroku"
 alias hl="heroku logs"
 alias hlt="heroku logs -t"
