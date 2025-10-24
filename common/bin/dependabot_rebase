@@ -13,6 +13,7 @@ class DependabotRebaseManager
       dry_run: true,
       include_test_failures: true,  # Default to checking tests
       force_rebase: false,
+      force_all: false,
       interactive: false
     }
     @results = { successful: 0, failed: 0, skipped: 0 }
@@ -34,8 +35,14 @@ class DependabotRebaseManager
     prs = find_dependabot_prs
     return success_exit("No open dependabot PRs found!") if prs.empty?
 
-    problematic_prs = analyze_prs(prs)
-    return success_exit("No dependabot PRs with issues found!") if problematic_prs.empty?
+    if @options[:force_all]
+      problematic_prs = prepare_force_all_prs(prs)
+      puts "🚨 FORCE-ALL mode: Will rebase ALL #{problematic_prs.length} open dependabot PRs"
+      puts
+    else
+      problematic_prs = analyze_prs(prs)
+      return success_exit("No dependabot PRs with issues found!") if problematic_prs.empty?
+    end
 
     display_summary(problematic_prs)
     return dry_run_exit(problematic_prs) if @options[:dry_run]
@@ -51,8 +58,11 @@ class DependabotRebaseManager
       opts.banner = <<~BANNER
         Usage: dependabot_rebase [OPTIONS]
 
-        Finds open dependabot PRs with merge conflicts or test failures in the current repository
-        and triggers a rebase by commenting "@dependabot rebase" on them.
+        Finds open dependabot PRs in the current repository and triggers a rebase by
+        commenting "@dependabot rebase" on them.
+
+        By default, only PRs with merge conflicts or test failures are rebased.
+        Use --force-all to rebase ALL open dependabot PRs regardless of status.
 
         OPTIONS:
       BANNER
@@ -77,6 +87,10 @@ class DependabotRebaseManager
         @options[:force_rebase] = true
       end
 
+      opts.on("--force-all", "Force rebase ALL open dependabot PRs, regardless of status") do
+        @options[:force_all] = true
+      end
+
       opts.on("--interactive", "Prompt before rebasing each PR (can be combined with other options)") do
         @options[:interactive] = true
       end
@@ -90,11 +104,12 @@ class DependabotRebaseManager
         puts "  dependabot_rebase --execute --skip-test-failures             # Only handle merge conflicts, skip test failures"
         puts "  dependabot_rebase --execute --interactive                    # Interactively handle PRs with conflicts or test failures"
         puts "  dependabot_rebase --execute --force                          # Force rebase all problematic PRs"
+        puts "  dependabot_rebase --execute --force-all                      # Rebase ALL dependabot PRs (useful after adding checksums, etc.)"
         puts
         puts "REQUIREMENTS:"
         puts "  - Must be run from within a git repository"
         puts "  - GitHub CLI (gh) must be installed and authenticated"
-        puts "  - Repository must have dependabot PRs with merge conflicts or test failures"
+        puts "  - Repository must have open dependabot PRs"
         exit 0
       end
     end.parse!(args)
@@ -127,6 +142,21 @@ class DependabotRebaseManager
     JSON.parse(output)
   rescue => e
     error_exit("Failed to fetch dependabot PRs: #{e.message}")
+  end
+
+  def prepare_force_all_prs(prs)
+    # When force-all is enabled, prepare all PRs for rebasing without checking their status
+    prs.map do |pr|
+      {
+        number: pr['number'],
+        title: pr['title'],
+        url: pr['url'],
+        issues: ['forced rebase'],
+        issue_description: 'forced rebase (--force-all)',
+        suggest_recreate: false,
+        action: 'rebase'
+      }
+    end
   end
 
   def analyze_prs(prs)
@@ -418,6 +448,7 @@ class DependabotRebaseManager
 
   def print_options
     puts "Options:"
+    puts "  - Force ALL PRs: #{@options[:force_all]}"
     puts "  - Include test failures: #{@options[:include_test_failures]}"
     puts "  - Force rebase: #{@options[:force_rebase]}"
     puts "  - Interactive mode: #{@options[:interactive]}"
