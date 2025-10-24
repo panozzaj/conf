@@ -2,6 +2,25 @@
 autoload -Uz compinit && compinit
 zmodload -i zsh/complist
 
+# Helper function to warn when an alias conflicts with an existing command
+# Usage: safe_alias <name> <command>
+function safe_alias() {
+  local alias_name="$1"
+  local alias_command="$2"
+
+  if (( $# != 2 )); then
+    echo "Usage: safe_alias <name> <command>" >&2
+    return 1
+  fi
+
+  # Check if this name exists as a real command/program
+  if command -v "$alias_name" > /dev/null 2>&1 && ! alias "$alias_name" > /dev/null 2>&1; then
+    echo "⚠️  Warning: alias '$alias_name' conflicts with existing command: $(command -v "$alias_name")" >&2
+  fi
+
+  alias "$alias_name"="$alias_command"
+}
+
 zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
 #zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=** r:|=**' 'l:|=* r:|=*'
 zmodload zsh/datetime
@@ -49,6 +68,7 @@ bindkey -e
 # usually overridden in host-specific .zshrc
 PROMPT="%F{cyan}%S[%T] %c%s%f ◊ "
 
+# Intentionally overrides system ls with gls (GNU ls) with custom options
 alias ls='command gls --color=auto --group-directories-first --classify --human-readable --show-control-chars --quoting-style=literal'
 
 setopt HIST_IGNORE_SPACE # don't add to ZSH history file any lines that start with a space
@@ -70,14 +90,15 @@ bindkey "\e[3~" delete-char
 # NOTE: `r` by default is a command to redo the last command.  If I change the
 # rspec functionality here, uncomment the other alias. Otherwise I may delete
 # files unintentionally, etc.
-#alias r='echo "Nerfed r command"'
+# Intentionally overrides zsh built-in `r` (redo last command) with rspec runner
+#alias r 'echo "Nerfed r command"'
 alias r='time best_rspec'
-alias rff='time best_rspec --fail-fast'
-alias rodff='time best_rspec --order defined --fail-fast'
+safe_alias rff 'time best_rspec --fail-fast'
+safe_alias rodff 'time best_rspec --order defined --fail-fast'
 
-alias t='time ./bin/test'
+safe_alias t 'time ./bin/test'
 
-alias ll='ls -lah'
+safe_alias ll 'ls -lah'
 
 # Quick change directories
 # typing a directory name or variable that expands to one is sufficient to change directories
@@ -118,13 +139,14 @@ alias -g L='| less'
 alias -g GV='grep -v'
 
 # Spelling corrections for common commands
+# Intentionally overrides dc calculator (uncommon in scripts, useful typo correction)
 alias dc='cd'
-alias pw='pwd'
-alias pdw='pwd'
-alias grpe='grep'
+safe_alias pw 'pwd'
+safe_alias pdw 'pwd'
+safe_alias grpe 'grep'
 
 # magic power for mkdir (and less typing)
-alias mp="mkdir -p"
+safe_alias mp "mkdir -p"
 function mpc() {
   mkdir -p "$1" && cd "$1"
 }
@@ -133,7 +155,7 @@ function mpc() {
 # To query in human-readable terms, use this command.
 # I believe this only works for OS X due to difference in stat command.
 # http://askubuntu.com/questions/152001
-alias mod="stat -f '%A %N'"
+safe_alias mod "stat -f '%A %N'"
 
 alias -g NE="2> /dev/null"
 
@@ -145,17 +167,17 @@ export GREP_COLOR='1;29'
 #####
 
 # Ruby
-alias be="bundle exec"
-alias beg="bundle exec guard"
-alias begc="bundle exec guard -c"
-alias bi="bundle install -j8"
-alias bu="bundle update"
+safe_alias be "bundle exec"
+safe_alias beg "bundle exec guard"
+safe_alias begc "bundle exec guard -c"
+safe_alias bi "bundle install -j8"
+safe_alias bu "bundle update"
 
-alias prs="parallel_rspec spec"
-alias pcf="parallel_cucumber features"
+safe_alias prs "parallel_rspec spec"
+safe_alias pcf "parallel_cucumber features"
 
-alias rubycop="rubocop"
-alias rubocopy="rubocop"
+safe_alias rubycop "rubocop"
+safe_alias rubocopy "rubocop"
 
 # TODO: explain rake commands with echoes when they are running
 #function verbose_alias() {
@@ -165,10 +187,10 @@ alias rubocopy="rubocop"
 #verbose_alias "fooey" "echo 'test'" ; fooey
 
 # Rake
-alias ®="best_rake "
-alias br="best_rake "
-alias brt="best_rake -T"
-alias rkae="best_rake"
+safe_alias ® "best_rake "
+safe_alias br "best_rake "
+safe_alias brt "best_rake -T"
+safe_alias rkae "best_rake"
 alias rdc="best_rake db:create"
 alias rdd="best_rake db:drop"
 alias rdm="best_rake db:migrate || best_rake db:migrate"
@@ -185,15 +207,16 @@ alias rjw="best_rake jobs:work"
 alias rpp="best_rake parallel:prepare"
 
 # Rails
-alias rials="rails"
-alias rdb="best_rails db"
+safe_alias rials "rails"
+safe_alias rdb "best_rails db"
+# Intentionally overrides ripgrep (rg) - Rails generate is more commonly used in Rails projects
 alias rg="best_rails generate"
-alias rgmo="best_rails generate model"
-alias rgc="best_rails generate controller"
-alias rr="best_rails runner"
-alias tf="tail -f"
-alias tfld="tail -f log/development.log"
-alias tflt="tail -f log/test.log"
+safe_alias rgmo "best_rails generate model"
+safe_alias rgc "best_rails generate controller"
+safe_alias rr "best_rails runner"
+safe_alias tf "tail -f"
+safe_alias tfld "tail -f log/development.log"
+safe_alias tflt "tail -f log/test.log"
 
 alias -g aas="app/assets/stylesheets"
 alias -g aaj="app/assets/javascripts"
@@ -486,7 +509,7 @@ function hcg() {
   heroku config "$@" | grep -i $search
 }
 
-alias fs="foreman start"
+safe_alias fs "foreman start"
 
 # zsh shorcuts
 alias reload="source ~/.zshrc"
@@ -522,7 +545,7 @@ git_checkout_ignore_missing() {
   done
 }
 
-alias g="git"
+safe_alias g "git"
 alias ga="git add --all"
 alias gaa="git add --all"
 alias gai="git add --interactive"
@@ -670,39 +693,39 @@ aliases() {
 }
 
 # npm
-alias ni='npm install'
-alias nis='npm install --save'
-alias nisd='npm install --save-dev'
-alias ng='npm list 2> /dev/null | grep $@'
-alias ngc='npm list 2> /dev/null | grep -C5 $@'
-alias nr='npm run'
-alias nrd='npm run dev'
-alias nrs='npm start' # npm run start
-alias nrt='npm run test'
-alias ns='npm start'
+safe_alias ni 'npm install'
+safe_alias nis 'npm install --save'
+safe_alias nisd 'npm install --save-dev'
+safe_alias ng 'npm list 2> /dev/null | grep $@'
+safe_alias ngc 'npm list 2> /dev/null | grep -C5 $@'
+safe_alias nr 'npm run'
+safe_alias nrd 'npm run dev'
+safe_alias nrs 'npm start' # npm run start
+safe_alias nrt 'npm run test'
+safe_alias ns 'npm start'
 
 # yarn
-alias yi='yarn install'
-alias ya='yarn add'
-alias yr='yarn run'
-alias yrm='yarn remove'
-alias ys='yarn start'
-alias yt='yarn test'
+safe_alias yi 'yarn install'
+safe_alias ya 'yarn add'
+safe_alias yr 'yarn run'
+safe_alias yrm 'yarn remove'
+safe_alias ys 'yarn start'
+safe_alias yt 'yarn test'
 
 # python
-alias pi='pip install'
+safe_alias pi 'pip install'
 
 # use random uuid for uuid generator
-alias uuid='uuid -v4'
+safe_alias uuid 'uuid -v4'
 
 # javascript
 #alias jsl="jslint -process"
 
 # vagrant
-alias va="vagrant"
-alias vaup="vagrant up"
-alias vap="vagrant provision"
-alias varedo="vagrant destroy -f; vagrant up"
+safe_alias va "vagrant"
+safe_alias vaup "vagrant up"
+safe_alias vap "vagrant provision"
+safe_alias varedo "vagrant destroy -f; vagrant up"
 
 # kill existing server, and then use ./bin/webpacker-dev-server or ./bin/shakapacker-dev-server
 function wds() {
@@ -720,43 +743,45 @@ function wds() {
   fi
 }
 
-alias py="python"
+safe_alias py "python"
 
-alias pre="pretty"
+safe_alias pre "pretty"
 
-alias ss="spring stop"
-alias ssr="spring stop; r"
+safe_alias ss "spring stop"
+safe_alias ssr "spring stop; r"
 
-#alias ant='color-ant'
-alias mvn='color-mvn'
+#safe_alias ant 'color-ant'
+safe_alias mvn 'color-mvn'
 
-alias week='date "+%V"'
+safe_alias week 'date "+%V"'
 
-alias wcl='wc -l'
+safe_alias wcl 'wc -l'
 
 alias -g pxargs="xargs -n 1"
 
-alias tgp="./bin/test && git push"
+safe_alias tgp "./bin/test && git push"
 
 # silver searcher - use less with color support for j/k support
 # hidden shows files with leading period, except for things in ~/.agignore
 # (see https://github.com/ggreer/the_silver_searcher/issues/24)
+# Intentionally overrides ag with custom flags for better defaults
 alias ag="ag --smart-case --pager 'less -R' --color-match='1;31' --hidden"
-alias cag='ag -C5'
-alias cag10='ag -C10'
-alias agc='ag -C5'
-alias agcw='ag -C5 -W 300'
-alias agc10='ag -C10'
-alias agl='ag -l'
-alias lag='ag -l'
-alias wag='ag -W 300' # don't print lines longer than 300 characters (good for minified files, etc.)
+safe_alias cag 'ag -C5'
+safe_alias cag10 'ag -C10'
+safe_alias agc 'ag -C5'
+safe_alias agcw 'ag -C5 -W 300'
+safe_alias agc10 'ag -C10'
+safe_alias agl 'ag -l'
+safe_alias lag 'ag -l'
+safe_alias wag 'ag -W 300' # don't print lines longer than 300 characters (good for minified files, etc.)
 
 # might be better platform independent, but YAGNI right now
-alias xe="xargs mvim"
+safe_alias xe "xargs mvim"
 
 # by default tree doesn't show hidden files, and these can be helpful
+# Intentionally overrides tree to show hidden files by default
 alias tree="tree -a"
-alias tff="tree -a --fromfile"
+safe_alias tff "tree -a --fromfile"
 
 function stree() {
   if [[ -n "$1" ]]; then
@@ -904,8 +929,9 @@ function echo_path {
   echo $PATH | tr ':' '\n'
 }
 
-alias cl='claude'
-alias CL='claude --dangerously-skip-permissions'
+safe_alias cl 'claude'
+safe_alias CL 'claude --dangerously-skip-permissions'
+# Intentionally overrides CLAUDE binary with permissions-skipping version
 alias CLAUDE='claude --dangerously-skip-permissions'
 
 function gcob_gh_issue {
@@ -986,7 +1012,7 @@ function llm_commit {
 #  compinit
 #fi
 
-alias weather="curl 'https://wttr.in/Fishers?u'"
+safe_alias weather "curl 'https://wttr.in/Fishers?u'"
 
 # https://www.jdeen.com/blog/fix-ruby-macos-nscfconstantstring-initialize-error
 # Was getting:
