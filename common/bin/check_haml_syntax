@@ -1,0 +1,56 @@
+#!/bin/bash
+
+overall_rc=0 # 0 for success, 1 for any error
+
+for file in "$@"; do
+  if [ -f "$file" ]; then
+    # Ensure the file is a HAML file
+    if [[ ! "$file" =~ \.haml$ ]]; then
+      echo "Skipping $file: not a HAML file."
+      continue
+    fi
+
+    echo "Checking $file"
+    output=$(haml compile "$file" 2>&1)
+
+    if echo "$output" | grep -qi 'raise'; then
+      echo -e "\033[31mSyntax errors found in $file:\033[0m"
+      overall_rc=1
+
+      formatted_errors=$(echo "$output" | perl -ne '
+        if (/.*; raise Haml::SyntaxError\.new\((?:%q\[([^\]]*)\]|'\''([^'\'']*)'\''), *([0-9]+)\);.*/i) {
+          my $message_q = $1;
+          my $message_s = $2;
+          my $line_num  = $3;
+          my $message = defined($message_q) ? $message_q : $message_s;
+          my $red_color = "\033[31m";
+          my $reset_color = "\033[0m";
+          printf "%sL%d: %s%s\n", $red_color, $line_num + 1, $message, $reset_color;
+        }
+      ')
+
+      if [ -n "$formatted_errors" ]; then
+        echo $formatted_errors
+      else
+        echo "Relevant error lines (unable to auto-format specifically):"
+        echo "$output" | grep -i 'raise'
+      fi
+    else
+      echo "No syntax errors in $file"
+    fi
+  else
+    echo "File $file does not exist."
+    overall_rc=1
+  fi
+  echo
+done
+
+if [ "$overall_rc" -ne 0 ]; then
+  echo "Completed with errors."
+else
+  green='\033[32m'
+  reset='\033[0m'
+  echo -e "${green}All files checked successfully.${reset}"
+fi
+
+exit "$overall_rc"
