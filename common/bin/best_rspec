@@ -7,15 +7,15 @@ if [ -f bin/rspec ]; then
   # use binstub if it is around
   echo ./bin/rspec $args
   ./bin/rspec $args
-elif [ -S .zeus.sock ]; then
-  echo "Running tests with Zeus"
-  zeus test $args
 elif [ -f bin/bundle ]; then
   echo 'Running `./bin/bundle rspec`'
   bundle exec rspec $args
 elif [ -f rspec ]; then
   echo 'Running `rspec`'
   rspec $args
+elif command -v bundle >/dev/null 2>&1 && bundle show rspec-core >/dev/null 2>&1; then
+  echo 'Running `bundle exec rspec`'
+  bundle exec rspec $args
 else
   echo "No rspec executable found. Please ensure you have RSpec installed."
   exit 1
