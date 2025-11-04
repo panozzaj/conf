@@ -1,0 +1,958 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'optparse'
+require 'shellwords'
+
+# Try to load tty-prompt for interactive mode
+TTY_PROMPT_AVAILABLE = begin
+  require 'tty-prompt'
+  true
+rescue LoadError
+  false
+end
+
+# Script to manage dependabot PRs: rebase PRs with conflicts/test failures,
+# close PRs whose changes are already merged, etc.
+
+class DependabotManager
+  def initialize
+    @options = {
+      dry_run: true,
+      include_test_failures: true,  # Default to checking tests
+      force_rebase: false,
+      force_all: false,
+      interactive: false,
+      close_merged: true,  # Default to closing already-merged PRs
+      skip_rebase: false,  # Option to only close merged PRs without rebasing
+      verbose: false       # Verbose logging for API calls
+    }
+    @results = { successful: 0, failed: 0, skipped: 0, closed: 0 }
+    @pr_cache = {}  # Cache for PR data to avoid redundant API calls
+    @api_call_count = 0  # Track number of API calls
+  end
+
+  def run(args)
+    parse_options(args)
+    validate_environment
+
+    puts "Searching for open dependabot PRs..."
+    puts "=" * 50
+    puts
+
+    repo = get_repository_info
+    puts "Repository: #{repo}"
+    print_options
+    puts
+
+    prs = find_dependabot_prs
+    return success_exit("No open dependabot PRs found!") if prs.empty?
+
+    # If interactive mode, skip all the filtering and show TUI immediately
+    # Interactive mode handles its own confirmation, so dry_run doesn't apply
+    if @options[:interactive]
+      unless TTY_PROMPT_AVAILABLE
+        puts "⚠️  Interactive mode requires tty-prompt gem."
+        puts "Install it with: gem install tty-prompt"
+        puts
+        puts "Falling back to non-interactive mode..."
+        puts
+      else
+        prs_to_close, problematic_prs, clean_prs = analyze_all_prs(prs)
+        return interactive_tui_mode(prs_to_close, problematic_prs, clean_prs)
+      end
+    end
+
+    # Non-interactive mode: filter and process normally
+    prs_to_close = []
+    if @options[:close_merged]
+      prs_to_close, prs = filter_merged_prs(prs)
+
+      if prs_to_close.any?
+        puts "📋 Found #{prs_to_close.length} already-merged PR(s) to close:"
+        prs_to_close.each do |pr|
+          puts "  → PR ##{pr['number']}: #{pr['title']}"
+        end
+        puts
+      end
+    end
+
+    # Then handle rebasing remaining PRs (unless skip_rebase is set)
+    problematic_prs = []
+    unless prs.empty? || @options[:skip_rebase]
+      if @options[:force_all]
+        problematic_prs = prepare_force_all_prs(prs)
+        puts "🚨 FORCE-ALL mode: Will rebase ALL #{problematic_prs.length} open dependabot PRs"
+        puts
+      else
+        problematic_prs = analyze_prs(prs)
+      end
+    end
+
+    # Exit if nothing to do
+    if prs_to_close.empty? && problematic_prs.empty?
+      if @options[:close_merged]
+        return success_exit("No already-merged PRs found and no dependabot PRs with issues found!")
+      else
+        return success_exit("No dependabot PRs with issues found!")
+      end
+    end
+
+    # Display summary of what will be done
+    display_combined_summary(prs_to_close, problematic_prs)
+    return combined_dry_run_exit(prs_to_close, problematic_prs) if @options[:dry_run]
+
+    # Execute the operations (only in non-interactive mode with --execute)
+    process_close_prs(prs_to_close) if prs_to_close.any?
+    process_prs(problematic_prs) if problematic_prs.any?
+    display_final_results
+  end
+
+  private
+
+  def parse_options(args)
+    OptionParser.new do |opts|
+      opts.banner = <<~BANNER
+        Usage: dependabot_manage [OPTIONS]
+
+        Manages open dependabot PRs in the current repository.
+
+        Default behavior:
+        - Close PRs whose changes are already merged
+        - Rebase remaining PRs with merge conflicts or test failures
+
+        OPTIONS:
+      BANNER
+
+      opts.on("--dry-run", "Show what would be done without actually commenting (default)") do
+        @options[:dry_run] = true
+      end
+
+      opts.on("--execute", "Actually post the rebase comments to GitHub") do
+        @options[:dry_run] = false
+      end
+
+      opts.on("--include-test-failures", "Also rebase PRs with failing tests (default: true)") do
+        @options[:include_test_failures] = true
+      end
+
+      opts.on("--skip-test-failures", "Skip PRs with failing tests, only handle merge conflicts") do
+        @options[:include_test_failures] = false
+      end
+
+      opts.on("--force", "Rebase even when tests are failing without prompting") do
+        @options[:force_rebase] = true
+      end
+
+      opts.on("--force-all", "Force rebase ALL open dependabot PRs, regardless of status") do
+        @options[:force_all] = true
+      end
+
+      opts.on("--interactive", "Interactive mode: review all PRs in a multi-select list (requires tty-prompt)") do
+        @options[:interactive] = true
+      end
+
+      opts.on("--close-merged", "Close PRs whose changes are already in the base branch (default: true)") do
+        @options[:close_merged] = true
+      end
+
+      opts.on("--skip-close-merged", "Skip closing already-merged PRs") do
+        @options[:close_merged] = false
+      end
+
+      opts.on("--skip-rebase", "Skip rebasing PRs, only close already-merged ones") do
+        @options[:skip_rebase] = true
+      end
+
+      opts.on("--verbose", "Show verbose logging including API calls") do
+        @options[:verbose] = true
+      end
+
+      opts.on("-h", "--help", "Show this help message") do
+        puts opts
+        puts
+        puts "EXAMPLES:"
+        puts "  dependabot_manage                                            # Dry run: close merged PRs + rebase PRs with issues (default)"
+        puts "  dependabot_manage --execute                                  # Execute: close merged PRs + rebase PRs with issues"
+        puts "  dependabot_manage --execute --skip-rebase                    # Only close merged PRs, skip rebasing"
+        puts "  dependabot_manage --execute --skip-close-merged              # Only rebase, don't close merged PRs"
+        puts "  dependabot_manage --execute --skip-test-failures             # Only handle merge conflicts, skip test failures"
+        puts "  dependabot_manage --interactive                              # Review all PRs in interactive multi-select list"
+        puts "  dependabot_manage --verbose                                  # Show verbose output including API calls and cache hits"
+        puts "  dependabot_manage --execute --force                          # Force rebase all problematic PRs"
+        puts "  dependabot_manage --execute --force-all                      # Rebase ALL dependabot PRs (useful after adding checksums, etc.)"
+        puts
+        puts "INTERACTIVE MODE:"
+        puts "  Interactive mode shows all PRs in a multi-select list with recommended actions."
+        puts "  It handles its own confirmation, so --execute is not needed (and is ignored)."
+        puts "  - Use ↑/↓ or j/k to navigate between PRs"
+        puts "  - Use Space to toggle selection"
+        puts "  - Press Enter to proceed to confirmation"
+        puts "  - Confirm 'yes' to execute, 'no' to cancel"
+        puts "  - Press q to quit without making changes"
+        puts "  - All suggested actions are selected by default"
+        puts
+        puts "REQUIREMENTS:"
+        puts "  - Must be run from within a git repository"
+        puts "  - GitHub CLI (gh) must be installed and authenticated"
+        puts "  - Repository must have open dependabot PRs"
+        exit 0
+      end
+    end.parse!(args)
+  end
+
+  def validate_environment
+    unless system('which gh > /dev/null 2>&1')
+      error_exit("GitHub CLI (gh) is not installed or not in PATH\nPlease install it from: https://cli.github.com/")
+    end
+
+    unless system('git rev-parse --git-dir > /dev/null 2>&1')
+      error_exit("Not in a git repository\nPlease run this script from within a git repository")
+    end
+
+    unless system('gh auth status > /dev/null 2>&1')
+      error_exit("Not authenticated with GitHub CLI\nPlease run: gh auth login")
+    end
+  end
+
+  def get_repository_info
+    output = `gh repo view --json owner,name`
+    repo_data = JSON.parse(output)
+    "#{repo_data['owner']['login']}/#{repo_data['name']}"
+  rescue => e
+    error_exit("Failed to get repository information: #{e.message}")
+  end
+
+  def find_dependabot_prs
+    # Fetch ALL open dependabot PRs with ALL fields we need in ONE request! 🚀
+    all_fields = 'number,title,url,baseRefName,headRefName,files,comments,mergeable,statusCheckRollup'
+
+    log_api_call("gh pr list --state open --author app/dependabot --limit 200 --json #{all_fields}")
+    output = `gh pr list --state open --author "app/dependabot" --limit 200 --json #{all_fields}`
+    prs = JSON.parse(output)
+
+    # Filter to only dependabot PRs
+    prs.select! { |pr| pr['title'] =~ /^Bump / }
+
+    # Pre-populate cache with ALL PR data
+    prs.each do |pr|
+      pr_number = pr['number']
+      all_fields_key = "#{pr_number}_#{all_fields.split(',').sort.join(',')}"
+      @pr_cache[all_fields_key] = pr
+
+      # Pre-populate cache with all common field combinations
+      %w[
+        baseRefName,files,headRefName,title
+        comments
+        mergeable
+        statusCheckRollup
+        title,url
+      ].each do |field_combo|
+        combo_key = "#{pr_number}_#{field_combo.split(',').sort.join(',')}"
+        @pr_cache[combo_key] = pr
+      end
+    end
+
+    prs
+  rescue => e
+    error_exit("Failed to fetch dependabot PRs: #{e.message}")
+  end
+
+  def get_pr_data(pr_number, fields)
+    # Fields is a comma-separated string, normalize for cache key
+    cache_key = "#{pr_number}_#{fields.split(',').sort.join(',')}"
+
+    # Should already be cached from find_dependabot_prs
+    if @pr_cache.key?(cache_key)
+      log_cache_hit(pr_number, fields)
+      return @pr_cache[cache_key]
+    end
+
+    # Fallback: fetch if not in cache (shouldn't happen normally)
+    puts "    ⚠️  Cache miss for PR ##{pr_number}, fetching..."
+    log_api_call("gh pr view #{pr_number} --json #{fields}")
+    output = `gh pr view #{pr_number} --json #{fields}`
+    @pr_cache[cache_key] = JSON.parse(output)
+  rescue => e
+    puts "    ⚠️  Warning: Could not fetch PR data (#{e.message})"
+    nil
+  end
+
+  def prepare_force_all_prs(prs)
+    # When force-all is enabled, prepare all PRs for rebasing without checking their status
+    prs.map do |pr|
+      {
+        number: pr['number'],
+        title: pr['title'],
+        url: pr['url'],
+        issues: ['forced rebase'],
+        issue_description: 'forced rebase (--force-all)',
+        suggest_recreate: false,
+        action: 'rebase'
+      }
+    end
+  end
+
+  def analyze_all_prs(prs)
+    puts "Analyzing all PRs..."
+    puts
+
+    prs_to_close = []
+    problematic_prs = []
+    clean_prs = []
+
+    prs.each do |pr|
+      pr_number = pr['number']
+      pr_title = pr['title']
+
+      puts "  Checking PR ##{pr_number}: #{pr_title}"
+
+      # First check if already merged (skip other checks if so)
+      if @options[:close_merged] && pr_already_merged?(pr_number)
+        puts "    • Already merged - will close"
+        prs_to_close << pr
+        next
+      end
+
+      # Check for issues if not merged
+      unless @options[:skip_rebase]
+        issues = check_pr_issues(pr_number)
+
+        if issues.any?
+          issue_description = issues.join(" and ")
+          puts "    • Issues found: #{issue_description}"
+
+          # Check dependabot comments for suggestions
+          comment_info = check_dependabot_comments(pr_number)
+          recreate_option = comment_info[:suggest_recreate] ? "recreate" : "rebase"
+
+          problematic_prs << {
+            number: pr_number,
+            title: pr_title,
+            url: pr['url'],
+            issues: issues,
+            issue_description: issue_description,
+            suggest_recreate: comment_info[:suggest_recreate],
+            action: recreate_option
+          }
+        else
+          puts "    • No issues found"
+          clean_prs << pr
+        end
+      end
+    end
+
+    puts
+
+    [prs_to_close, problematic_prs, clean_prs]
+  end
+
+  def filter_merged_prs(prs)
+    puts "Checking which PRs are already merged..."
+    puts
+
+    prs_to_close = []
+    remaining_prs = []
+
+    prs.each do |pr|
+      pr_number = pr['number']
+      pr_title = pr['title']
+
+      puts "  Checking PR ##{pr_number}: #{pr_title}"
+
+      if pr_already_merged?(pr_number)
+        puts "    • Already merged - will close"
+        prs_to_close << pr
+      else
+        puts "    • Not merged yet"
+        remaining_prs << pr
+      end
+    end
+
+    puts
+
+    [prs_to_close, remaining_prs]
+  end
+
+  def pr_already_merged?(pr_number)
+    # Get PR details including title, files changed
+    pr_data = get_pr_data(pr_number, 'baseRefName,headRefName,files,title')
+    return false unless pr_data
+
+    base_branch = pr_data['baseRefName']
+    head_branch = pr_data['headRefName']
+    files = pr_data['files']
+    title = pr_data['title']
+
+    # Extract package name from PR title (e.g., "Bump rexml from 3.4.1 to 3.4.2" -> "rexml")
+    package_name = extract_package_name(title)
+    return false unless package_name
+
+    # Find the dependency lockfile(s) that were changed
+    lockfiles = files.select { |f| is_lockfile?(f['path']) }.map { |f| f['path'] }
+    return false if lockfiles.empty?
+
+    # Fetch the latest from origin
+    `git fetch origin #{base_branch} #{head_branch} 2>/dev/null`
+
+    # Check if the package version in base >= version in PR branch
+    lockfiles.all? do |lockfile|
+      base_version = extract_version_from_lockfile(lockfile, package_name, "origin/#{base_branch}")
+      head_version = extract_version_from_lockfile(lockfile, package_name, "origin/#{head_branch}")
+
+      # If we can't extract versions, assume not merged
+      next false unless base_version && head_version
+
+      # Compare versions
+      compare_versions(base_version, head_version) >= 0
+    end
+  rescue => e
+    puts "    ⚠️  Warning: Could not check merge status (#{e.message})"
+    false
+  end
+
+  def extract_package_name(title)
+    # Handle format: "Bump package-name from x.y.z to a.b.c"
+    # Also handles: "Bump package1 and package2" (take first package)
+    if title =~ /^Bump\s+([^\s]+)\s+(?:from|and)/i
+      $1
+    end
+  end
+
+  def extract_version_from_lockfile(lockfile, package_name, git_ref)
+    content = `git show #{git_ref}:#{lockfile} 2>/dev/null`
+    return nil if $?.exitstatus != 0
+
+    if lockfile.end_with?('Gemfile.lock')
+      extract_gem_version(content, package_name)
+    elsif lockfile.end_with?('package-lock.json')
+      extract_npm_version(content, package_name)
+    elsif lockfile.end_with?('yarn.lock')
+      extract_yarn_version(content, package_name)
+    else
+      nil
+    end
+  end
+
+  def extract_gem_version(content, gem_name)
+    # Look for "  gem_name (version)" in the specs section
+    if content =~ /^\s{4}#{Regexp.escape(gem_name)}\s+\(([^\)]+)\)/
+      $1
+    end
+  end
+
+  def extract_npm_version(content, package_name)
+    # Parse JSON and look for the package
+    require 'json'
+    data = JSON.parse(content)
+    data.dig('packages', "node_modules/#{package_name}", 'version') ||
+    data.dig('dependencies', package_name, 'version')
+  rescue
+    nil
+  end
+
+  def extract_yarn_version(content, package_name)
+    # Look for "package-name@version:" pattern
+    if content =~ /^"?#{Regexp.escape(package_name)}@[^"]*"?:\s+version\s+"([^"]+)"/m
+      $1
+    elsif content =~ /^#{Regexp.escape(package_name)}@[^:]+:\s+version\s+"([^"]+)"/m
+      $1
+    end
+  end
+
+  def compare_versions(v1, v2)
+    # Use Ruby's Gem::Version for proper version comparison
+    Gem::Version.new(v1) <=> Gem::Version.new(v2)
+  rescue ArgumentError
+    # Fallback to string comparison if versions are malformed
+    v1 <=> v2
+  end
+
+  def is_lockfile?(path)
+    lockfile_patterns = [
+      'Gemfile.lock',
+      'package-lock.json',
+      'yarn.lock',
+      'pnpm-lock.yaml'
+    ]
+
+    lockfile_patterns.any? { |pattern| path.end_with?(pattern) }
+  end
+
+  def interactive_tui_mode(prs_to_close, problematic_prs, clean_prs)
+    prompt = TTY::Prompt.new
+
+    # Build list of ALL PRs with their suggested actions
+    pr_items = []
+    default_indices = []
+
+    # Add PRs to close (already merged)
+    prs_to_close.each do |pr|
+      item = {
+        pr: pr,
+        number: pr['number'],
+        title: pr['title'],
+        action: :close,
+        reason: "Already merged"
+      }
+      pr_items << item
+    end
+
+    # Add PRs to rebase
+    problematic_prs.each do |pr|
+      item = {
+        pr: pr,
+        number: pr[:number],
+        title: pr[:title],
+        action: :rebase,
+        reason: pr[:issue_description]
+      }
+      pr_items << item
+    end
+
+    # Add clean PRs (no action recommended)
+    clean_prs.each do |pr|
+      item = {
+        pr: pr,
+        number: pr['number'],
+        title: pr['title'],
+        action: :none,
+        reason: "No issues"
+      }
+      pr_items << item
+    end
+
+    if pr_items.empty?
+      return success_exit("No PRs to manage!")
+    end
+
+    # Sort by PR number descending (newest first)
+    pr_items.sort_by! { |item| -item[:number] }
+
+    # Find the longest title for minimal but aligned arrow placement
+    max_title_length = pr_items.map { |item| "PR ##{item[:number]}: #{item[:title]}".length }.max
+    # Add 2 spaces minimum padding before arrow
+    arrow_column = max_title_length + 2
+
+    # Add formatted display strings with aligned arrows
+    pr_items.each do |item|
+      pr_label = "PR ##{item[:number]}: #{item[:title]}"
+      padding = " " * (arrow_column - pr_label.length)
+
+      case item[:action]
+      when :close
+        item[:display] = "#{pr_label}#{padding}→ Close (#{item[:reason]})"
+      when :rebase
+        item[:display] = "#{pr_label}#{padding}→ Rebase (#{item[:reason]})"
+      when :none
+        item[:display] = "#{pr_label}#{padding}→ No action needed"
+      end
+    end
+
+    # Build default selections (only PRs with recommended actions)
+    pr_items.each_with_index do |item, index|
+      default_indices << (index + 1) if item[:action] != :none
+    end
+
+    puts
+    puts "━" * 80
+    puts "Review PRs - Navigate: ↑/↓ arrows  |  Toggle: Space  |  Confirm: Enter  |  Quit: Ctrl-C"
+    puts "━" * 80
+    puts
+
+    # Multi-select with defaults (only PRs with recommended actions)
+    begin
+      selected = prompt.multi_select(
+        "Select PRs to process:",
+        pr_items.map { |item| { name: item[:display], value: item } },
+        default: default_indices,  # Only recommended actions selected by default
+        per_page: 20,
+        echo: false,
+        cycle: true,
+        show_help: :always,
+        symbols: { marker: '›', radio_on: '⬢', radio_off: '⬡' }
+      ) do |menu|
+        menu.help "(↑/↓: navigate, Space: toggle, Enter: confirm, Ctrl-C: quit)"
+      end
+    rescue TTY::Reader::InputInterrupt
+      puts "\nCancelled by user."
+      exit 0
+    end
+
+    if selected.empty?
+      puts "\n✅ No PRs selected. Exiting."
+      exit 0
+    end
+
+    # Show confirmation
+    puts
+    puts "━" * 80
+    puts "You're about to:"
+    selected.each do |item|
+      case item[:action]
+      when :close
+        puts "  ❌ Close PR ##{item[:number]}: #{item[:title]}"
+      when :rebase
+        puts "  🔄 Rebase PR ##{item[:number]}: #{item[:title]}"
+      end
+    end
+    puts "━" * 80
+    puts
+
+    confirmed = prompt.yes?("Proceed with these actions?")
+
+    unless confirmed
+      puts "✅ Cancelled. No changes made."
+      exit 0
+    end
+
+    # Execute the selected actions
+    puts
+    puts "🚀 Executing actions..."
+    puts
+
+    selected.each do |item|
+      case item[:action]
+      when :close
+        close_pr(item[:pr])
+      when :rebase
+        rebase_pr(item[:pr])
+      when :none
+        puts "  → Skipping PR ##{item[:number]} (no action selected)"
+      end
+    end
+
+    display_final_results
+  end
+
+  def display_combined_summary(prs_to_close, problematic_prs)
+    # Summary already displayed inline during filtering/analysis
+  end
+
+  def combined_dry_run_exit(prs_to_close, problematic_prs)
+    puts "🔥 DRY RUN MODE - Would perform the following actions:"
+    puts
+
+    if prs_to_close.any?
+      puts "  Close (already merged):"
+      prs_to_close.each do |pr|
+        puts "    → PR ##{pr['number']}: #{pr['title']}"
+      end
+      puts
+    end
+
+    if problematic_prs.any?
+      puts "  Rebase (conflicts or test failures):"
+      problematic_prs.each do |pr|
+        puts "    → PR ##{pr[:number]}: #{pr[:title]} (#{pr[:issue_description]}) - @dependabot #{pr[:action]}"
+      end
+      puts
+    end
+
+    puts "💡 To actually perform these actions, run with --execute"
+    exit 0
+  end
+
+  def process_close_prs(prs_to_close)
+    puts "🚀 EXECUTE MODE - Closing already-merged PRs..."
+    puts
+
+    prs_to_close.each do |pr|
+      close_pr(pr)
+    end
+
+    puts
+  end
+
+  def close_pr(pr)
+    pr_number = pr['number']
+    puts "  → Closing PR ##{pr_number}..."
+
+    comment = "Closing because these changes are already in #{`gh repo view --json defaultBranchRef --jq .defaultBranchRef.name`.strip}."
+    success = system("gh pr close #{pr_number} --comment #{comment.shellescape} 2>/dev/null")
+
+    if success
+      puts "    ✅ Closed"
+      @results[:closed] += 1
+    else
+      puts "    ❌ Failed to close"
+      @results[:failed] += 1
+    end
+  end
+
+  def analyze_prs(prs)
+    puts "🔍 Checking status for each PR..."
+
+    problematic_prs = []
+
+    prs.each do |pr|
+      pr_number = pr['number']
+      pr_title = pr['title']
+      pr_url = pr['url']
+
+            puts "  Checking PR ##{pr_number}: #{pr_title}"
+
+      # Check dependabot comments
+      comment_info = check_dependabot_comments(pr_number)
+
+      if comment_info[:skip]
+        puts "    ℹ️  Skipping - Dependabot already commented recently (won't rebase)"
+        next
+      end
+
+      issues = check_pr_issues(pr_number)
+
+      if issues.any?
+        issue_description = issues.join(" and ")
+        puts "    ⚠️  Issues found: #{issue_description}"
+
+        # Add recreate suggestion if applicable
+        recreate_option = comment_info[:suggest_recreate] ? "recreate" : "rebase"
+
+        problematic_prs << {
+          number: pr_number,
+          title: pr_title,
+          url: pr_url,
+          issues: issues,
+          issue_description: issue_description,
+          suggest_recreate: comment_info[:suggest_recreate],
+          action: recreate_option
+        }
+      else
+        puts "    ✅ No issues found"
+      end
+    end
+
+    problematic_prs
+  end
+
+    def check_dependabot_comments(pr_number)
+    comments_data = get_pr_data(pr_number, 'comments')
+    return { skip: false, suggest_recreate: false } unless comments_data
+
+    return { skip: false, suggest_recreate: false } unless comments_data['comments']
+
+    # Check for recent dependabot comments (within last 24 hours)
+    one_day_ago = Time.now - (24 * 60 * 60)
+
+    skip_rebase = false
+    suggest_recreate = false
+
+    comments_data['comments'].each do |comment|
+      next unless comment['author']['login'] == 'dependabot[bot]'
+
+      comment_time = Time.parse(comment['createdAt'])
+      next unless comment_time > one_day_ago
+
+      body = comment['body'].downcase
+
+      # Check for messages that indicate dependabot won't act
+      if body.include?('already up-to-date') ||
+         body.include?("won't") ||
+         body.include?('cannot rebase')
+        skip_rebase = true
+      end
+
+      # Check if recreate is suggested
+      if body.include?('recreate')
+        suggest_recreate = true
+      end
+    end
+
+    { skip: skip_rebase, suggest_recreate: suggest_recreate }
+  rescue => e
+    puts "    ⚠️  Warning: Could not check comments (#{e.message})"
+    { skip: false, suggest_recreate: false }
+  end
+
+  def check_pr_issues(pr_number)
+    issues = []
+
+    # Check merge conflicts
+    merge_status = get_mergeable_status(pr_number)
+    issues << "merge conflicts" if merge_status == "CONFLICTING"
+
+    # Check test failures if requested
+    if @options[:include_test_failures]
+      test_status = get_test_status(pr_number)
+      case test_status[:state]
+      when "FAILING"
+        issues << "failing tests"
+        puts "    • Tests are failing"
+        test_status[:details].each { |detail| puts "      #{detail}" }
+      when "PASSING"
+        puts "    • Tests are passing"
+      when "PENDING"
+        puts "    • Tests are pending"
+      when "UNKNOWN"
+        puts "    • Test status unknown"
+      end
+    end
+
+    issues
+  end
+
+  def get_mergeable_status(pr_number)
+    pr_data = get_pr_data(pr_number, 'mergeable')
+    return "UNKNOWN" unless pr_data
+    pr_data['mergeable']
+  end
+
+    def get_test_status(pr_number)
+    status_data = get_pr_data(pr_number, 'statusCheckRollup')
+    return { state: "UNKNOWN", details: [] } unless status_data
+
+    checks = status_data['statusCheckRollup']
+    return { state: "UNKNOWN", details: [] } unless checks && checks.is_a?(Array)
+
+    # Analyze all checks to determine overall state
+    has_failures = false
+    has_pending = false
+    has_success = false
+    details = []
+
+    checks.each do |check|
+      case check['conclusion'] || check['state']
+      when 'FAILURE', 'ERROR'
+        has_failures = true
+        name = check['name'] || check['context']
+        details << "❌ #{name}: Failed"
+      when 'SUCCESS'
+        has_success = true
+      when 'PENDING', 'EXPECTED', nil
+        # If status is COMPLETED but conclusion is nil, it might be pending
+        if check['status'] != 'COMPLETED'
+          has_pending = true
+        end
+      end
+    end
+
+    # Determine overall state
+    state = if has_failures
+              'FAILING'
+            elsif has_pending
+              'PENDING'
+            elsif has_success
+              'PASSING'
+            else
+              'UNKNOWN'
+            end
+
+    # If failing but no details captured, add a generic message
+    if state == 'FAILING' && details.empty?
+      details = ["❌ Tests are failing (details unavailable)"]
+    end
+
+    { state: state, details: details }
+  rescue => e
+    { state: "UNKNOWN", details: ["Error checking status: #{e.message}"] }
+  end
+
+
+  def process_prs(problematic_prs)
+    puts "🚀 EXECUTE MODE - Processing rebase requests..."
+    puts
+
+    problematic_prs.each do |pr|
+      if should_skip_pr?(pr)
+        puts "  ⚠️  Skipping PR ##{pr[:number]} (has failing tests, use --force or --interactive to override)"
+        @results[:skipped] += 1
+        next
+      end
+
+      rebase_pr(pr)
+    end
+  end
+
+  def should_skip_pr?(pr)
+    pr[:issues].include?("failing tests") &&
+    !@options[:force_rebase]
+  end
+
+    def rebase_pr(pr)
+    action = pr[:action]
+    puts "  → Commenting '@dependabot #{action}' on PR ##{pr[:number]}..."
+
+    command = "gh pr comment #{pr[:number]} --body '@dependabot #{action}'"
+    success = system("#{command} 2>/dev/null")
+
+    if success
+      puts "    ✅ Success"
+      @results[:successful] += 1
+    else
+      puts "    ❌ Failed"
+      @results[:failed] += 1
+    end
+  end
+
+  def display_final_results
+    puts
+    puts "📊 Results:"
+    puts "  ✅ PRs closed: #{@results[:closed]}" if @results[:closed] > 0
+    puts "  ✅ PRs rebased: #{@results[:successful]}" if @results[:successful] > 0
+    puts "  ❌ Failed: #{@results[:failed]}" if @results[:failed] > 0
+    puts "  ⏭️  Skipped: #{@results[:skipped]}" if @results[:skipped] > 0
+
+    if @options[:verbose] || @api_call_count > 0
+      puts
+      puts "📡 API Calls: #{@api_call_count}"
+    end
+
+    if @results[:failed] > 0
+      puts
+      puts "⚠️  Some operations failed. This might be due to:"
+      puts "  - Network issues"
+      puts "  - Insufficient permissions"
+      puts "  - PR already being processed"
+    end
+
+    if @results[:skipped] > 0
+      puts
+      puts "💡 To handle skipped PRs with failing tests:"
+      puts "  - Use --force to rebase without prompting"
+      puts "  - Use --interactive to decide case by case"
+    end
+  end
+
+  def log_api_call(command)
+    @api_call_count += 1
+    return unless @options[:verbose]
+    puts "  [API Call ##{@api_call_count}] #{command}"
+  end
+
+  def log_cache_hit(pr_number, fields)
+    return unless @options[:verbose]
+    puts "  [Cache Hit] PR ##{pr_number}: #{fields}"
+  end
+
+  def print_options
+    puts "Options:"
+    puts "  - Close merged PRs: #{@options[:close_merged]}"
+    puts "  - Skip rebase: #{@options[:skip_rebase]}"
+    puts "  - Force ALL PRs: #{@options[:force_all]}"
+    puts "  - Include test failures: #{@options[:include_test_failures]}"
+    puts "  - Force rebase: #{@options[:force_rebase]}"
+    puts "  - Interactive mode: #{@options[:interactive]}"
+    puts "  - Dry run: #{@options[:dry_run]}"
+    puts "  - Verbose: #{@options[:verbose]}"
+  end
+
+  def success_exit(message)
+    puts "✅ #{message}"
+    exit 0
+  end
+
+  def error_exit(message)
+    puts "Error: #{message}"
+    exit 1
+  end
+end
+
+# Run the script
+if __FILE__ == $0
+  manager = DependabotManager.new
+  manager.run(ARGV)
+
+  puts
+  puts "✨ Done!"
+end
