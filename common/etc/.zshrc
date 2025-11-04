@@ -786,14 +786,14 @@ function wds() {
   # kill any existing servers on this port
   lsof -i tcp:3035 | tail -n+2 | awk '{print $2}' | sort -u | xargs kill -9
 
-  if [[ -f ./bin/webpacker-dev-server ]]; then
-    echo ./bin/webpacker-dev-server $@
-    ./bin/webpacker-dev-server $@
-  elif [[ -f ./bin/shakapacker-dev-server ]]; then
+  if [[ -f ./bin/shakapacker-dev-server ]]; then
     echo ./bin/shakapacker-dev-server $@
     ./bin/shakapacker-dev-server $@
+  elif [[ -f ./bin/webpacker-dev-server ]]; then
+    echo ./bin/webpacker-dev-server $@
+    ./bin/webpacker-dev-server $@
   else
-    echo "This project does not have a ./bin/webpacker-dev-server or ./bin/shakapacker-dev-server"
+    echo "This project does not have a ./bin/shakapacker-dev-server or ./bin/webpacker-dev-server"
   fi
 }
 
