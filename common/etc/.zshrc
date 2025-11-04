@@ -157,6 +157,16 @@ function mpc() {
 # http://askubuntu.com/questions/152001
 safe_alias mod "stat -f '%A %N'"
 
+# cat wrapper: ls directories instead of erroring
+function cat() {
+  if [[ $# -eq 1 && -d "$1" ]]; then
+    echo "\e[95mcat: $1: Is a directory (showing ls instead)\e[0m" >&2
+    command ls "$1"
+  else
+    command cat "$@"
+  fi
+}
+
 alias -g NE="2> /dev/null"
 
 export GREP_OPTIONS='--color=auto'
