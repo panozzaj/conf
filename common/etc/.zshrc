@@ -646,6 +646,8 @@ alias gd="git diff"
 alias gdc="git diff --cached"
 alias gdcs="git diff --cached --stat"
 alias gdcw="git diff --cached --ignore-all-space"
+alias gdm='git diff $(main_branch)'
+alias gdmw='git diff $(main_branch) --ignore-all-space'
 alias gdom='git diff origin/$(main_branch)'
 alias gdoms='git diff origin/$(main_branch) --stat=200' # all files that changed on this branch
 alias gdomw='git diff origin/$(main_branch) --ignore-all-space'
