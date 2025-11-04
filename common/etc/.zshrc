@@ -512,11 +512,53 @@ alias her="heroku"
 alias hl="heroku logs"
 alias hlt="heroku logs -t"
 
-# takes heroku params after search term
+# takes heroku params before or after search term
+# Examples:
+#   hcg DATABASE_URL
+#   hcg DATABASE_URL production
+#   hcg DATABASE_URL -r production
+#   hcg -r production DATABASE_URL
 function hcg() {
-  search=$1
-  shift
-  heroku config "$@" | grep -i $search
+  local heroku_args=()
+  local search=""
+
+  # Parse arguments to separate heroku flags from search term
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -r|--remote|-a|--app)
+        # Flag with value (next argument)
+        heroku_args+=("$1" "$2")
+        shift 2
+        ;;
+      --remote=*|--app=*)
+        # Flag with value in same argument
+        heroku_args+=("$1")
+        shift
+        ;;
+      *)
+        # First non-flag argument is the search term
+        if [[ -z "$search" ]]; then
+          search="$1"
+          shift
+        else
+          # Subsequent non-flag arguments: treat as remote name if no dashes/underscores
+          if [[ ! "$1" =~ [-_] ]]; then
+            heroku_args+=("--remote=$1")
+          else
+            heroku_args+=("$1")
+          fi
+          shift
+        fi
+        ;;
+    esac
+  done
+
+  if [[ -z "$search" ]]; then
+    echo "Usage: hcg [heroku-flags] <search-term> [remote-name]"
+    return 1
+  fi
+
+  heroku config "${heroku_args[@]}" | grep -i "$search"
 }
 
 safe_alias fs "foreman start"
