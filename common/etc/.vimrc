@@ -395,6 +395,10 @@ vnoremap <leader>lu <Esc>`>a](<C-r>*)<C-o>`<[<Esc>f)
 " link (disregard clipboard)
 vnoremap <leader>ll <Esc>`>a]()<C-o>`<[<Esc>f)
 
+" See https://www.benpickles.com/articles/88-vim-syntax-highlight-markdown-code-blocks
+" and https://github.com/tpope/vim-markdown
+let g:markdown_fenced_languages = ['html', 'js=javascript', 'ruby', 'yaml']
+
 "nnoremap <leader>e :Errors<CR><C-W><C-W>
 nnoremap <leader>q :q<CR>
 nnoremap <leader>w :w<CR>
