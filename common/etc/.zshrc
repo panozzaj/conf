@@ -160,8 +160,16 @@ safe_alias mod "stat -f '%A %N'"
 # cat wrapper: ls directories instead of erroring
 function cat() {
   if [[ $# -eq 1 && -d "$1" ]]; then
-    echo "\e[95mcat: $1: Is a directory (showing ls instead)\e[0m" >&2
-    command ls "$1"
+    local file_count=$(command ls -1 "$1" | wc -l | tr -d ' ')
+    if [[ $file_count -eq 1 ]]; then
+      echo "\e[95mcat: $1: Is a directory with 1 file (showing ls then cat)\e[0m" >&2
+      command ls "$1"
+      local single_file="$1/$(command ls -1 "$1")"
+      command cat "$single_file"
+    else
+      echo "\e[95mcat: $1: Is a directory (showing ls instead)\e[0m" >&2
+      command ls "$1"
+    fi
   else
     command cat "$@"
   fi
