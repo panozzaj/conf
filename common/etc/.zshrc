@@ -435,10 +435,7 @@ function gdomspec() {
   files=$(git diff origin/$(main_branch) --stat=200 | \
     cut -f 2 -d ' ' | \
     grep spec/ | \
-    grep -v spec/spec_helper.rb | \
-    grep -v spec/factories | \
-    grep -v spec/fixtures/ | \
-    grep -v spec/support/
+    grep '_spec\.rb$'
   )
 
   if [ -z "$files" ]; then
