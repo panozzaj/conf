@@ -411,10 +411,19 @@ function gdomcuc() {
 }
 
 # roughly: run any specs that we have changed since the last commit
+# Usage: gspec [commit-hash]
+#   - No args: runs specs from uncommitted changes
+#   - With hash: runs specs changed since that commit
 function gspec() {
-  echo 'Finding spec files that have changed since the last commit.'
+  local commit_hash="$1"
 
-  files=$(modified_files | grep _spec.rb)
+  if [ -n "$commit_hash" ]; then
+    echo "Finding spec files that have changed since $commit_hash."
+    files=$(git diff --name-only "$commit_hash" | grep _spec.rb)
+  else
+    echo 'Finding spec files that have changed since the last commit.'
+    files=$(modified_files | grep _spec.rb)
+  fi
 
   if [ -z "$files" ]; then
     echo "No spec files changed."
@@ -427,6 +436,52 @@ function gspec() {
 }
 alias gdspec=gspec
 alias gsspec=gspec
+
+# roughly: run any tests that we have changed since HEAD or specified commit
+# Usage: gtest [commit-hash]
+#   - No args: runs tests from uncommitted changes
+#   - With hash: runs tests changed since that commit
+# Supports both Ruby specs (_spec.rb) and JS tests (.test.js, .spec.js)
+function gtest() {
+  local commit_hash="$1"
+
+  if [ -n "$commit_hash" ]; then
+    echo "Finding test files that have changed since $commit_hash."
+    files=$(git diff --name-only "$commit_hash")
+  else
+    echo 'Finding test files that have changed in working directory.'
+    files=$(modified_files)
+  fi
+
+  # Separate Ruby specs and JS tests
+  ruby_specs=$(echo "$files" | grep '_spec\.rb$')
+  js_tests=$(echo "$files" | grep -E '\.(test|spec)\.js$')
+
+  local ran_tests=false
+
+  # Run JS tests first (faster)
+  if [ -n "$js_tests" ]; then
+    echo "=== Running JavaScript tests with jest ==="
+    echo $js_tests | xargs echo
+    echo $js_tests | xargs jest
+    ran_tests=true
+  fi
+
+  # Run Ruby specs
+  if [ -n "$ruby_specs" ]; then
+    echo "=== Running Ruby specs with best_rspec ==="
+    echo $ruby_specs | xargs echo
+    echo $ruby_specs | xargs best_rspec
+    ran_tests=true
+  fi
+
+  if [ "$ran_tests" = false ]; then
+    echo "No test files changed."
+    return 1
+  fi
+}
+alias gdtest=gtest
+alias gstest=gtest
 
 # roughly: run any specs that we have changed on our feature branch
 function gdomspec() {
@@ -617,7 +672,65 @@ alias ganc="git amend-nc"
 alias gancn="git amend-nc -n"
 alias gap="git add --patch"
 alias gb-="git checkout -"
-alias gb="git branch"
+# Enhanced git branch alias with time since last commit and color coding
+# Colors: orange (<1 day), yellow (<1 week), grey (>1 month)
+function gb() {
+  local current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+  local now=$(date +%s)
+
+  # First pass: get all data and find max branch name length
+  local branches_data=$(git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname:short)|%(committerdate:relative)|%(committerdate:unix)')
+  local max_len=0
+
+  while IFS='|' read -r branch rel_date unix_ts; do
+    local len=${#branch}
+    if [ $len -gt $max_len ]; then
+      max_len=$len
+    fi
+  done <<< "$branches_data"
+
+  # Second pass: display with proper alignment
+  while IFS='|' read -r branch rel_date unix_ts; do
+    local age=$((now - unix_ts))
+
+    # Clean up relative date display
+    if [[ "$rel_date" =~ "seconds ago" ]]; then
+      rel_date="just now"
+    elif [[ "$rel_date" =~ "^1 minute" ]]; then
+      rel_date="1 minute ago"
+    fi
+
+    # Determine color based on age
+    local color_code=""
+    if [ $age -lt 86400 ]; then
+      # Less than 1 day - muted orange
+      color_code="208"
+    elif [ $age -lt 604800 ]; then
+      # Less than 1 week - muted yellow
+      color_code="178"
+    elif [ $age -gt 2592000 ]; then
+      # More than 1 month - grey
+      color_code="240"
+    fi
+
+    # Format output with color
+    local padded_branch=$(printf "%-${max_len}s" "$branch")
+
+    if [ "$branch" = "$current_branch" ]; then
+      if [ -n "$color_code" ]; then
+        print -P "%F{34}* %f${padded_branch} %F{${color_code}}[${rel_date}]%f"
+      else
+        print -P "%F{34}* %f${padded_branch} [${rel_date}]"
+      fi
+    else
+      if [ -n "$color_code" ]; then
+        print -P "  ${padded_branch} %F{${color_code}}[${rel_date}]%f"
+      else
+        print -P "  ${padded_branch} [${rel_date}]"
+      fi
+    fi
+  done <<< "$branches_data"
+}
 alias gba="git branch --all"
 alias gbb="git bisect bad"
 alias gbg="git bisect good"
