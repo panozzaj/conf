@@ -678,19 +678,57 @@ function gb() {
   local current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
   local now=$(date +%s)
 
-  # First pass: get all data and find max branch name length
+  # Determine main branch (check in order: main, master, develop)
+  local main_branch=""
+  for candidate in main master develop; do
+    if git show-ref --verify --quiet refs/heads/$candidate; then
+      main_branch=$candidate
+      break
+    fi
+  done
+
+  # Get list of worktree branches
+  local -A worktree_branches
+  while read -r wt_branch; do
+    worktree_branches[$wt_branch]=1
+  done < <(git worktree list 2>/dev/null | grep -o '\[[^]]*\]' | tr -d '[]')
+
+  # First pass: get all data and find max branch name length (including + prefix)
   local branches_data=$(git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname:short)|%(committerdate:relative)|%(committerdate:unix)')
   local max_len=0
 
   while IFS='|' read -r branch rel_date unix_ts; do
-    local len=${#branch}
-    if [ $len -gt $max_len ]; then
-      max_len=$len
+    local display_len=${#branch}
+    # Add 2 for '+ ' prefix if it's a worktree
+    if [[ -n "${worktree_branches[$branch]}" ]]; then
+      display_len=$((display_len + 2))
+    fi
+    if [ $display_len -gt $max_len ]; then
+      max_len=$display_len
     fi
   done <<< "$branches_data"
 
-  # Second pass: display with proper alignment
+  # Display main branch first if it exists
+  if [ -n "$main_branch" ]; then
+    local display_main="$main_branch"
+    if [[ -n "${worktree_branches[$main_branch]}" ]]; then
+      display_main="+ $main_branch"
+    fi
+    local padded_main=$(printf "%-${max_len}s" "$display_main")
+    if [ "$main_branch" = "$current_branch" ]; then
+      print -P "%F{34}* %F{green}%B${padded_main}%b%f"
+    else
+      print -P "  %F{green}%B${padded_main}%b%f"
+    fi
+  fi
+
+  # Second pass: display other branches with proper alignment
   while IFS='|' read -r branch rel_date unix_ts; do
+    # Skip main branch (already displayed)
+    if [ "$branch" = "$main_branch" ]; then
+      continue
+    fi
+
     local age=$((now - unix_ts))
 
     # Clean up relative date display
@@ -713,8 +751,14 @@ function gb() {
       color_code="240"
     fi
 
+    # Add worktree prefix if applicable
+    local display_branch="$branch"
+    if [[ -n "${worktree_branches[$branch]}" ]]; then
+      display_branch="+ $branch"
+    fi
+
     # Format output with color
-    local padded_branch=$(printf "%-${max_len}s" "$branch")
+    local padded_branch=$(printf "%-${max_len}s" "$display_branch")
 
     if [ "$branch" = "$current_branch" ]; then
       if [ -n "$color_code" ]; then
