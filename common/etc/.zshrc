@@ -777,7 +777,7 @@ alias gcdf="git clean -df"
 alias gco="git checkout"
 alias gco-="git checkout -"
 alias gcob="git checkout -b"
-alias gcobi="git checkout \`git branch --sort=-committerdate | fzf\`"
+# gcobi removed - use gcb instead (supports both direct and fzf selection)
 alias gcogem="git checkout Gemfile Gemfile.lock"
 alias gcogems="git checkout Gemfile Gemfile.lock"
 alias gcojs="git_checkout_ignore_missing package.json package-lock.json yarn.lock" # quickly revert JS package changes
@@ -792,7 +792,13 @@ alias gcw="git commit -m 'Whitespace'"
 alias gcm="git commit --message"
 alias gcp="git cherry-pick"
 alias gcpc="git cherry-pick --continue"
-alias gcpi="git cherry-pick \`git reflog | fzf | cut -d ' ' -f 1\`"
+function gcpi() {
+  if [[ -n "$1" ]]; then
+    git cherry-pick "$1"
+  else
+    git cherry-pick $(git reflog | fzf | cut -d ' ' -f 1)
+  fi
+}
 alias gcv="git cherry -v"
 alias gd="git diff"
 alias gdc="git diff --cached"
@@ -824,7 +830,108 @@ alias glp="git log --patch --decorate"
 alias glpw="glp --ignore-all-space"
 alias glom='gl origin/$(main_branch)^..HEAD'
 alias glss="git log --stat --decorate"
-alias gnoff="git merge --no-ff"
+function gnoff() {
+  if [[ -n "$1" ]]; then
+    git merge --no-ff --no-edit "$1"
+    return
+  fi
+
+  # Interactive branch selection for git merge --no-ff with gb-style formatting
+  local current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+  local now=$(date +%s)
+
+  # Determine main branch (check in order: main, master, develop)
+  local main_branch=""
+  for candidate in main master develop; do
+    if git show-ref --verify --quiet refs/heads/$candidate; then
+      main_branch=$candidate
+      break
+    fi
+  done
+
+  # Get list of worktree branches
+  local -A worktree_branches
+  while read -r wt_branch; do
+    worktree_branches[$wt_branch]=1
+  done < <(git worktree list 2>/dev/null | grep -o '\[[^]]*\]' | tr -d '[]')
+
+  # Get all data and find max branch name length
+  local branches_data=$(git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname:short)|%(committerdate:relative)|%(committerdate:unix)')
+  local max_len=0
+
+  while IFS='|' read -r branch rel_date unix_ts; do
+    local len=${#branch}
+    if [ $len -gt $max_len ]; then
+      max_len=$len
+    fi
+  done <<< "$branches_data"
+
+  # Build formatted output
+  local output=""
+
+  # Main branch first if it exists
+  if [ -n "$main_branch" ]; then
+    local padded_main=$(printf "%-${max_len}s" "$main_branch")
+    local main_prefix="  "
+
+    if [ "$main_branch" = "$current_branch" ]; then
+      main_prefix="\033[38;5;34m* \033[0m"
+    elif [[ -n "${worktree_branches[$main_branch]}" ]]; then
+      main_prefix="+ "
+    fi
+
+    output="${main_prefix}\033[32;1m${padded_main}\033[0m\n"
+  fi
+
+  # Other branches with proper alignment
+  while IFS='|' read -r branch rel_date unix_ts; do
+    # Skip main branch (already displayed)
+    if [ "$branch" = "$main_branch" ]; then
+      continue
+    fi
+
+    local age=$((now - unix_ts))
+
+    # Clean up relative date display
+    if [[ "$rel_date" =~ "seconds ago" ]]; then
+      rel_date="just now"
+    elif [[ "$rel_date" =~ "^1 minute" ]]; then
+      rel_date="1 minute ago"
+    fi
+
+    # Determine color based on age
+    local color_code=""
+    if [ $age -lt 86400 ]; then
+      color_code="208"
+    elif [ $age -lt 604800 ]; then
+      color_code="178"
+    elif [ $age -gt 2592000 ]; then
+      color_code="240"
+    fi
+
+    local padded_branch=$(printf "%-${max_len}s" "$branch")
+    local prefix="  "
+
+    if [ "$branch" = "$current_branch" ]; then
+      prefix="\033[38;5;34m* \033[0m"
+    elif [[ -n "${worktree_branches[$branch]}" ]]; then
+      prefix="+ "
+    fi
+
+    if [ -n "$color_code" ]; then
+      output+="${prefix}${padded_branch} \033[38;5;${color_code}m[${rel_date}]\033[0m\n"
+    else
+      output+="${prefix}${padded_branch} [${rel_date}]\n"
+    fi
+  done <<< "$branches_data"
+
+  # Use fzf with ANSI colors, extract just the branch name
+  local selected=$(echo -e "$output" | fzf --ansi --no-sort | sed 's/^[* +]*//' | awk '{print $1}')
+  if [ -n "$selected" ]; then
+    git merge --no-ff --no-edit "$selected"
+  fi
+}
+
 alias gmom='echo "git merge origin/$(main_branch) --ff-only"; git merge origin/$(main_branch) --ff-only'
 alias gmt="git mergetool"
 alias gp="git push"
@@ -849,7 +956,13 @@ alias grhom='git reset --hard origin/$(main_branch)'
 alias grom='git rebase origin/$(main_branch)'
 alias grh="git reset --hard"
 alias grp="git reset --patch"
-alias grr="git reset --hard \`git reflog | fzf | cut -d ' ' -f 1\`"
+function grr() {
+  if [[ -n "$1" ]]; then
+    git reset --hard "$1"
+  else
+    git reset --hard $(git reflog | fzf | cut -d ' ' -f 1)
+  fi
+}
 alias grs="git rebase --skip"
 alias grsh="git reset --soft 'HEAD^' && git reset"
 alias gs="git status"
