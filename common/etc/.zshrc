@@ -693,33 +693,29 @@ function gb() {
     worktree_branches[$wt_branch]=1
   done < <(git worktree list 2>/dev/null | grep -o '\[[^]]*\]' | tr -d '[]')
 
-  # First pass: get all data and find max branch name length (including + prefix)
+  # First pass: get all data and find max branch name length
   local branches_data=$(git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname:short)|%(committerdate:relative)|%(committerdate:unix)')
   local max_len=0
 
   while IFS='|' read -r branch rel_date unix_ts; do
-    local display_len=${#branch}
-    # Add 2 for '+ ' prefix if it's a worktree
-    if [[ -n "${worktree_branches[$branch]}" ]]; then
-      display_len=$((display_len + 2))
-    fi
-    if [ $display_len -gt $max_len ]; then
-      max_len=$display_len
+    local len=${#branch}
+    if [ $len -gt $max_len ]; then
+      max_len=$len
     fi
   done <<< "$branches_data"
 
   # Display main branch first if it exists
   if [ -n "$main_branch" ]; then
-    local display_main="$main_branch"
-    if [[ -n "${worktree_branches[$main_branch]}" ]]; then
-      display_main="+ $main_branch"
-    fi
-    local padded_main=$(printf "%-${max_len}s" "$display_main")
+    local padded_main=$(printf "%-${max_len}s" "$main_branch")
+    local main_prefix="  "
+
     if [ "$main_branch" = "$current_branch" ]; then
-      print -P "%F{34}* %F{green}%B${padded_main}%b%f"
-    else
-      print -P "  %F{green}%B${padded_main}%b%f"
+      main_prefix="%F{34}* %f"
+    elif [[ -n "${worktree_branches[$main_branch]}" ]]; then
+      main_prefix="+ "
     fi
+
+    print -P "${main_prefix}%F{green}%B${padded_main}%b%f"
   fi
 
   # Second pass: display other branches with proper alignment
@@ -751,27 +747,21 @@ function gb() {
       color_code="240"
     fi
 
-    # Add worktree prefix if applicable
-    local display_branch="$branch"
-    if [[ -n "${worktree_branches[$branch]}" ]]; then
-      display_branch="+ $branch"
+    # Format output with color
+    local padded_branch=$(printf "%-${max_len}s" "$branch")
+    local prefix="  "
+
+    # Determine prefix (*, +, or spaces)
+    if [ "$branch" = "$current_branch" ]; then
+      prefix="%F{34}* %f"
+    elif [[ -n "${worktree_branches[$branch]}" ]]; then
+      prefix="+ "
     fi
 
-    # Format output with color
-    local padded_branch=$(printf "%-${max_len}s" "$display_branch")
-
-    if [ "$branch" = "$current_branch" ]; then
-      if [ -n "$color_code" ]; then
-        print -P "%F{34}* %f${padded_branch} %F{${color_code}}[${rel_date}]%f"
-      else
-        print -P "%F{34}* %f${padded_branch} [${rel_date}]"
-      fi
+    if [ -n "$color_code" ]; then
+      print -P "${prefix}${padded_branch} %F{${color_code}}[${rel_date}]%f"
     else
-      if [ -n "$color_code" ]; then
-        print -P "  ${padded_branch} %F{${color_code}}[${rel_date}]%f"
-      else
-        print -P "  ${padded_branch} [${rel_date}]"
-      fi
+      print -P "${prefix}${padded_branch} [${rel_date}]"
     fi
   done <<< "$branches_data"
 }
@@ -889,11 +879,100 @@ alias squashme="git commit -nm 'SQUASH ME'"
 # mnemonic: git change branch
 function gcb() {
   if [[ -z "$1" ]]; then
-    # Open interactive branch selection
-    # committerdate sorts by the last commit, so the ones that we have most
-    # recently been working with will appear closer to the bottom of the list
-    # http://stackoverflow.com/questions/5188320
-    git checkout `git branch --sort=-committerdate | fzf`
+    # Open interactive branch selection with gb-style formatting
+    local current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+    local now=$(date +%s)
+
+    # Determine main branch (check in order: main, master, develop)
+    local main_branch=""
+    for candidate in main master develop; do
+      if git show-ref --verify --quiet refs/heads/$candidate; then
+        main_branch=$candidate
+        break
+      fi
+    done
+
+    # Get list of worktree branches
+    local -A worktree_branches
+    while read -r wt_branch; do
+      worktree_branches[$wt_branch]=1
+    done < <(git worktree list 2>/dev/null | grep -o '\[[^]]*\]' | tr -d '[]')
+
+    # Get all data and find max branch name length
+    local branches_data=$(git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname:short)|%(committerdate:relative)|%(committerdate:unix)')
+    local max_len=0
+
+    while IFS='|' read -r branch rel_date unix_ts; do
+      local len=${#branch}
+      if [ $len -gt $max_len ]; then
+        max_len=$len
+      fi
+    done <<< "$branches_data"
+
+    # Build formatted output
+    local output=""
+
+    # Main branch first if it exists
+    if [ -n "$main_branch" ]; then
+      local padded_main=$(printf "%-${max_len}s" "$main_branch")
+      local main_prefix="  "
+
+      if [ "$main_branch" = "$current_branch" ]; then
+        main_prefix="\033[38;5;34m* \033[0m"
+      elif [[ -n "${worktree_branches[$main_branch]}" ]]; then
+        main_prefix="+ "
+      fi
+
+      output="${main_prefix}\033[32;1m${padded_main}\033[0m\n"
+    fi
+
+    # Other branches with proper alignment
+    while IFS='|' read -r branch rel_date unix_ts; do
+      # Skip main branch (already displayed)
+      if [ "$branch" = "$main_branch" ]; then
+        continue
+      fi
+
+      local age=$((now - unix_ts))
+
+      # Clean up relative date display
+      if [[ "$rel_date" =~ "seconds ago" ]]; then
+        rel_date="just now"
+      elif [[ "$rel_date" =~ "^1 minute" ]]; then
+        rel_date="1 minute ago"
+      fi
+
+      # Determine color based on age
+      local color_code=""
+      if [ $age -lt 86400 ]; then
+        color_code="208"
+      elif [ $age -lt 604800 ]; then
+        color_code="178"
+      elif [ $age -gt 2592000 ]; then
+        color_code="240"
+      fi
+
+      local padded_branch=$(printf "%-${max_len}s" "$branch")
+      local prefix="  "
+
+      if [ "$branch" = "$current_branch" ]; then
+        prefix="\033[38;5;34m* \033[0m"
+      elif [[ -n "${worktree_branches[$branch]}" ]]; then
+        prefix="+ "
+      fi
+
+      if [ -n "$color_code" ]; then
+        output+="${prefix}${padded_branch} \033[38;5;${color_code}m[${rel_date}]\033[0m\n"
+      else
+        output+="${prefix}${padded_branch} [${rel_date}]\n"
+      fi
+    done <<< "$branches_data"
+
+    # Use fzf with ANSI colors, extract just the branch name
+    local selected=$(echo -e "$output" | fzf --ansi --no-sort | sed 's/^[* +]*//' | awk '{print $1}')
+    if [ -n "$selected" ]; then
+      git checkout "$selected"
+    fi
   else
     # Switch to the branch specified
     git checkout $1
@@ -1149,6 +1228,8 @@ safe_alias cl 'claude'
 safe_alias CL 'claude --dangerously-skip-permissions'
 # Intentionally overrides CLAUDE binary with permissions-skipping version
 alias CLAUDE='claude --dangerously-skip-permissions'
+alias CLC='claude --dangerously-skip-permissions -c'
+alias CLR='claude --dangerously-skip-permissions -r'
 
 function gcob_gh_issue {
   if [[ -z "$1" ]]; then
