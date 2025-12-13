@@ -2,5 +2,4 @@ alias e="$EDITOR"
 alias e.="$EDITOR ."
 source $conf/common/open_source/zummoner/zummoner.zsh
 
-# Support for https://github.com/tobi/try
-eval "$($conf/common/bin/try init $dev/tries)"
+eval "$(try-ink init)"
