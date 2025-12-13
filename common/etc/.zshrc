@@ -344,6 +344,18 @@ alias gu="gem uninstall"
 alias cuc="time best_cucumber"
 alias -g PIPE="|"
 
+# Kill process running on a given port
+killport() {
+  local info=$(lsof -i :$1 | tail -n +2)
+  if [[ -n "$info" ]]; then
+    echo "$info"
+    local pid=$(echo "$info" | awk '{print $2}' | head -1)
+    kill -9 $pid && echo "\nKilled process $pid on port $1"
+  else
+    echo "No process found on port $1"
+  fi
+}
+
 # helpful: https://git-scm.com/docs/git-status#_output
 # $NF: take last matching field. Handles renames:
 # R  spec/1_spec.rb -> features/2_spec.rb
