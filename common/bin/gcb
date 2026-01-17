@@ -1,0 +1,129 @@
+#!/bin/zsh
+# gcb - git change branch
+# Interactive branch selector with fzf, showing commit diff preview for non-main branches
+
+set -e
+
+# If argument provided, just checkout directly
+if [[ -n "$1" ]]; then
+  git checkout "$1"
+  exit 0
+fi
+
+current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+now=$(date +%s)
+
+# Use main_branch script if available, otherwise detect inline
+main_branch=$(main_branch 2>/dev/null || {
+  for candidate in main master develop; do
+    if git show-ref --verify --quiet refs/heads/$candidate; then
+      echo $candidate
+      break
+    fi
+  done
+})
+
+# Get list of worktree branches (zsh associative array)
+typeset -A worktree_branches
+while read -r wt_branch; do
+  [[ -n "$wt_branch" ]] && worktree_branches[$wt_branch]=1
+done < <(git worktree list 2>/dev/null | grep -o '\[[^]]*\]' | tr -d '[]')
+
+# Get all data and find max branch name length
+branches_data=$(git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname:short)|%(committerdate:relative)|%(committerdate:unix)')
+max_len=0
+
+while IFS='|' read -r branch rel_date unix_ts; do
+  len=${#branch}
+  if [ $len -gt $max_len ]; then
+    max_len=$len
+  fi
+done <<< "$branches_data"
+
+# Build formatted output
+output=""
+
+# Main branch first if it exists
+if [ -n "$main_branch" ]; then
+  padded_main=$(printf "%-${max_len}s" "$main_branch")
+  main_prefix="  "
+
+  if [ "$main_branch" = "$current_branch" ]; then
+    main_prefix="\033[38;5;34m* \033[0m"
+  elif [[ -n "${worktree_branches[$main_branch]}" ]]; then
+    main_prefix="+ "
+  fi
+
+  output="${main_prefix}\033[32;1m${padded_main}\033[0m\n"
+fi
+
+# Other branches with proper alignment
+while IFS='|' read -r branch rel_date unix_ts; do
+  # Skip main branch (already displayed)
+  if [ "$branch" = "$main_branch" ]; then
+    continue
+  fi
+
+  age=$((now - unix_ts))
+
+  # Clean up relative date display
+  if [[ "$rel_date" =~ "seconds ago" ]]; then
+    rel_date="just now"
+  elif [[ "$rel_date" =~ ^1\ minute ]]; then
+    rel_date="1 minute ago"
+  fi
+
+  # Determine color based on age
+  color_code=""
+  if [ $age -lt 86400 ]; then
+    color_code="208"
+  elif [ $age -lt 604800 ]; then
+    color_code="178"
+  elif [ $age -gt 2592000 ]; then
+    color_code="240"
+  fi
+
+  padded_branch=$(printf "%-${max_len}s" "$branch")
+  prefix="  "
+
+  if [ "$branch" = "$current_branch" ]; then
+    prefix="\033[38;5;34m* \033[0m"
+  elif [[ -n "${worktree_branches[$branch]}" ]]; then
+    prefix="+ "
+  fi
+
+  if [ -n "$color_code" ]; then
+    output+="${prefix}${padded_branch} \033[38;5;${color_code}m[${rel_date}]\033[0m\n"
+  else
+    output+="${prefix}${padded_branch} [${rel_date}]\n"
+  fi
+done <<< "$branches_data"
+
+# Create preview script that shows commit diff from main
+# For main branch: show recent commits
+# For other branches: show commits unique to that branch (not in main)
+preview_cmd="
+branch=\$(echo {} | sed 's/^[* +]*//' | awk '{print \$1}')
+main_branch='$main_branch'
+if [ \"\$branch\" = \"\$main_branch\" ] || [ -z \"\$main_branch\" ]; then
+  git log --color=always --reverse --format='%C(yellow)%h%Creset %<(50,trunc)%s' -20 \"\$branch\" 2>/dev/null
+  echo -e \"\033[1;32mRecent commits on \$branch\033[0m\"
+else
+  ahead=\$(git rev-list --count \"\$main_branch\"..\"\$branch\" 2>/dev/null || echo 0)
+  behind=\$(git rev-list --count \"\$branch\"..\"\$main_branch\" 2>/dev/null || echo 0)
+  if [ \"\$ahead\" -gt 0 ]; then
+    git log --color=always --reverse --format='%C(yellow)%h%Creset %<(50,trunc)%s' \"\$main_branch\"..\"\$branch\" 2>/dev/null
+  fi
+  echo -e \"\033[1;33m\$ahead ahead, \$behind behind \$main_branch\033[0m\"
+fi
+"
+
+# Use fzf with ANSI colors and preview, extract just the branch name
+selected=$(echo -e "$output" | fzf --ansi --no-sort \
+  --preview "$preview_cmd" \
+  --preview-window=up:40% \
+  | sed 's/^[* +]*//' | awk '{print $1}')
+
+if [ -n "$selected" ]; then
+  git checkout "$selected"
+fi

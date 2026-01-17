@@ -1001,108 +1001,7 @@ alias gsquash="git commit -nm 'SQUASH ME'"
 alias squash="git commit -nm 'SQUASH ME'"
 alias squashme="git commit -nm 'SQUASH ME'"
 
-# mnemonic: git change branch
-function gcb() {
-  if [[ -z "$1" ]]; then
-    # Open interactive branch selection with gb-style formatting
-    local current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
-    local now=$(date +%s)
-
-    # Determine main branch (check in order: main, master, develop)
-    local main_branch=""
-    for candidate in main master develop; do
-      if git show-ref --verify --quiet refs/heads/$candidate; then
-        main_branch=$candidate
-        break
-      fi
-    done
-
-    # Get list of worktree branches
-    local -A worktree_branches
-    while read -r wt_branch; do
-      worktree_branches[$wt_branch]=1
-    done < <(git worktree list 2>/dev/null | grep -o '\[[^]]*\]' | tr -d '[]')
-
-    # Get all data and find max branch name length
-    local branches_data=$(git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname:short)|%(committerdate:relative)|%(committerdate:unix)')
-    local max_len=0
-
-    while IFS='|' read -r branch rel_date unix_ts; do
-      local len=${#branch}
-      if [ $len -gt $max_len ]; then
-        max_len=$len
-      fi
-    done <<< "$branches_data"
-
-    # Build formatted output
-    local output=""
-
-    # Main branch first if it exists
-    if [ -n "$main_branch" ]; then
-      local padded_main=$(printf "%-${max_len}s" "$main_branch")
-      local main_prefix="  "
-
-      if [ "$main_branch" = "$current_branch" ]; then
-        main_prefix="\033[38;5;34m* \033[0m"
-      elif [[ -n "${worktree_branches[$main_branch]}" ]]; then
-        main_prefix="+ "
-      fi
-
-      output="${main_prefix}\033[32;1m${padded_main}\033[0m\n"
-    fi
-
-    # Other branches with proper alignment
-    while IFS='|' read -r branch rel_date unix_ts; do
-      # Skip main branch (already displayed)
-      if [ "$branch" = "$main_branch" ]; then
-        continue
-      fi
-
-      local age=$((now - unix_ts))
-
-      # Clean up relative date display
-      if [[ "$rel_date" =~ "seconds ago" ]]; then
-        rel_date="just now"
-      elif [[ "$rel_date" =~ "^1 minute" ]]; then
-        rel_date="1 minute ago"
-      fi
-
-      # Determine color based on age
-      local color_code=""
-      if [ $age -lt 86400 ]; then
-        color_code="208"
-      elif [ $age -lt 604800 ]; then
-        color_code="178"
-      elif [ $age -gt 2592000 ]; then
-        color_code="240"
-      fi
-
-      local padded_branch=$(printf "%-${max_len}s" "$branch")
-      local prefix="  "
-
-      if [ "$branch" = "$current_branch" ]; then
-        prefix="\033[38;5;34m* \033[0m"
-      elif [[ -n "${worktree_branches[$branch]}" ]]; then
-        prefix="+ "
-      fi
-
-      if [ -n "$color_code" ]; then
-        output+="${prefix}${padded_branch} \033[38;5;${color_code}m[${rel_date}]\033[0m\n"
-      else
-        output+="${prefix}${padded_branch} [${rel_date}]\n"
-      fi
-    done <<< "$branches_data"
-
-    # Use fzf with ANSI colors, extract just the branch name
-    local selected=$(echo -e "$output" | fzf --ansi --no-sort | sed 's/^[* +]*//' | awk '{print $1}')
-    if [ -n "$selected" ]; then
-      git checkout "$selected"
-    fi
-  else
-    # Switch to the branch specified
-    git checkout $1
-  fi
-}
+# gcb (git change branch) moved to ~/conf/common/bin/gcb
 
 function hpr {
   gh pr create
@@ -1411,7 +1310,7 @@ function llm_commit {
 
   git diff --cached
 
-  summary_prompt='output a one line description of the change. it MUST be 50 characters or less total. if the change was only to .cursor/rules file(s), start with ".cursor/rules: "'
+  summary_prompt='output a one line description of the change. it MUST be 50 characters or less total. if the change was only to .cursor/rules file(s), start with ".cursor/rules: ". if the change was only to .gitignore, start with ".gitignore: ". Start with a verb in present tense (e.g., "Add", "Fix", "Update", "Remove", "Refactor", etc.)'
   summary=$(git diff --cached -U0 | llm $summary_prompt)
 
   echo $summary
@@ -1440,6 +1339,13 @@ safe_alias weather "curl 'https://wttr.in/Fishers?u'"
 # Was getting:
 # objc[75787]: +[__NSCFConstantString initialize] may have been in progress in another thread when fork() was called.#
 export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+
+# Allow Ollama to accept requests from Chrome extensions
+launchctl setenv OLLAMA_ORIGINS "*"
+
+# tmux helpers - see ~/Documents/dev/tmux-helpers
+alias ts='tmux-sessions'
+alias ta='tmux-sessions'
 
 if is_agent; then
   echo "Running ZSH in an agentic context"
