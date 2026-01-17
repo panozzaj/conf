@@ -6,11 +6,25 @@ require 'optparse'
 require 'set'
 require 'json'
 require 'tmpdir'
+require 'openssl'
 
 class RailsVersionReporter
   VERSIONS_JSON_URL = "https://rubygems.org/api/v1/versions/rails.json"
   EOL_API_URL = "https://endoflife.date/api/rails.json"
   DEBUG = ENV['DEBUG'] == 'true'
+
+  # Helper to make HTTPS requests without CRL checking (avoids "unable to get certificate CRL" errors)
+  def self.http_get(uri)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = uri.scheme == 'https'
+    http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+    # Create a cert store without CRL checking flags
+    cert_store = OpenSSL::X509::Store.new
+    cert_store.set_default_paths
+    cert_store.flags = OpenSSL::X509::V_FLAG_NO_CHECK_TIME
+    http.cert_store = cert_store
+    http.get(uri.request_uri)
+  end
 
   class ::String
     def green;  "\e[32m#{self}\e[0m" end
@@ -92,7 +106,7 @@ class RailsVersionReporter
   def fetch_json(url, data_name)
     @io.puts "Fetching #{data_name} from #{url} ..."
     uri = URI(url)
-    response = Net::HTTP.get_response(uri)
+    response = self.class.http_get(uri)
 
     unless response.is_a?(Net::HTTPSuccess)
       @io.puts "\nFailed to fetch #{data_name}. HTTP Status: #{response.code}".red
@@ -108,7 +122,7 @@ class RailsVersionReporter
   def fetch_releases_json
     @io.puts "Fetching all Rails versions from #{VERSIONS_JSON_URL} ..."
     uri = URI(VERSIONS_JSON_URL)
-    response = Net::HTTP.get_response(uri)
+    response = self.class.http_get(uri)
 
     unless response.is_a?(Net::HTTPSuccess)
       @io.puts "\nFailed to fetch releases. HTTP Status: #{response.code}".red
@@ -393,7 +407,7 @@ if $0 == __FILE__
   rescue => e
     puts "\nAn unexpected error occurred:".red
     puts e.message
-    puts e.backtrace.join("\n").grey if DEBUG
+    puts e.backtrace.join("\n").grey if ENV['DEBUG'] == 'true'
     exit 1
   end
 end
