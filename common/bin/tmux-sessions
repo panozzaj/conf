@@ -1,0 +1,2 @@
+#!/bin/bash
+exec /Users/anthony/.nvm/versions/node/v20.19.6/bin/node /Users/anthony/Documents/dev/tmux-helpers/dist/tmux-sessions.js "$@"
