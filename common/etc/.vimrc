@@ -40,7 +40,7 @@ set shell=bash
 
 set number
 set ignorecase
-set is
+set incsearch
 set wrap
 set visualbell " don't beep at me
 set wildmode=longest,list " bash-style file completion
@@ -205,9 +205,9 @@ function! Wp()
   end
 
   " highlight double words ("word word")
-  syn match doubleWord "\c\<\(\a\+\)\_s\+\1\>"
-  hi def link doubleWord Error
-endfu
+  syntax match doubleWord "\c\<\(\a\+\)\_s\+\1\>"
+  highlight def link doubleWord Error
+endfunction
 
 function! BasicAbbreviations()
   iabbrev wrt with respect to
@@ -304,18 +304,18 @@ function! BasicAbbreviations()
   iabbrev dts <C-R>=strftime("%F %H%M")<CR>
   iabbrev dtsiso <C-R>=strftime("%FT%T%z")<CR>
   iabbrev dtsrfc <C-R>=strftime("%a, %d %b %Y %H:%M:%S %z")<CR>
-endfu
+endfunction
 call BasicAbbreviations()
 
 
 
-cabbr cdhere cd %:p:h
+cabbrev cdhere cd %:p:h
 
-cabbr autocommit call Autocommit()
-fun! Autocommit()
-  au BufWritePost * silent !git add <afile>
-  au BufWritePost * silent !git commit <afile> -m 'Generated commit'
-endfu
+cabbrev autocommit call Autocommit()
+function! Autocommit()
+  autocmd BufWritePost * silent !git add <afile>
+  autocmd BufWritePost * silent !git commit <afile> -m 'Generated commit'
+endfunction
 
 " delete surrounding braces in function/method declarations
 nmap <leader>dp csbs
@@ -360,18 +360,18 @@ nnoremap <leader>x :call SetExecutableBit()<CR>
 function! SetExecutableBit()
   let fname = expand("%:p")
   checktime
-  execute "au FileChangedShell " . fname . " :echo"
+  execute "autocmd FileChangedShell " . fname . " :echo"
   silent !chmod a+x %
   checktime
-  execute "au! FileChangedShell " . fname
+  execute "autocmd! FileChangedShell " . fname
   echo ' '
   echo 'File is now executable.'
 endfunction
 command! Xbit call SetExecutableBit()
 
-command! Vimrc vsp ~/.vimrc
-command! Vvimrc vsp ~/.vimrc
-command! Svimrc sp ~/.vimrc
+command! Vimrc vsplit ~/.vimrc
+command! Vvimrc vsplit ~/.vimrc
+command! Svimrc split ~/.vimrc
 
 " Word transposition. Lifted from:
 " http://superuser.com/questions/290360/how-to-switch-words-in-an-easy-manner-in-vim/290449#290449
@@ -440,7 +440,7 @@ augroup panozzaj_group
   " on file load, go to the last known cursor position if it is valid
   autocmd BufReadPost *
     \ if line("'\"") > 0 && line("'\"") <= line("$") |
-    \ exe "normal g`\"" |
+    \ execute "normal g`\"" |
     \ endif
 augroup END
 
@@ -448,9 +448,9 @@ augroup commit_message_overrides
    autocmd!
   " When editing git commit message, go to top of the file
   " (forget any saved positions)
-  autocmd BufReadPost COMMIT_EDITMSG exe "normal! gg"
+  autocmd BufReadPost COMMIT_EDITMSG execute "normal! gg"
   " Same for `hub pull-request` file name
-  autocmd BufReadPost PULLREQ_EDITMSG exe "normal! gg"
+  autocmd BufReadPost PULLREQ_EDITMSG execute "normal! gg"
 augroup END
 
 function! PromoteToLet()
@@ -511,11 +511,11 @@ set list
 
 " trim trailing whitespace from file
 " see https://vi.stackexchange.com/a/456
-fun! TrimWhitespace()
+function! TrimWhitespace()
     let l:save = winsaveview()
     keeppatterns %s/\s\+$//e
     call winrestview(l:save)
-endfun
+endfunction
 command! TrimWhitespace call TrimWhitespace()
 nnoremap <leader>S :TrimWhitespace<CR>
 
@@ -528,8 +528,8 @@ let g:netrw_fastbrowse=0
 "nnoremap <leader>v :vsp %:h/.<CR>
 
 " Quickly open split of current file
-nnoremap <leader>s :sp<CR>
-nnoremap <leader>v :vsp<CR>
+nnoremap <leader>s :split<CR>
+nnoremap <leader>v :vsplit<CR>
 
 " Only enable normal mode functions. Otherwise, since my leader is currently
 " space, we insert random stuff on space or have delays after typing space.
@@ -636,7 +636,7 @@ function! RandomColorscheme()
   " Select a random colorscheme
   let i = localtime() % len(mycolors)
   let chosen_colorscheme = fnamemodify(mycolors[i], ':t:r')
-  exe 'so ' . mycolors[i]
+  execute 'source ' . mycolors[i]
   unlet mycolors
 
   " Only echo if we've already called this function once
@@ -695,7 +695,7 @@ vnoremap <silent> * :call VisualSearch('f')<CR>
 vnoremap <silent> # :call VisualSearch('b')<CR>
 
 function! CmdLine(str)
-    exe "menu Foo.Bar :" . a:str
+    execute "menu Foo.Bar :" . a:str
     emenu Foo.Bar
     unmenu Foo
 endfunction
@@ -811,13 +811,13 @@ nnoremap <leader>j} 3J
 nnoremap <leader>= <Cq<CR>
 
 " function for working with files with hard line breaks
-cabbr eighty call Eighty()
-fun! Eighty()
+cabbrev eighty call Eighty()
+function! Eighty()
   set textwidth=80                               " wrap to size characters
   set formatoptions+=a                           " automatically reformat when inserting or deleting
   let w:m2=matchadd('ErrorMsg', '\%>80v.\+', -1) " highlight any line > size characters
-  colo neon
-endfu
+  colorscheme neon
+endfunction
 
 "if has("mac") || has("gui_macvim") || has("gui_mac")
 "  source ~/conf/platforms/$PLATFORM/etc/.vimrc
@@ -827,7 +827,7 @@ endfu
 "let g:xmledit_enable_html=1
 
 if &l:diff
-  colors peachpuff
+  colorscheme peachpuff
   set diffopt+=iwhite   " ignore whitespace differences for diff
 else
   if !exists("g:randomizedColorsOnStart")
@@ -836,7 +836,7 @@ else
   let g:randomizedColorsOnStart=1
 endif
 
-comma! -nargs=1 Silent
+command! -nargs=1 Silent
       \ | execute ':silent !'.<q-args>
       \ | execute ':redraw!'
 
