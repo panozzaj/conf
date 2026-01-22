@@ -1,0 +1,12 @@
+#!/bin/zsh
+# Print the value of a zsh variable from the user's environment
+# Usage: zsh-var <varname>
+# Example: zsh-var dev -> /Users/anthony/Documents/dev
+
+if [[ -z "$1" ]]; then
+  echo "Usage: zsh-var <varname>" >&2
+  exit 1
+fi
+
+source ~/.zshrc 2>/dev/null
+echo ${(P)1}
