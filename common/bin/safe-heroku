@@ -1,0 +1,181 @@
+#!/bin/bash
+#
+# safe-heroku: A wrapper around the Heroku CLI that restricts commands
+# when running inside Claude Code sessions.
+#
+# PURPOSE:
+#   When Claude Code runs shell commands, the CLAUDECODE=1 environment variable
+#   is set. This wrapper detects that and only allows read-only Heroku commands,
+#   preventing accidental or unintended destructive operations like scaling dynos,
+#   modifying config vars, or resetting databases.
+#
+# INSTALLATION:
+#   1. Save this file somewhere in your PATH before the real heroku binary
+#      Example: ~/bin/heroku (ensure ~/bin is in PATH before /opt/homebrew/bin)
+#   2. Make it executable: chmod +x ~/bin/heroku
+#   3. Verify: `which heroku` should show your wrapper location
+#   4. Update REAL_HEROKU below to point to the actual heroku CLI
+#
+# TESTING:
+#   - Normal shell: `heroku config:set FOO=bar` should work
+#   - In Claude Code: `heroku config:set FOO=bar` should be BLOCKED
+#   - In Claude Code: `heroku config` should work (read-only)
+#
+# MAINTENANCE:
+#   To allow additional read-only commands, add them to the ALLOWED_CMDS array.
+#   Only add commands that cannot modify state, trigger releases, or affect billing.
+#
+# -----------------------------------------------------------------------------
+
+# Path to the real Heroku CLI binary (adjust if yours is elsewhere)
+# Can be overridden via environment variable (useful for testing)
+REAL_HEROKU="${REAL_HEROKU:-/usr/local/bin/heroku}"
+
+# If not in a Claude Code session, pass through to real heroku unchanged
+if [[ -z "$CLAUDECODE" ]]; then
+  exec "$REAL_HEROKU" "$@"
+fi
+
+# -----------------------------------------------------------------------------
+# CLAUDE CODE SESSION: Apply allowlist restrictions
+# -----------------------------------------------------------------------------
+
+# Extract the subcommand, skipping flags and their arguments
+# Examples:
+#   heroku config -a myapp        -> subcmd="config"
+#   heroku -a myapp config        -> subcmd="config"
+#   heroku --app myapp config     -> subcmd="config"
+#   heroku ps:scale web=2         -> subcmd="ps:scale"
+#
+# Flags that take an argument (we skip the flag and its value):
+#   -a, --app       App name (most common)
+#   -r, --remote    Git remote name
+#   -t, --team      Team name
+#   --space         Private space name
+#   --region        Region name
+subcmd=""
+skip_next=false
+for arg in "$@"; do
+  if $skip_next; then
+    skip_next=false
+    continue
+  fi
+  case "$arg" in
+    -a|--app|-r|--remote|-t|--team|--space|--region)
+      skip_next=true
+      continue
+      ;;
+    -a=*|--app=*|-r=*|--remote=*|-t=*|--team=*|--space=*|--region=*)
+      # Flag with value attached (e.g., --app=myapp), just skip it
+      continue
+      ;;
+    -*)
+      # Other flags (no argument), skip
+      continue
+      ;;
+    *)
+      # First non-flag argument is the subcommand
+      subcmd="$arg"
+      break
+      ;;
+  esac
+done
+
+# Allowlist of read-only commands (alphabetical by category)
+# These commands only display information and cannot modify app state.
+ALLOWED_CMDS=(
+  # Add-ons (list/info only - not :create, :destroy, :attach, :detach)
+  addons
+  addons:info
+
+  # Apps
+  apps
+  apps:errors
+  apps:info
+
+  # Buildpacks (list only - not :add, :remove, :set, :clear)
+  buildpacks
+
+  # Certs (list/info only - not :add, :remove, :update)
+  certs
+  certs:info
+
+  # Config vars - BLOCKED (may contain secrets)
+  # Use terminal directly if needed
+
+  # Domains (list only - not :add, :remove, :clear)
+  domains
+
+  # Labs (list/info only - not :enable, :disable)
+  labs
+  labs:info
+
+  # Logs - BLOCKED (may contain sensitive data)
+  # Use terminal directly if needed
+
+  # Pipelines
+  pipelines
+  pipelines:info
+
+  # Postgres (diagnostic only - not :reset, :kill, :credentials:rotate, etc.)
+  pg
+  pg:bloat
+  pg:diagnose
+  pg:info
+  pg:locks
+  pg:outliers
+  pg:ps
+  pg:settings
+
+  # Ps/Dynos (list only - not :scale, :restart, :stop, :kill)
+  ps
+
+  # Redis (info only)
+  redis
+  redis:info
+
+  # Regions
+  regions
+
+  # Releases (read-only - not :rollback)
+  releases
+  # releases:info - BLOCKED (exposes config vars)
+  releases:output
+
+  # Stack (read-only - :set would change it)
+  stack
+
+  # Status
+  status
+)
+
+# Check if subcommand is in allowlist
+is_allowed() {
+  local cmd="$1"
+  for allowed in "${ALLOWED_CMDS[@]}"; do
+    [[ "$cmd" == "$allowed" ]] && return 0
+  done
+  return 1
+}
+
+if [[ -z "$subcmd" ]]; then
+  # No subcommand provided (e.g., `heroku` or `heroku --help`)
+  exec "$REAL_HEROKU" "$@"
+elif [[ "$subcmd" == "allowed" ]]; then
+  # Show allowed commands
+  echo "Commands allowed in Claude Code sessions:"
+  echo ""
+  printf "  %s\n" "${ALLOWED_CMDS[@]}"
+  echo ""
+  echo "All other heroku commands are blocked when CLAUDECODE=1."
+  echo "If you need a blocked command, ask the human operator to run it directly."
+  exit 0
+elif is_allowed "$subcmd"; then
+  # Command is in allowlist - execute it
+  exec "$REAL_HEROKU" "$@"
+else
+  # Command not in allowlist - block it
+  echo "BLOCKED: 'heroku $subcmd' is not allowed in Claude sessions" >&2
+  echo "Run 'safe-heroku allowed' for more info." >&2
+  exit 1
+fi
