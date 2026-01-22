@@ -952,6 +952,10 @@ alias gpf="git push --force"
 alias gpfhm='time git push --force heroku $(main_branch)'
 alias gphm='time git push heroku $(main_branch) && osascript -e "display notification \"Heroku deploy finished\"" || osascript -e "display notification \"Heroku deploy FAILED\""'
 alias gphmf='time git push --force heroku $(main_branch)'
+
+alias gppm='time git push production $(main_branch) && osascript -e "display notification \"Production deploy finished\"" || osascript -e "display notification \"Production deploy FAILED\""'
+alias gppmf='time git push --force production $(main_branch)'
+
 alias gpop="git pop"
 alias gpr="git pull --rebase"
 alias gpull="git pull"
