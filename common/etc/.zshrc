@@ -1158,6 +1158,11 @@ zstyle ':vcs_info:*' enable git
 #}
 precmd () { vcs_info }
 
+# Snapshot jj repo before each command runs (not on prompt redraws)
+preexec () {
+  [[ -d .jj ]] && jj status >/dev/null 2>&1
+}
+
 # single quotes to evaluate each time the prompt is refreshed
 RPROMPT='${vcs_info_msg_0_}'
 
@@ -1252,12 +1257,52 @@ function echo_path {
   echo $PATH | tr ':' '\n'
 }
 
-safe_alias cl 'claude'
-safe_alias CL 'claude --dangerously-skip-permissions'
+# Claude Code with reload support (exit 129 = SIGHUP = reload)
+# After reload, continues conversation with "restarted" prompt
+function cl {
+  local continue_flag=""
+  local restart_msg=""
+  while true; do
+    claude $continue_flag "$@" $restart_msg
+    [ $? -eq 129 ] || break
+    echo "Reloading Claude Code..."
+    continue_flag="-c"
+    restart_msg="restarted"
+  done
+}
+function CL {
+  local continue_flag=""
+  local restart_msg=""
+  while true; do
+    claude --dangerously-skip-permissions $continue_flag "$@" $restart_msg
+    [ $? -eq 129 ] || break
+    echo "Reloading Claude Code..."
+    continue_flag="-c"
+    restart_msg="restarted"
+  done
+}
 # Intentionally overrides CLAUDE binary with permissions-skipping version
 alias CLAUDE='claude --dangerously-skip-permissions'
-alias CLC='claude --dangerously-skip-permissions -c'
-alias CLR='claude --dangerously-skip-permissions -r'
+function CLC {
+  local restart_msg=""
+  while true; do
+    claude --dangerously-skip-permissions -c "$@" $restart_msg
+    [ $? -eq 129 ] || break
+    echo "Reloading Claude Code..."
+    restart_msg="restarted"
+  done
+}
+function CLR {
+  local resume_flag="-r"
+  local restart_msg=""
+  while true; do
+    claude --dangerously-skip-permissions $resume_flag "$@" $restart_msg
+    [ $? -eq 129 ] || break
+    echo "Reloading Claude Code..."
+    resume_flag="-c"
+    restart_msg="restarted"
+  done
+}
 
 function gcob_gh_issue {
   if [[ -z "$1" ]]; then
