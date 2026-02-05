@@ -1,0 +1,74 @@
+#!/bin/bash
+# smv - smart move
+# Moves a directory and optionally renames its corresponding Claude project
+# Usage: smv <source> <destination>
+
+set -e
+
+CLAUDE_PROJECTS_DIR="$HOME/.claude/projects"
+
+if [[ $# -ne 2 ]]; then
+  echo "Usage: smv <source> <destination>" >&2
+  exit 1
+fi
+
+source_path="$1"
+dest_path="$2"
+
+if [[ ! -e "$source_path" ]]; then
+  echo "Error: source does not exist: $source_path" >&2
+  exit 1
+fi
+
+# Resolve to absolute paths
+source_abs="$(cd "$(dirname "$source_path")" && pwd)/$(basename "$source_path")"
+source_abs="${source_abs%/}"  # Remove trailing slash
+
+# For destination, handle both "rename in place" and "move into directory" cases
+if [[ -d "$dest_path" ]]; then
+  # Moving into existing directory
+  dest_abs="$(cd "$dest_path" && pwd)/$(basename "$source_path")"
+else
+  # Renaming or moving to new path
+  dest_dir="$(dirname "$dest_path")"
+  if [[ ! -d "$dest_dir" ]]; then
+    echo "Error: destination directory does not exist: $dest_dir" >&2
+    exit 1
+  fi
+  dest_abs="$(cd "$dest_dir" && pwd)/$(basename "$dest_path")"
+fi
+dest_abs="${dest_abs%/}"  # Remove trailing slash
+
+# Convert paths to Claude project format (replace / with -)
+path_to_project_name() {
+  echo "$1" | sed 's|/|-|g'
+}
+
+source_project_name="$(path_to_project_name "$source_abs")"
+dest_project_name="$(path_to_project_name "$dest_abs")"
+
+source_project_path="$CLAUDE_PROJECTS_DIR/$source_project_name"
+
+# Check if Claude project exists
+if [[ -d "$source_project_path" ]]; then
+  echo "Found Claude project: $source_project_name"
+  echo "  -> Would rename to: $dest_project_name"
+  echo
+  read -p "Rename Claude project too? [Y/n] " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+    rename_project=true
+  fi
+fi
+
+# Perform the moves
+echo "Moving: $source_abs -> $dest_abs"
+mv "$source_abs" "$dest_abs"
+
+if [[ "$rename_project" == "true" ]]; then
+  dest_project_path="$CLAUDE_PROJECTS_DIR/$dest_project_name"
+  echo "Moving Claude project: $source_project_name -> $dest_project_name"
+  mv "$source_project_path" "$dest_project_path"
+fi
+
+echo "Done."
