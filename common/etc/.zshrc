@@ -1223,7 +1223,7 @@ if [[ ! "$PATH" =~ "/usr/local/opt/go/libexec/bin" ]]; then
 fi
 
 if [[ ! "$GOPATH" =~ "$HOME/go" ]]; then
-  export GOPATH=$PATH:$HOME/go
+  export GOPATH=$HOME/go
 fi
 
 if [[ ! "$PATH" =~ "$GOPATH/bin" ]]; then
