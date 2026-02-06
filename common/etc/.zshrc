@@ -1,6 +1,14 @@
-# load ability to do completions
+# Standard zsh completion
 autoload -Uz compinit && compinit
 zmodload -i zsh/complist
+
+# Exact match first, then case-insensitive, then fuzzy
+zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+setopt ALWAYS_LAST_PROMPT
+
+# fzf-tab: use fzf for completion menu (must be after compinit)
+source $conf/common/etc/fzf-tab/fzf-tab.plugin.zsh
+zstyle ':fzf-tab:*' fzf-flags --bind=tab:accept
 
 # Helper function to warn when an alias conflicts with an existing command
 # Usage: safe_alias <name> <command>
@@ -21,7 +29,6 @@ function safe_alias() {
   alias "$alias_name"="$alias_command"
 }
 
-zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
 #zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=** r:|=**' 'l:|=* r:|=*'
 zmodload zsh/datetime
 setopt share_history
@@ -1403,3 +1410,6 @@ if is_agent; then
   export GIT_PAGER="cat"
   export GIT_INTERACTIVE_DIFF_FILTER=""
 fi
+
+# megatest CLI completions (after PATH setup)
+eval "$(mt completion zsh)"

@@ -328,3 +328,6 @@
 [submodule "common/open_source/zummoner"]
 	path = common/open_source/zummoner
 	url = https://github.com/day50-dev/zummoner.git
+[submodule "common/etc/fzf-tab"]
+	path = common/etc/fzf-tab
+	url = https://github.com/Aloxaf/fzf-tab.git
