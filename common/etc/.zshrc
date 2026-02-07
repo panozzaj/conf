@@ -6,9 +6,8 @@ zmodload -i zsh/complist
 zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
 setopt ALWAYS_LAST_PROMPT
 
-# fzf-tab: use fzf for completion menu (must be after compinit)
-source $conf/common/etc/fzf-tab/fzf-tab.plugin.zsh
-zstyle ':fzf-tab:*' fzf-flags --bind=tab:accept
+# Multi-column completion menu with interactive typeahead filtering
+zstyle ':completion:*' menu select interactive
 
 # Helper function to warn when an alias conflicts with an existing command
 # Usage: safe_alias <name> <command>

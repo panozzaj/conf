@@ -3,3 +3,14 @@ alias e.="$EDITOR ."
 source $conf/common/open_source/zummoner/zummoner.zsh
 
 eval "$(try-ink init)"
+
+# GNU LS_COLORS for colored completions (macOS uses LSCOLORS, but zsh/fzf-tab need LS_COLORS)
+eval "$(gdircolors -b)"
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+
+# fzf-tab: replace zsh's default completion menu with fzf-powered fuzzy picker.
+# Must be loaded after compinit and after ~/.fzf.zsh (needs to be last to bind ^I).
+source $conf/common/etc/fzf-tab/fzf-tab.zsh
+
+# Use fuzzy-grid-picker instead of fzf for tab completion
+zstyle ':fzf-tab:*' fzf-command "$HOME/Documents/dev/tries/2026-02-06-terminal-fuzzy-grid-picker/ftb-fuzzy-grid-picker"
