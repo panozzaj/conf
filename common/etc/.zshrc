@@ -9,6 +9,9 @@ setopt ALWAYS_LAST_PROMPT
 # Multi-column completion menu with interactive typeahead filtering
 zstyle ':completion:*' menu select interactive
 
+# Don't use /etc/hosts for completions (hosts file has ad-blocking entries)
+zstyle ':completion:*' hosts
+
 # Helper function to warn when an alias conflicts with an existing command
 # Usage: safe_alias <name> <command>
 function safe_alias() {
