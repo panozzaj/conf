@@ -149,6 +149,20 @@ let g:copilot_filetypes = {
 \ 'gitcommit': v:true,
 \}
 
+" Toggle Copilot on/off (buffer-level)
+function! ToggleCopilot()
+  if exists('b:copilot_enabled') && !b:copilot_enabled
+    let b:copilot_enabled = v:true
+    Copilot enable
+    echo "Copilot enabled"
+  else
+    let b:copilot_enabled = v:false
+    Copilot disable
+    echo "Copilot disabled"
+  endif
+endfunction
+nnoremap <leader>cp :call ToggleCopilot()<CR>
+
 " Disable Copilot for large files (see https://codeinthehole.com/tips/vim-and-github-copilot/)
 autocmd BufReadPre *
 \ let f=getfsize(expand("<afile>"))
