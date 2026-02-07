@@ -1,3 +1,8 @@
+# Add Homebrew completions to fpath (before compinit)
+if [[ -d /opt/homebrew/share/zsh/site-functions ]]; then
+  fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
+fi
+
 # Standard zsh completion
 autoload -Uz compinit && compinit
 zmodload -i zsh/complist
@@ -1388,12 +1393,6 @@ function llm_commit {
 #    zle reset-prompt
 #}
 
-#if type brew &>/dev/null; then
-#  FPATH=$(brew --prefix)/share/zsh-completions:$FPATH
-#
-#  autoload -Uz compinit
-#  compinit
-#fi
 
 safe_alias weather "curl 'https://wttr.in/Fishers?u'"
 
