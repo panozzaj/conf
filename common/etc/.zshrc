@@ -1272,6 +1272,7 @@ function cl {
     claude $continue_flag "$@" $restart_msg
     [ $? -eq 129 ] || break
     echo "Reloading Claude Code..."
+    sleep 0.5
     continue_flag="-c"
     restart_msg="restarted"
   done
@@ -1283,6 +1284,7 @@ function CL {
     claude --dangerously-skip-permissions $continue_flag "$@" $restart_msg
     [ $? -eq 129 ] || break
     echo "Reloading Claude Code..."
+    sleep 0.5
     continue_flag="-c"
     restart_msg="restarted"
   done
@@ -1295,6 +1297,7 @@ function CLC {
     claude --dangerously-skip-permissions -c "$@" $restart_msg
     [ $? -eq 129 ] || break
     echo "Reloading Claude Code..."
+    sleep 0.5
     restart_msg="restarted"
   done
 }
@@ -1305,6 +1308,7 @@ function CLR {
     claude --dangerously-skip-permissions $resume_flag "$@" $restart_msg
     [ $? -eq 129 ] || break
     echo "Reloading Claude Code..."
+    sleep 0.5
     resume_flag="-c"
     restart_msg="restarted"
   done
