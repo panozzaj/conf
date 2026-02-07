@@ -652,8 +652,8 @@ alias vimrc="$EDITOR ~/conf/common/etc/.vimrc"
 alias zshrc="$EDITOR ~/conf/common/etc/.zshrc"
 alias zsrhc="$EDITOR ~/conf/common/etc/.zshrc"
 alias zshrcp="$EDITOR ~/conf/platform/$PLATFORM/etc/.zshrc"
-alias zshrch="$EDITOR ~/conf/hosts/$HOST/etc/.zshrc"
-alias zshrcl="$EDITOR ~/conf/hosts/$HOST/etc/.zshrc" # local
+alias zshrch="$EDITOR ~/conf/hosts/local/etc/.zshrc"
+alias zshrcl="$EDITOR ~/conf/hosts/local/etc/.zshrc" # local
 alias zshrci="$EDITOR ~/conf/init/etc/.zshrc"
 
 # you can do this in dry-run mode, but not in real mode, per

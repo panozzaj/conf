@@ -6,3 +6,4 @@ common/.vim/bundle/.floo
 common/tmp
 common/.vim/undodir
 .claude
+hosts/local
