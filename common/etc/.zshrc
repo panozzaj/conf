@@ -1285,42 +1285,25 @@ function cl {
     restart_msg="restarted"
   done
 }
-function CL {
-  local continue_flag=""
+function _claude_loop {
+  local flag="$1"; shift
   local restart_msg=""
+  local rc
   while true; do
-    claude --dangerously-skip-permissions $continue_flag "$@" $restart_msg
-    [ $? -eq 129 ] || break
+    claude --dangerously-skip-permissions $flag "$@" $restart_msg
+    rc=$?
+    [ $rc -eq 129 ] || return $rc
     echo "Reloading Claude Code..."
     sleep 0.5
-    continue_flag="-c"
+    flag="-c"
     restart_msg="restarted"
   done
 }
+function CL  { _claude_loop ""   "$@"; }
+function CLC { _claude_loop "-c" "$@"; }
+function CLR { _claude_loop "-r" "$@"; }
 # Intentionally overrides CLAUDE binary with permissions-skipping version
 alias CLAUDE='claude --dangerously-skip-permissions'
-function CLC {
-  local restart_msg=""
-  while true; do
-    claude --dangerously-skip-permissions -c "$@" $restart_msg
-    [ $? -eq 129 ] || break
-    echo "Reloading Claude Code..."
-    sleep 0.5
-    restart_msg="restarted"
-  done
-}
-function CLR {
-  local resume_flag="-r"
-  local restart_msg=""
-  while true; do
-    claude --dangerously-skip-permissions $resume_flag "$@" $restart_msg
-    [ $? -eq 129 ] || break
-    echo "Reloading Claude Code..."
-    sleep 0.5
-    resume_flag="-c"
-    restart_msg="restarted"
-  done
-}
 
 function gcob_gh_issue {
   if [[ -z "$1" ]]; then
