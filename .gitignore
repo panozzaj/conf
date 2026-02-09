@@ -7,3 +7,4 @@ common/tmp
 common/.vim/undodir
 .claude
 hosts/local
+tmp/
