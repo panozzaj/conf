@@ -1301,7 +1301,12 @@ function _claude_loop {
 }
 function CL  { _claude_loop ""   "$@"; }
 function CLC { _claude_loop "-c" "$@"; }
-function CLR { _claude_loop "-r" "$@"; }
+function CLR {
+  local session_id
+  session_id=$(cc-resume)
+  [ -z "$session_id" ] && return 0
+  _claude_loop "-r" "$session_id" "$@"
+}
 # Intentionally overrides CLAUDE binary with permissions-skipping version
 alias CLAUDE='claude --dangerously-skip-permissions'
 
@@ -1392,8 +1397,6 @@ alias ts='tmux-sessions'
 alias ta='tmux-sessions'
 
 if is_agent; then
-  echo "Running ZSH in an agentic context"
-
   # Disable delta pager when AI agent is active
   export GIT_PAGER="cat"
   export GIT_INTERACTIVE_DIFF_FILTER=""
