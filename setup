@@ -29,8 +29,15 @@ end
 
 [
  "conf/common/etc/.ackrc",
+ "conf/common/etc/.actrc",
+ "conf/common/etc/.aprc",
+ "conf/common/etc/.bash_profile",
+ "conf/common/etc/.bashrc",
+ "conf/common/etc/.ctags",
  "conf/common/etc/.cvsignore",
  "conf/common/etc/.emacs",
+ "conf/common/etc/.fzf.bash",
+ "conf/common/etc/.fzf.zsh",
  "conf/common/etc/.gemrc",
  "conf/common/etc/.gitconfig",
  "conf/common/etc/.gitignore",
@@ -38,7 +45,10 @@ end
  "conf/common/etc/.hushlogin",
  "conf/common/etc/.irbrc",
  "conf/common/etc/.rvmrc",
+ "conf/common/etc/.tmux.conf",
+ "conf/common/etc/.tryrc.json",
  "conf/common/etc/.vimrc",
+ "conf/common/etc/.yarnrc",
  "conf/common/etc/.zshrc.end",
 
  "conf/common/.vim",
@@ -56,11 +66,23 @@ end
 # based on my .emacs custom configuration
 `mkdir -p ~/conf/tmp/emacs`
 
-# karabiner-elements setup
-`mkdir -p ~/.config/karabiner/karabiner.json`
-symlink_if_not_present_or_existing_symlink \
-  'conf/common/etc/karabiner.json',
-  '~/.config/karabiner/karabiner.json'
+# ~/.config symlinks
+# Auto-discovers everything under conf/common/etc/.config/ and symlinks it into
+# ~/.config/, creating parent directories as needed. To add a new config, just
+# drop the file into conf/common/etc/.config/<app>/<file>.
+config_src = File.expand_path('~/conf/common/etc/.config')
+Dir.glob("#{config_src}/**/*").select { |f| File.file?(f) }.each do |src_path|
+  relative = src_path.sub("#{config_src}/", '')
+  dest = File.expand_path("~/.config/#{relative}")
+  dir = File.dirname(dest)
+  `mkdir -p #{dir}`
+  if !File.exist?(dest) || File.symlink?(dest)
+    `ln -sf #{src_path} #{dest}`
+    puts "  Linked ~/.config/#{relative}"
+  else
+    puts "  Skipped ~/.config/#{relative} (non-symlink file exists)"
+  end
+end
 
 platform = ARGV[0]
 host = ARGV[1]

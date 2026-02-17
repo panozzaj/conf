@@ -37,7 +37,7 @@
         interactive = auto
 [core]
         excludesfile = ~/.cvsignore
-        editor = "/usr/local/bin/mvim -f"
+        editor = "/opt/homebrew/bin/mvim -f"
         ignorecase = false
 [diff]
         renames = copies
@@ -55,7 +55,7 @@
 [merge]
         stat = true
 [mergetool "mvimdiff"]
-        cmd = /usr/local/bin/mvimdiff -f "$LOCAL" "$MERGED" "$REMOTE"
+        cmd = /opt/homebrew/bin/mvimdiff -f "$LOCAL" "$MERGED" "$REMOTE"
 [mergetool "sourcetree"]
         cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
         trustExitCode = true
