@@ -1,0 +1,5 @@
+# see https://github.com/awesome-print/awesome_print#setting-custom-defaults
+AwesomePrint.defaults = {
+  sort_keys: true,
+  ruby19_syntax: true,
+}

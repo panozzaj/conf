@@ -1,0 +1,59 @@
+# Ported from iTerm2 'Default' profile
+
+# --- Cursor ---
+cursor-style = block
+cursor-style-blink = false
+shell-integration-features = no-cursor
+# Note: Ghostty doesn't have an unfocused cursor style setting.
+# It already shows a hollow block for unfocused splits by default.
+
+# --- Font (matches iTerm2: Monaco 14) ---
+font-family = Monaco
+font-size = 14
+
+# --- Splits (match iTerm2 Cmd+D / Cmd+Shift+D) ---
+keybind = super+d=new_split:right
+keybind = super+shift+d=new_split:down
+keybind = ctrl+tab=goto_split:next
+keybind = ctrl+shift+tab=goto_split:previous
+
+# --- Window/scrollback ---
+window-padding-x = 2
+window-padding-y = 2
+
+# --- Bell (flash border instead of sound, matching iTerm2 Visual Bell) ---
+bell-features = no-system,no-audio,attention,title,border
+
+# --- Option key sends Esc+ (needed for Alt keybinds in vim/tmux) ---
+# iTerm2 has this as "Option Key Sends: Normal" (0) — change to "esc" if you
+# want Option to work as Meta in terminal apps:
+# macos-option-as-alt = left
+
+# --- Colors ---
+foreground = #bbbbbb
+background = #000000
+cursor-color = #bbbbbb
+selection-background = #b4d5ff
+selection-foreground = #000000
+
+palette = 0=#5a5858
+palette = 1=#ea2d0f
+palette = 2=#00c700
+palette = 3=#e0dd04
+palette = 4=#626ef6
+palette = 5=#da38d8
+palette = 6=#01ccce
+palette = 7=#e5e5e5
+palette = 8=#555555
+palette = 9=#ff1a10
+palette = 10=#55ff55
+palette = 11=#ffff55
+palette = 12=#9296f7
+palette = 13=#ff55ff
+palette = 14=#55ffff
+palette = 15=#ffffff
+
+copy-on-select = clipboard
+
+# Disable tab/window restore on startup (investigating system freezes)
+window-save-state = never

@@ -1,0 +1,44 @@
+{
+  "path": "~/Documents/dev/tries",
+  "templates": {
+    "rails": "rails new \"$1\" --name \"$TRY_ID\""
+  },
+  "init_actions": {
+    "git_init": {
+      "label": "git init",
+      "command": "git init",
+      "default": true
+    },
+    "gitignore": {
+      "label": "Create .gitignore",
+      "command": "printf '.DS_Store\\n.env\\n.jj/\\n.playwright-mcp/\\n__pycache__/\\nnode_modules/\\ntmp/\\n' > .gitignore",
+      "default": true
+    },
+    "jj_init": {
+      "label": "jj git init --colocate",
+      "command": "jj git init --colocate",
+      "default": true
+    },
+    "jj_snapshot_hook": {
+      "label": "Add Claude jj_snapshot hook",
+      "command": "~/Documents/dev/claude-hooks/scripts/setup/add_jj_snapshot_hook",
+      "default": true
+    },
+    "readme": {
+      "label": "Create README.md",
+      "command": "echo \"# $TRY_ID\" > README.md",
+      "default": false
+    },
+    "chrome_devtools_mcp": {
+      "label": "Setup Chrome DevTools MCP for Claude",
+      "command": "claude mcp add chrome-devtools -s project -- npx chrome-devtools-mcp@latest",
+      "default": false
+    },
+    "trufflehog_lefthook": {
+      "label": "Add lefthook with trufflehog pre-push",
+      "command": "~/Documents/dev/lefthook-scripts/add_trufflehog_lefthook",
+      "default": false
+    }
+  },
+  "startup_command": "CL"
+}
