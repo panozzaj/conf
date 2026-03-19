@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+
+import re
+import subprocess
+import sys
+import unittest
+
+MULTIPLIERS = {"KB": 1, "MB": 1024, "GB": 1024**2, "TB": 1024**3}
+
+
+def parse_size(line):
+    match = re.search(r"([\d.]+)\s+(KB|MB|GB|TB)", line)
+    if match:
+        return float(match.group(1)) * MULTIPLIERS[match.group(2)]
+    return None
+
+
+def sort_output(raw):
+    lines = raw.strip().split("\n")
+    if not lines:
+        return ""
+    header = lines[0]
+    rows = []
+    for line in lines[1:]:
+        size = parse_size(line)
+        if size is not None:
+            rows.append((size, line))
+    sorted_lines = [line for _, line in sorted(rows, key=lambda r: r[0], reverse=True)]
+    return "\n".join([header] + sorted_lines)
+
+
+class TestOllamaList(unittest.TestCase):
+    SAMPLE = """\
+NAME                         ID              SIZE      MODIFIED
+qwen3.5:9b                   6488c96fa5fa    6.6 GB    11 days ago
+qwen3.5-4b-nothink:latest    16ac258030b4    3.4 GB    12 days ago
+glm-4.7-flash:latest         d1a8a26252f1    19 GB     6 weeks ago
+nomic-embed-text:latest      0a109f422b47    274 MB    3 months ago
+gemma3:1b                    8648f39daa8f    815 MB    7 months ago"""
+
+    def test_sort_order(self):
+        result = sort_output(self.SAMPLE)
+        lines = result.strip().split("\n")
+        names = [line.split()[0] for line in lines[1:]]
+        self.assertEqual(names, [
+            "glm-4.7-flash:latest",
+            "qwen3.5:9b",
+            "qwen3.5-4b-nothink:latest",
+            "gemma3:1b",
+            "nomic-embed-text:latest",
+        ])
+
+    def test_header_preserved(self):
+        result = sort_output(self.SAMPLE)
+        self.assertTrue(result.startswith("NAME"))
+
+    def test_empty_input(self):
+        self.assertEqual(sort_output(""), "")
+
+    def test_parse_size_units(self):
+        self.assertEqual(parse_size("foo 274 MB bar"), 274 * 1024)
+        self.assertEqual(parse_size("foo 1.5 GB bar"), 1.5 * 1024**2)
+        self.assertEqual(parse_size("foo 2 TB bar"), 2 * 1024**3)
+        self.assertEqual(parse_size("foo 512 KB bar"), 512)
+
+    def test_parse_size_no_match(self):
+        self.assertIsNone(parse_size("no size here"))
+
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "test":
+        sys.argv = sys.argv[:1]
+        unittest.main()
+    else:
+        result = subprocess.run(["ollama", "list"], capture_output=True, text=True)
+        print(sort_output(result.stdout))

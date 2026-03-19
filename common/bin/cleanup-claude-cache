@@ -1,0 +1,74 @@
+#!/bin/bash
+# Periodic cleanup of Claude Code caches and stale temp files.
+# Designed to run via launchd (daily). Safe to run anytime.
+#
+# Claude Code dirs are archived to ~/.claude/archive/<dir>/ before removal.
+# npm caches are deleted outright (easily re-fetched).
+#
+# What it archives:
+#   - ~/.claude/debug logs older than 7 days
+#   - ~/.claude/file-history older than 14 days
+#   - ~/.claude/shell-snapshots older than 14 days
+#   - ~/.claude/paste-cache older than 7 days
+#   - ~/.claude/todos older than 30 days
+#   - ~/.claude/plans older than 30 days
+#   - ~/.claude/tasks older than 30 days
+#   - ~/.claude/backups older than 14 days
+#
+# What it deletes (not worth archiving):
+#   - npm _npx cache entries older than 30 days
+
+set -euo pipefail
+
+CLAUDE_DIR="$HOME/.claude"
+ARCHIVE_DIR="$CLAUDE_DIR/archive"
+LOG_PREFIX="[cleanup-claude-cache]"
+
+log() { echo "$LOG_PREFIX $(date '+%Y-%m-%d %H:%M:%S') $*"; }
+
+mkdir -p "$ARCHIVE_DIR"
+
+archive_and_prune() {
+  local dir="$1" days="$2" label="$3"
+  if [ ! -d "$dir" ]; then return; fi
+
+  local items
+  items=$(find "$dir" -mindepth 1 -maxdepth 1 -mtime +"$days" 2>/dev/null)
+  local count
+  count=$(echo "$items" | grep -c . 2>/dev/null || echo 0)
+
+  if [ "$count" -gt 0 ]; then
+    local dest="$ARCHIVE_DIR/$label"
+    mkdir -p "$dest"
+    echo "$items" | xargs -I{} mv {} "$dest/" 2>/dev/null
+    log "Archived $count items from $label -> archive/$label/ (older than ${days}d)"
+  fi
+}
+
+log "Starting cleanup"
+
+archive_and_prune "$CLAUDE_DIR/debug"           7  "debug"
+archive_and_prune "$CLAUDE_DIR/file-history"   14  "file-history"
+archive_and_prune "$CLAUDE_DIR/shell-snapshots" 14 "shell-snapshots"
+archive_and_prune "$CLAUDE_DIR/paste-cache"     7  "paste-cache"
+archive_and_prune "$CLAUDE_DIR/todos"          30  "todos"
+archive_and_prune "$CLAUDE_DIR/plans"          30  "plans"
+archive_and_prune "$CLAUDE_DIR/tasks"          30  "tasks"
+archive_and_prune "$CLAUDE_DIR/backups"        14  "backups"
+
+# Clean stale npx cache (MCP servers, etc.) — not worth archiving
+NPX_DIR="$HOME/.npm/_npx"
+if [ -d "$NPX_DIR" ]; then
+  count=$(find "$NPX_DIR" -mindepth 1 -maxdepth 1 -mtime +30 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$count" -gt 0 ]; then
+    find "$NPX_DIR" -mindepth 1 -maxdepth 1 -mtime +30 -exec rm -rf {} + 2>/dev/null
+    log "Pruned $count stale npx cache entries"
+  fi
+fi
+
+# Clean npm cache (built-in gc)
+if command -v npm &>/dev/null; then
+  npm cache clean --force 2>/dev/null && log "Ran npm cache clean" || true
+fi
+
+log "Done"
