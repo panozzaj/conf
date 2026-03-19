@@ -593,7 +593,13 @@ alias hrdb="heroku whoami && heroku pg:psql"
 alias hrsql="heroku whoami && heroku pg:psql"
 alias hrdm="heroku whoami && heroku run rake db:migrate"
 alias hrr="heroku whoami && echo heroku run rake '<your command>'; heroku run rake"
-alias hrrr="heroku whoami && echo heroku run rails runner '<your command>'; heroku run rails runner"
+function hrrr {
+  heroku whoami || return 1
+  local cmd="${@:- }"
+  echo "heroku run rails runner $cmd"
+  sleep 2
+  heroku run rails runner "$@"
+}
 alias her="heroku"
 alias hl="heroku logs"
 alias hlt="heroku logs -t"
@@ -1058,7 +1064,7 @@ safe_alias yt 'yarn test'
 safe_alias pi 'pip install'
 
 # use random uuid for uuid generator
-safe_alias uuid 'uuid -v4'
+#safe_alias uuid 'uuid -v4'
 
 # javascript
 #alias jsl="jslint -process"
@@ -1135,6 +1141,10 @@ function stree() {
 
 # print STDERR in red
 alias -g errred='2> >(while read line; do echo -e "\e[01;31m$line\e[0m" >&2; done)'
+
+if [[ ! "$PATH" =~ "postgresql@18" ]]; then
+  PATH="/opt/homebrew/opt/postgresql@18/bin:$PATH"
+fi
 
 if [[ ! "$PATH" =~ "/usr/local/bin" ]]; then
   PATH=/usr/local/bin:$PATH
@@ -1292,16 +1302,15 @@ function cl {
 }
 function _claude_loop {
   local flag="$1"; shift
-  local restart_msg=""
   local rc
   while true; do
-    claude --dangerously-skip-permissions $flag "$@" $restart_msg
+    claude --dangerously-skip-permissions $flag "$@"
     rc=$?
     [ $rc -eq 129 ] || return $rc
     echo "Reloading Claude Code..."
     sleep 0.5
     flag="-c"
-    restart_msg="restarted"
+    set -- "restarted"
   done
 }
 function CL  { _claude_loop ""   "$@"; }
@@ -1386,6 +1395,8 @@ function llm_commit {
 #    zle reset-prompt
 #}
 
+
+alias rp="realpath"
 
 safe_alias weather "curl 'https://wttr.in/Fishers?u'"
 
