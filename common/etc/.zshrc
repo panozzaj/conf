@@ -707,6 +707,12 @@ alias gb-="git checkout -"
 # Enhanced git branch alias with time since last commit and color coding
 # Colors: orange (<1 day), yellow (<1 week), grey (>1 month)
 function gb() {
+  # Pass through to git branch when flags are given (e.g. gb -m, gb -d)
+  if [[ $# -gt 0 ]]; then
+    git branch "$@"
+    return
+  fi
+
   if ! git rev-parse --is-inside-work-tree &>/dev/null; then
     echo "fatal: not a git repository (or any of the parent directories): .git" >&2
     return 1
