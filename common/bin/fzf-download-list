@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# List ~/Downloads sorted newest-first with relative age, for fzf
+now=$(date +%s)
+command gstat --printf='%Y\t%n\n' ~/Downloads/* 2>/dev/null | sort -rn | perl -CS -e '
+  use utf8;
+  my $now = shift;
+  my (@names, @rels);
+  my $maxlen = 0;
+  while (<STDIN>) {
+    chomp;
+    my ($epoch, $path) = split /\t/, $_, 2;
+    (my $name = $path) =~ s{.*/}{};
+    my $diff = $now - $epoch;
+    my $rel;
+    if    ($diff < 60)      { $rel = int($diff) . "s ago" }
+    elsif ($diff < 3600)    { $rel = int($diff/60) . "m ago" }
+    elsif ($diff < 86400)   { $rel = int($diff/3600) . "h ago" }
+    elsif ($diff < 604800)  { $rel = int($diff/86400) . "d ago" }
+    elsif ($diff < 2592000) { $rel = int($diff/604800) . "w ago" }
+    else                    { $rel = int($diff/2592000) . "mo ago" }
+    my $displen = length($name);
+    $maxlen = $displen if $displen > $maxlen && $displen <= 100;
+    push @names, $name;
+    push @rels, $rel;
+  }
+  for my $i (0 .. $#names) {
+    my $pad = $maxlen - length($names[$i]);
+    $pad = 0 if $pad < 0;
+    printf "%s%s\t%s\n", $names[$i], " " x $pad, $rels[$i];
+  }
+' "$now"

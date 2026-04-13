@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Convert epoch timestamps to relative dates (e.g. "3d ago")
+# Usage:
+#   relative-date 1775832760           # single timestamp
+#   echo 1775832760 | relative-date    # from stdin, one per line
+now=$(date +%s)
+
+format_rel() {
+  local diff=$(( now - $1 ))
+  if   (( diff < 60 ));      then echo "${diff}s ago"
+  elif (( diff < 3600 ));    then echo "$(( diff / 60 ))m ago"
+  elif (( diff < 86400 ));   then echo "$(( diff / 3600 ))h ago"
+  elif (( diff < 604800 ));  then echo "$(( diff / 86400 ))d ago"
+  elif (( diff < 2592000 )); then echo "$(( diff / 604800 ))w ago"
+  else echo "$(( diff / 2592000 ))mo ago"
+  fi
+}
+
+if [[ $# -gt 0 ]]; then
+  for ts in "$@"; do
+    format_rel "$ts"
+  done
+else
+  while IFS= read -r ts; do
+    format_rel "$ts"
+  done
+fi

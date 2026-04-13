@@ -2,6 +2,63 @@ alias e="$EDITOR"
 alias e.="$EDITOR ."
 source $conf/common/open_source/zummoner/zummoner.zsh
 
+# Helper: extract the last shell word from LBUFFER for use as an fzf query
+_fzf_last_word() {
+  # Split on whitespace, grab the last token
+  local -a words=(${(z)LBUFFER})
+  if (( ${#words} )) && [[ "$LBUFFER" != *' ' ]]; then
+    echo "${words[-1]}"
+  fi
+}
+
+# Helper: remove the last shell word from LBUFFER (to replace it with selection)
+_fzf_strip_last_word() {
+  local -a words=(${(z)LBUFFER})
+  if (( ${#words} )) && [[ "$LBUFFER" != *' ' ]]; then
+    # Remove the last word, keep trailing space
+    LBUFFER="${LBUFFER%${words[-1]}}"
+  fi
+}
+
+# Override Ctrl+T: use current partial word as initial fzf query
+fzf-file-widget() {
+  local query=$(_fzf_last_word)
+  local selected
+  selected=$(
+    FZF_DEFAULT_COMMAND=${FZF_CTRL_T_COMMAND:-} \
+    FZF_DEFAULT_OPTS=$(__fzf_defaults "--reverse --walker=file,dir,follow,hidden --scheme=path" "${FZF_CTRL_T_OPTS-} -m --query=${(qqq)query}") \
+    FZF_DEFAULT_OPTS_FILE='' $(__fzfcmd) < /dev/tty | while read -r item; do
+      echo -n -E "${(q)item} "
+    done
+  )
+  if [[ -n "$selected" ]]; then
+    [[ -n "$query" ]] && _fzf_strip_last_word
+    LBUFFER="${LBUFFER}${selected}"
+  fi
+  zle reset-prompt
+}
+zle -N fzf-file-widget
+
+# Ctrl+X d: pick a file from ~/Downloads (newest first), partial word as query
+# Shows relative age (e.g. "3d ago") right-aligned, searches only on filename
+fzf-download-widget() {
+  local query=$(_fzf_last_word)
+  local selected
+  selected=$(
+    FZF_DEFAULT_COMMAND="fzf-download-list" \
+    FZF_DEFAULT_OPTS=$(__fzf_defaults "--reverse" "--no-sort --delimiter='\t' --nth=1 --tabstop=4 --prompt='Download: ' --query=${(qqq)query}") \
+    FZF_DEFAULT_OPTS_FILE='' $(__fzfcmd) < /dev/tty)
+  if [[ -n "$selected" ]]; then
+    # Strip the trailing tab + relative time that fzf returns
+    selected="${selected%%$'\t'*}"
+    [[ -n "$query" ]] && _fzf_strip_last_word
+    LBUFFER="${LBUFFER}${(q)HOME}/Downloads/${(q)selected}"
+  fi
+  zle reset-prompt
+}
+zle -N fzf-download-widget
+bindkey '^Xd' fzf-download-widget
+
 eval "$(try-ink init)"
 
 # GNU LS_COLORS for colored completions (macOS uses LSCOLORS, but zsh/fzf-tab need LS_COLORS)
