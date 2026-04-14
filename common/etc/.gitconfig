@@ -62,7 +62,7 @@
 [pull]
         ff = only
 [push]
-        default = tracking
+	default = current
 [rerere]
         enabled = 0
 [user]
