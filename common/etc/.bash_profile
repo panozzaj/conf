@@ -9,3 +9,4 @@ export PATH="$PATH:/Users/anthony/.lmstudio/bin"
 cd .
 
 export PATH="$HOME/.elan/bin:$PATH"
+export PATH=$PATH:$HOME/.maestro/bin
