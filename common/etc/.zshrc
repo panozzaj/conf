@@ -241,8 +241,6 @@ alias rpp="best_rake parallel:prepare"
 # Rails
 safe_alias rials "rails"
 safe_alias rdb "best_rails db"
-# Intentionally overrides ripgrep (rg) - Rails generate is more commonly used in Rails projects
-alias rg="best_rails generate"
 safe_alias rgmo "best_rails generate model"
 safe_alias rgc "best_rails generate controller"
 safe_alias rr "best_rails runner"
