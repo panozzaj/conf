@@ -42,7 +42,7 @@ all_candidates=$(
 )
 
 # Get worktree and subtree information
-worktree_branches=$(git worktree list --porcelain 2>/dev/null | grep "^branch " | sed 's/^branch //' | sort | uniq || true)
+worktree_branches=$(git worktree list --porcelain 2>/dev/null | grep "^branch " | sed 's|^branch refs/heads/||' | sort | uniq || true)
 subtree_branches=$(git branch -v | grep "^[[:space:]]*+" | sed 's/^[* +]*//' | cut -d' ' -f1 || true)
 
 # Filter out branches that are used by worktrees

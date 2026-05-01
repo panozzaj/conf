@@ -1356,6 +1356,17 @@ function git-new-wt {
   fi
 }
 
+function gcb {
+  local output
+  output=$(command gcb "$@")
+  echo "$output" | grep -v "^WORKTREE_DIR="
+  local worktree_dir
+  worktree_dir=$(echo "$output" | grep "^WORKTREE_DIR=" | cut -d= -f2)
+  if [[ -n "$worktree_dir" ]]; then
+    cd "$worktree_dir"
+  fi
+}
+
 function gem_summary {
   if [[ -n $(git diff --cached Gemfile Gemfile.lock) ]]; then
     echo "Staged changes detected:"

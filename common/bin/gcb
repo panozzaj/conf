@@ -4,14 +4,44 @@
 
 set -e
 
-# If argument provided, just checkout directly
-if [[ -n "$1" ]]; then
-  git checkout "$1"
-  exit 0
-fi
-
 current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
 now=$(date +%s)
+current_worktree=$(git rev-parse --show-toplevel 2>/dev/null)
+
+# Parse worktrees once: branch -> path map (and a presence set)
+typeset -A worktree_branches
+typeset -A worktree_paths
+{
+  wt_path=""
+  while IFS= read -r line; do
+    case "$line" in
+      "worktree "*) wt_path="${line#worktree }" ;;
+      "branch refs/heads/"*)
+        wt_branch="${line#branch refs/heads/}"
+        worktree_branches[$wt_branch]=1
+        worktree_paths[$wt_branch]="$wt_path"
+        ;;
+      "") wt_path="" ;;
+    esac
+  done
+} < <(git worktree list --porcelain 2>/dev/null)
+
+# Switch to a branch, or print WORKTREE_DIR=<path> if it lives in another worktree
+checkout_or_worktree() {
+  local target="$1"
+  [[ -z "$target" ]] && return 0
+  if [[ "$target" != "$current_branch" && -n "${worktree_paths[$target]}" && "${worktree_paths[$target]}" != "$current_worktree" ]]; then
+    echo "WORKTREE_DIR=${worktree_paths[$target]}"
+    return 0
+  fi
+  git checkout "$target"
+}
+
+# If argument provided, just checkout directly (or hop to its worktree)
+if [[ -n "$1" ]]; then
+  checkout_or_worktree "$1"
+  exit 0
+fi
 
 # Use main_branch script if available, otherwise detect inline
 main_branch=$(main_branch 2>/dev/null || {
@@ -22,12 +52,6 @@ main_branch=$(main_branch 2>/dev/null || {
     fi
   done
 })
-
-# Get list of worktree branches (zsh associative array)
-typeset -A worktree_branches
-while read -r wt_branch; do
-  [[ -n "$wt_branch" ]] && worktree_branches[$wt_branch]=1
-done < <(git worktree list 2>/dev/null | grep -o '\[[^]]*\]' | tr -d '[]')
 
 # Get all data and find max branch name length
 branches_data=$(git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname:short)|%(committerdate:relative)|%(committerdate:unix)')
@@ -125,5 +149,5 @@ selected=$(echo -e "$output" | fzf --ansi --no-sort \
   | sed 's/^[* +]*//' | awk '{print $1}')
 
 if [ -n "$selected" ]; then
-  git checkout "$selected"
+  checkout_or_worktree "$selected"
 fi
