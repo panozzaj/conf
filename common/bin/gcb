@@ -5,22 +5,16 @@
 set -e
 
 current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
-now=$(date +%s)
 current_worktree=$(git rev-parse --show-toplevel 2>/dev/null)
 
-# Parse worktrees once: branch -> path map (and a presence set)
-typeset -A worktree_branches
+# Parse worktrees once: branch -> path map
 typeset -A worktree_paths
 {
   wt_path=""
   while IFS= read -r line; do
     case "$line" in
       "worktree "*) wt_path="${line#worktree }" ;;
-      "branch refs/heads/"*)
-        wt_branch="${line#branch refs/heads/}"
-        worktree_branches[$wt_branch]=1
-        worktree_paths[$wt_branch]="$wt_path"
-        ;;
+      "branch refs/heads/"*) worktree_paths[${line#branch refs/heads/}]="$wt_path" ;;
       "") wt_path="" ;;
     esac
   done
@@ -36,6 +30,30 @@ checkout_or_worktree() {
   fi
   git checkout "$target"
 }
+
+branch_prefix() {
+  local branch="$1"
+  if [[ "$branch" == "$current_branch" ]]; then
+    printf '\033[38;5;34m* \033[0m'
+  elif [[ -n "${worktree_paths[$branch]}" ]]; then
+    printf '+ '
+  else
+    printf '  '
+  fi
+}
+
+# If argument is a GitHub PR URL, resolve the branch name via gh
+if [[ "$1" =~ ^https://github\.com/([^/]+/[^/]+)/pull/([0-9]+) ]]; then
+  repo="${match[1]}"
+  pr_number="${match[2]}"
+  branch=$(gh pr view "$pr_number" --repo "$repo" --json headRefName --jq .headRefName)
+  if [[ -z "$branch" ]]; then
+    echo "Could not resolve branch for $1" >&2
+    exit 1
+  fi
+  checkout_or_worktree "$branch"
+  exit 0
+fi
 
 # If argument provided, just checkout directly (or hop to its worktree)
 if [[ -n "$1" ]]; then
@@ -54,12 +72,13 @@ main_branch=$(main_branch 2>/dev/null || {
 })
 
 # Get all data and find max branch name length
+now=$(date +%s)
 branches_data=$(git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname:short)|%(committerdate:relative)|%(committerdate:unix)')
 max_len=0
 
 while IFS='|' read -r branch rel_date unix_ts; do
   len=${#branch}
-  if [ $len -gt $max_len ]; then
+  if [ "$len" -gt "$max_len" ]; then
     max_len=$len
   fi
 done <<< "$branches_data"
@@ -70,23 +89,12 @@ output=""
 # Main branch first if it exists
 if [ -n "$main_branch" ]; then
   padded_main=$(printf "%-${max_len}s" "$main_branch")
-  main_prefix="  "
-
-  if [ "$main_branch" = "$current_branch" ]; then
-    main_prefix="\033[38;5;34m* \033[0m"
-  elif [[ -n "${worktree_branches[$main_branch]}" ]]; then
-    main_prefix="+ "
-  fi
-
-  output="${main_prefix}\033[32;1m${padded_main}\033[0m\n"
+  output="$(branch_prefix "$main_branch")\033[32;1m${padded_main}\033[0m\n"
 fi
 
 # Other branches with proper alignment
 while IFS='|' read -r branch rel_date unix_ts; do
-  # Skip main branch (already displayed)
-  if [ "$branch" = "$main_branch" ]; then
-    continue
-  fi
+  [[ "$branch" == "$main_branch" ]] && continue
 
   age=$((now - unix_ts))
 
@@ -97,30 +105,15 @@ while IFS='|' read -r branch rel_date unix_ts; do
     rel_date="1 minute ago"
   fi
 
-  # Determine color based on age
-  color_code=""
-  if [ $age -lt 86400 ]; then
-    color_code="208"
-  elif [ $age -lt 604800 ]; then
-    color_code="178"
-  elif [ $age -gt 2592000 ]; then
-    color_code="240"
+  # Color by age: <1d orange, <1w yellow, >30d dim
+  if (( age < 86400 )); then     date_display="\033[38;5;208m[${rel_date}]\033[0m"
+  elif (( age < 604800 )); then  date_display="\033[38;5;178m[${rel_date}]\033[0m"
+  elif (( age > 2592000 )); then date_display="\033[38;5;240m[${rel_date}]\033[0m"
+  else                           date_display="[${rel_date}]"
   fi
 
   padded_branch=$(printf "%-${max_len}s" "$branch")
-  prefix="  "
-
-  if [ "$branch" = "$current_branch" ]; then
-    prefix="\033[38;5;34m* \033[0m"
-  elif [[ -n "${worktree_branches[$branch]}" ]]; then
-    prefix="+ "
-  fi
-
-  if [ -n "$color_code" ]; then
-    output+="${prefix}${padded_branch} \033[38;5;${color_code}m[${rel_date}]\033[0m\n"
-  else
-    output+="${prefix}${padded_branch} [${rel_date}]\n"
-  fi
+  output+="$(branch_prefix "$branch")${padded_branch} ${date_display}\n"
 done <<< "$branches_data"
 
 # Create preview script that shows commit diff from main
@@ -143,10 +136,25 @@ fi
 "
 
 # Use fzf with ANSI colors and preview, extract just the branch name
-selected=$(echo -e "$output" | fzf --ansi --no-sort \
+# --print-query lets us capture pasted PR URLs even when no branch matches
+fzf_output=$(echo -e "$output" | fzf --ansi --no-sort \
   --preview "$preview_cmd" \
   --preview-window=up:40% \
-  | sed 's/^[* +]*//' | awk '{print $1}')
+  --print-query) || true
+
+query=$(echo "$fzf_output" | head -1)
+selected=$(echo "$fzf_output" | tail -n +2 | sed 's/^[* +]*//' | awk '{print $1}')
+
+# If no branch was selected but the query looks like a PR URL, resolve it
+if [[ -z "$selected" || "$selected" == "$query" ]] && [[ "$query" =~ ^https://github\.com/([^/]+/[^/]+)/pull/([0-9]+) ]]; then
+  repo="${match[1]}"
+  pr_number="${match[2]}"
+  selected=$(gh pr view "$pr_number" --repo "$repo" --json headRefName --jq .headRefName)
+  if [[ -z "$selected" ]]; then
+    echo "Could not resolve branch for $query" >&2
+    exit 1
+  fi
+fi
 
 if [ -n "$selected" ]; then
   checkout_or_worktree "$selected"
