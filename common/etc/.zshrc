@@ -660,6 +660,7 @@ alias reload!="source ~/.zshrc"
 # file editing shortcuts
 alias gitconfig="$EDITOR ~/.gitconfig"
 alias vimrc="$EDITOR ~/conf/common/etc/.vimrc"
+alias bashrc="$EDITOR ~/conf/common/etc/.bashrc"
 alias zshrc="$EDITOR ~/conf/common/etc/.zshrc"
 alias zsrhc="$EDITOR ~/conf/common/etc/.zshrc"
 alias zshrcp="$EDITOR ~/conf/platform/$PLATFORM/etc/.zshrc"
@@ -1065,7 +1066,6 @@ safe_alias ys 'yarn start'
 safe_alias yt 'yarn test'
 
 # python
-safe_alias pi 'pip install'
 
 # use random uuid for uuid generator
 #safe_alias uuid 'uuid -v4'
@@ -1435,3 +1435,18 @@ fi
 
 # megatest CLI completions (after PATH setup)
 eval "$(mt completion zsh)"
+
+# try-ink completions
+_try() {
+  if (( CURRENT == 2 )); then
+    local tries_path
+    tries_path=$(try-ink _completions-path 2>/dev/null)
+    local -a dirs
+    if [[ -n "$tries_path" && -d "$tries_path" ]]; then
+      dirs=("${(@f)$(ls -1 "$tries_path" 2>/dev/null)}")
+    fi
+    compadd -- config init completions
+    compadd -U -M 'l:|=* r:|=* m:{[:lower:]}={[:upper:]}' -- "${dirs[@]}"
+  fi
+}
+compdef _try try
