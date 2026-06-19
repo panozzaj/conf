@@ -1,0 +1,21 @@
+#!/bin/bash
+# Weekly Docker cleanup: unused containers, images, networks, and build cache.
+# Volumes are left alone to avoid data loss — run `docker volume prune` manually.
+set -euo pipefail
+
+log() { echo "[cleanup-docker] $(date '+%Y-%m-%d %H:%M:%S') $*"; }
+
+if ! command -v docker &>/dev/null; then
+  log "Docker not found, skipping"
+  exit 0
+fi
+
+if ! docker info &>/dev/null 2>&1; then
+  log "Docker not running, skipping"
+  exit 0
+fi
+
+log "Starting cleanup"
+docker system prune -af --filter "until=168h" 2>&1 | tail -1
+docker builder prune -af --filter "until=168h" 2>&1 | tail -1
+log "Done"
