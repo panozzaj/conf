@@ -98,3 +98,5 @@
     conflictstyle = zdiff3
 [rebase]
 	autosquash = true
+[safe]
+	directory = /Users/anthony/Documents/dev/woven/code/apply-yourself
