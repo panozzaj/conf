@@ -10,3 +10,5 @@ fi
 
 # Added by LM Studio CLI (lms)
 export PATH="$PATH:/Users/anthony/.lmstudio/bin"
+
+export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
