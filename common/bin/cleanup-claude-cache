@@ -35,7 +35,8 @@ archive_and_prune() {
   local items
   items=$(find "$dir" -mindepth 1 -maxdepth 1 -mtime +"$days" 2>/dev/null)
   local count
-  count=$(echo "$items" | grep -c . 2>/dev/null || echo 0)
+  count=$(echo "$items" | grep -c . 2>/dev/null || true)
+  count=${count:-0}
 
   if [ "$count" -gt 0 ]; then
     local dest="$ARCHIVE_DIR/$label"
@@ -66,9 +67,9 @@ if [ -d "$NPX_DIR" ]; then
   fi
 fi
 
-# Clean npm cache (built-in gc)
+# GC npm cache (verify removes unreachable entries without wiping valid ones)
 if command -v npm &>/dev/null; then
-  npm cache clean --force 2>/dev/null && log "Ran npm cache clean" || true
+  npm cache verify 2>/dev/null && log "Ran npm cache verify" || true
 fi
 
 log "Done"
